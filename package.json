@@ -1,0 +1,29 @@
+{
+  "name": "ancilla",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "parcel src/index.html",
+    "build": "parcel build src/index.html",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "parcel": "^1.12.4",
+    "rimraf": "^3.0.0",
+    "sass": "^1.23.1",
+    "typescript": "^3.6.4"
+  },
+  "dependencies": {
+    "@types/react": "^16.9.11",
+    "@types/react-dom": "^16.9.3",
+    "axios": "^0.19.0",
+    "evergreen-ui": "^4.20.0",
+    "office-ui-fabric-react": "^7.56.0",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0",
+    "react-router-dom": "^5.1.2",
+    "react-split-pane": "^0.1.87",
+    "semantic-ui-css": "^2.4.1"
+  }
+}

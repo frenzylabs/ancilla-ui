@@ -95,7 +95,6 @@ export default class Form extends React.Component<{save:Function, loading:boolea
           marginBottom={4}  
           width="100%" 
           height={48}
-          value={this.state.name}
           onChange={e => 
             this.setState({
               newPrinter: {

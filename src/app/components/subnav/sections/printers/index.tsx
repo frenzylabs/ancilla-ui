@@ -39,7 +39,7 @@ export default class Printers extends React.Component {
   toggleDialog(show:boolean) {
     this.setState({
       ...this.state,
-      showing: true
+      showing: show
     })
   }
 

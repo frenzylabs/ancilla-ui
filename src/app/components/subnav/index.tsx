@@ -41,7 +41,7 @@ export default class SubNav extends React.Component {
       <Pane margin={0} padding={0} height="100%" display="flex" flexDirection="column" background="#425A70">
         <Pane width={180} padding={0} margin={0}>
           <br/>
-          <Printers/>
+          <Printers {...this.props} />
           <Devices/>
           <Files/>
         </Pane>

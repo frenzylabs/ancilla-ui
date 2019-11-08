@@ -27,8 +27,8 @@ export default class Statusbar extends React.Component {
   render() {
     return (
       <Pane background="#122330" height={42} width="100%" display="flex" paddingLeft={20} paddingRight={20}>
-        <Printers />
-        <Devices />
+        <Printers {...this.props} />
+        <Devices {...this.props} />
       </Pane>
     )
   }

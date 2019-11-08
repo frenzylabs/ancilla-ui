@@ -8,7 +8,7 @@
 
 import axios from 'axios'
 
-export default axios.create({
+export const Request = axios.create({
   baseURL: 'http://localhost:5000',
   responseType: 'json',
   headers: {
@@ -18,3 +18,8 @@ export default axios.create({
     'Access-Control-Allow-Origin' : '*',
   }
 })
+
+export const isCancel = axios.isCancel;
+export const CancelToken = axios.CancelToken;
+
+export default Request;

@@ -6,9 +6,13 @@
 //  Copyright 2019 Wess Cope
 //
 
-import Request from './request'
+import {Request, CancelToken} from './request'
 
-export default {
+export const Printer = {
+  cancelSource: () => {
+    return CancelToken.source();
+  },
+
   create: (printer) => {
     return Request.post('/printers', printer)
   },
@@ -21,3 +25,6 @@ export default {
     return Request.get('/ports')
   }
 }
+
+
+export default Printer

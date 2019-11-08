@@ -3,11 +3,15 @@ import {
   applyMiddleware
 } from 'redux'
 
-// import thunk      from 'redux-thunk'
+
+import thunkMiddleware      from 'redux-thunk'
 import reducer    from './reducers'
 
 const store = createStore(
-  reducer
+  reducer,
+  applyMiddleware(
+    thunkMiddleware
+  )
 )
 
 // window.store = store

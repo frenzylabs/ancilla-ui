@@ -20,6 +20,7 @@ import {
 
 import Tree from '../../../tree'
 import Form from './form'
+import { NodeAction } from '../../../../store/reducers/nodes'
 
 import printer, {default as request} from '../../../../network/printer'
 
@@ -40,8 +41,14 @@ export class Printers extends React.Component {
   }
 
   componentDidMount() {
-    this.getPrinters()
+    this.props.listPrinters()
+    // this.getPrinters()
 
+  }
+
+  componentDidUpdate(op, os) {
+    console.log("did update porps", op)
+    console.log("did update stae", os)
   }
 
   toggleDialog(show:boolean) {
@@ -98,11 +105,15 @@ export class Printers extends React.Component {
 
   selectPrinter(item) {
     console.log("Selected Printer", item)
+    let url = `/printers/${item.id}`
     console.log(this.props)
+    this.props.history.push(`${url}`);
+    
   }
 
   render() {
-    let items =  this.state.printers.length > 0 ? this.state.printers : [{name: "No printers found."}]
+    let printers = Object.values(this.props.printers)
+    let items =  printers.length > 0 ? printers : [{name: "No printers found."}]
     
     return ( 
       <React.Fragment key="printers">
@@ -130,4 +141,11 @@ const mapStateToProps = (state) => {
   }
 }
 
-export default connect(mapStateToProps)(Printers)
+const mapDispatchToProps = (dispatch) => {
+  return {
+    listPrinters: () => dispatch(NodeAction.listPrinters())
+  }
+}
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(Printers)

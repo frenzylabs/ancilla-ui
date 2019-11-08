@@ -9,6 +9,13 @@
 import "./styles/app.scss"
 import {connect}  from 'react-redux'
 
+import {
+  Switch,
+  Route,
+  withRouter,
+  matchPath
+} from 'react-router-dom'
+
 import SplitPane from 'react-split-pane'
 
 import {
@@ -24,6 +31,20 @@ import {
   Terminal
 } from './components'
 
+class MainView extends React.Component {
+  render() {
+    // const Component = this.props.component;
+    return (
+      <div id="" className="has-navbar-fixed-top" style={{height: '100vh', flex: '1'}}>
+          <Statusbar printer={this.props.printer} />
+          <Summary printer={this.props.printer} />
+          <Terminal printer={this.props.printer} />
+      </div>
+    );
+ }
+}
+
+
 export class App extends React.Component {
   constructor(props:any) {
     super(props)    
@@ -31,6 +52,7 @@ export class App extends React.Component {
     // this.toggleDialog = this.toggleDialog.bind(this)
     // this.savePrinter  = this.savePrinter.bind(this)
     // this.getPrinters  = this.getPrinters.bind(this)
+    console.log(this.props)
   }
 
   componentDidMount() {
@@ -46,9 +68,14 @@ export class App extends React.Component {
         </Pane>
 
         <Pane background='#f6f6f6' width="100%" display="flex" flexDirection="column">
-          <Statusbar/>
-          <Summary/>
-          <Terminal/>
+          <Switch>
+            <Route path={`/printers/:printerId`}  exact={true} render={ props => {
+              var printer = this.props.node.devices.printers[parseInt(props.match.params.printerId)];
+              return <MainView {...props} printer={printer} /> 
+            }
+            }/>
+          </Switch>
+          
         </Pane>
       </Pane>
     )
@@ -63,4 +90,4 @@ const mapStateToProps = (state) => {
   // }
 }
 
-export default connect(mapStateToProps)(App)
+export default withRouter(connect(mapStateToProps)(App))

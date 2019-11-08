@@ -26,7 +26,7 @@ export default class Files extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <Tree.Node name="Printers" key="printers" children={this.state.files} />
+        <Tree.Node name="Files" key="files" children={this.state.files} />
       </React.Fragment>
     )
   }

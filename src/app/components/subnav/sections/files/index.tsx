@@ -96,7 +96,7 @@ export default class Files extends React.Component {
   }
 
   render() {
-    let names =  this.state.files.length > 0 ? this.state.files.map((f) =>  f.name) : ["No files found."]
+    let items =  this.state.files.length > 0 ? this.state.files : [{name: "No files found."}]
 
     return ( 
       <React.Fragment key="files">
@@ -110,7 +110,7 @@ export default class Files extends React.Component {
           <Form ref={frm => this.form = frm} save={this.saveFile} loading={this.state.loading}/>
         </Dialog>
 
-        <Tree.Node name="Files" key="files" children={names} addAction={() => this.toggleDialog(true)} />
+        <Tree.Node name="Files" key="files" children={items} addAction={() => this.toggleDialog(true)} />
       </React.Fragment>
     )
   }

@@ -7,6 +7,7 @@
 //
 
 import React from 'react'
+import {connect}  from 'react-redux'
 
 import {
   Dialog,
@@ -22,7 +23,7 @@ import Form from './form'
 
 import printer, {default as request} from '../../../../network/printer'
 
-export default class Printers extends React.Component {  
+export class Printers extends React.Component {  
   state = {
     printers: Array<Printer>(),
     showing: false,
@@ -40,6 +41,7 @@ export default class Printers extends React.Component {
 
   componentDidMount() {
     this.getPrinters()
+
   }
 
   toggleDialog(show:boolean) {
@@ -52,7 +54,6 @@ export default class Printers extends React.Component {
   getPrinters() {
     request.list()
     .then((response) => {
-      console.log(response)
       if (response.data && response.data.printers) {
         this.setState({printers: response.data.printers})
       }
@@ -95,9 +96,14 @@ export default class Printers extends React.Component {
     })
   }
 
-  render() {
-    let names =  this.state.printers.length > 0 ? this.state.printers.map((printer) =>  printer.name) : ["No printers found."]
+  selectPrinter(item) {
+    console.log("Selected Printer", item)
+    console.log(this.props)
+  }
 
+  render() {
+    let items =  this.state.printers.length > 0 ? this.state.printers : [{name: "No printers found."}]
+    
     return ( 
       <React.Fragment key="printers">
         <Dialog
@@ -110,8 +116,18 @@ export default class Printers extends React.Component {
           <Form ref={frm => this.form = frm} save={this.savePrinter} loading={this.state.loading}/>
         </Dialog>
 
-        <Tree.Node name="Printers" key="printers" children={names} addAction={() => this.toggleDialog(true)} />
+        <Tree.Node name="Printers" key="printers" children={items} addAction={() => this.toggleDialog(true)} selectItem={this.selectPrinter.bind(this)} />
       </React.Fragment>
     )
   }
 }
+
+
+const mapStateToProps = (state) => {
+  // return state
+  return {
+    printers: state.node.devices.printers
+  }
+}
+
+export default connect(mapStateToProps)(Printers)

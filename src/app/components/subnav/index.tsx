@@ -31,6 +31,11 @@ import {
 } from './sections'
 
 export default class SubNav extends React.Component {
+  componentDidMount() {
+    // this.getPrinters()
+    // console.log("INSIDE SUBNAV ", this.props)
+    // window.snav = this;
+  }
   render() {
     return (
       <Pane margin={0} padding={0} height="100%" display="flex" flexDirection="column" background="#425A70">

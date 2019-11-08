@@ -7,6 +7,7 @@
 //
 
 import React from 'react'
+import {connect}  from 'react-redux'
 
 import {
   Pane,
@@ -16,7 +17,7 @@ import {
 
 
 namespace Tree {
-  export class Node extends React.Component<{name:string, key:string, icon?:string, children?:Array<string>, addAction?:Function}> {
+  export class Node extends React.Component<{name:string, key:string, icon?:string, children?:Array<{}>, addAction?:Function}> {
     state = {
       expanded: false
     }
@@ -35,11 +36,15 @@ namespace Tree {
         expanded: !this.state.expanded
       })
     }
+    onSelect() {
+      if (this.props.selectItem)
+        this.props.selectItem(this.props.item)
+    }
 
     renderSingle() {
       return (
         <Pane width={180} height={20}>
-          <Button minWidth={180} iconBefore="application" appearance="minimal" color="#f0f0f0">{this.props.name}</Button>
+          <Button onClick={() => this.onSelect()} minWidth={180} iconBefore="application" appearance="minimal" color="#f0f0f0">{this.props.name}</Button>
         </Pane>
       )
     }
@@ -66,7 +71,7 @@ namespace Tree {
             <Pane id={`group-${this.props.name}`} paddingLeft={16} paddingTop={0} marginTop={0} marginBottom={0}>
               {this.props.children.map((child, index) => {
                 return (
-                  <Tree.Node name={child} key={`tree-node-${this.props.name}-${index}`}/>
+                  <Tree.Node selectItem={this.props.selectItem} name={child.name} item={child} key={`tree-node-${this.props.name}-${index}`}/>
                 )
               })}
             </Pane>
@@ -82,3 +87,4 @@ namespace Tree {
 }
 
 export default Tree
+

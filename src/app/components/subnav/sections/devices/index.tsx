@@ -29,7 +29,7 @@ export default class Devices extends React.Component {
   }
 
   render() {
-    let names =  this.state.devices.length > 0 ? this.state.devices : ["No Devices added."]
+    let items =  this.state.devices.length > 0 ? this.state.devices : [{name: "No Devices added."}]
 
     return (
       <React.Fragment key="devices">
@@ -42,7 +42,7 @@ export default class Devices extends React.Component {
           Content
         </Dialog>
 
-        <Tree.Node name="Devices" key="devices" children={names} addAction={() => this.toggleDialog(true)} />
+        <Tree.Node name="Devices" key="devices" children={items} addAction={() => this.toggleDialog(true)} />
       </React.Fragment>
     )
   }

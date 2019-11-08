@@ -1,0 +1,27 @@
+//
+//  printers.tsx
+//  ancilla
+// 
+//  Created by Wess Cope (me@wess.io) on 11/08/19
+//  Copyright 2019 Wess Cope
+//
+
+import React from 'react'
+
+import {
+  Pane,
+  Text,
+  Strong,
+  Icon
+} from 'evergreen-ui'
+
+export default class Printers extends React.Component<{status?: string}> {
+  render() {
+    return (
+      <Pane flex={1} alignItems="center" display="flex">
+        <Icon icon="dot" size={22} color={this.props.status || 'danger'}/>
+        <Text color="muted">Printer: <Strong color="rgba(255.0, 255.0, 255.0, 0.8)">Ender 5</Strong></Text>
+      </Pane>
+    )
+  }
+}

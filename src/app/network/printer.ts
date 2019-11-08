@@ -13,8 +13,8 @@ export default {
     return Request.post('/printers', printer)
   },
 
-  list: () => {
-      return Request.get('/printers')
+  list: (options= {}) => {
+      return Request.get('/printers', options)
   },
 
   ports: () => {

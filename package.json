@@ -22,6 +22,7 @@
     "office-ui-fabric-react": "^7.56.0",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
+    "react-file-drop": "^0.2.8",
     "react-router-dom": "^5.1.2",
     "react-split-pane": "^0.1.87",
     "semantic-ui-css": "^2.4.1"

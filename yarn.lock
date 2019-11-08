@@ -4462,7 +4462,7 @@ promise@^7.1.1:
   dependencies:
     asap "~2.0.3"
 
-prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.7, prop-types@^15.6.0, prop-types@^15.6.2, prop-types@^15.7.2:
+prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.7, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.7.2:
   version "15.7.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
   integrity sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
@@ -4581,6 +4581,13 @@ react-event-listener@^0.5.1:
     fbjs "^0.8.16"
     prop-types "^15.6.0"
     warning "^3.0.0"
+
+react-file-drop@^0.2.8:
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/react-file-drop/-/react-file-drop-0.2.8.tgz#de1e26cef0f1a5855fa1fb1e0cee32bc03c34466"
+  integrity sha512-tcrDDbU25C45eusLGpnRg5qx7BexsjJ+5qZMnjwvj0IrRiv7VWEtJ2h2XZsLCkuaAtQe8cF5WYFJbzhfctoZjA==
+  dependencies:
+    prop-types "^15.6.1"
 
 react-is@^16.6.0, react-is@^16.7.0, react-is@^16.8.1, react-is@^16.9.0:
   version "16.11.0"

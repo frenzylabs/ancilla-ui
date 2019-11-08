@@ -19,6 +19,11 @@ import printer, {default as request} from '../../../../network/printer'
 
 export default class Form extends React.Component<{save:Function, loading:boolean}> {
   state = {
+    newPrinter: {
+      name:     '',
+      port:     '',
+      baud_rate: ''
+    },
     name:     '',
     port:     '',
     baudrate: '',
@@ -98,7 +103,7 @@ export default class Form extends React.Component<{save:Function, loading:boolea
           onChange={e => 
             this.setState({
               newPrinter: {
-                ...this.state,
+                ...this.state.newPrinter,
                 name: e.target.value     
               }
             })
@@ -118,7 +123,7 @@ export default class Form extends React.Component<{save:Function, loading:boolea
           onChange={selected => 
             this.setState({
               newPrinter: {
-                ...this.state,
+                ...this.state.newPrinter,
                 port: selected
               }
             })
@@ -136,8 +141,8 @@ export default class Form extends React.Component<{save:Function, loading:boolea
           onChange={selected => 
             this.setState({
               newPrinter: {
-                ...this.state,
-                baudrate: selected
+                ...this.state.newPrinter,
+                baud_rate: selected
               }
             })
           }

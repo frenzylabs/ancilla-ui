@@ -16,7 +16,6 @@ import {
 
 export default class Devices extends React.Component {
   power(){
-    console.log("STATUSBAR: ", this.props)
     if (this.props.printerState.open) {
       var res = PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "REQUEST.close"])
     } else {

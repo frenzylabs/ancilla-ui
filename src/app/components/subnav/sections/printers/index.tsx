@@ -38,7 +38,6 @@ export class Printers extends React.Component {
     this.toggleDialog = this.toggleDialog.bind(this)
     this.savePrinter  = this.savePrinter.bind(this)
     this.getPrinters  = this.getPrinters.bind(this)
-    window.prn = this
   }
 
   componentDidMount() {
@@ -47,10 +46,10 @@ export class Printers extends React.Component {
 
   }
 
-  componentDidUpdate(op, os) {
-    console.log("did update porps", op)
-    console.log("did update stae", os)
-  }
+  // componentDidUpdate(op, os) {
+  //   console.log("did update porps", op)
+  //   console.log("did update stae", os)
+  // }
 
   toggleDialog(show:boolean) {
     this.setState({
@@ -105,9 +104,7 @@ export class Printers extends React.Component {
   }
 
   selectPrinter(item) {
-    console.log("Selected Printer", item)
     let url = `/printers/${item.id}`
-    console.log(this.props)
     this.props.history.push(`${url}`);
     
   }
@@ -137,7 +134,6 @@ export class Printers extends React.Component {
 
 const mapStateToProps = (state) => {
   // return state
-  
   return {
     printers: state.activeNode.printers
   }

@@ -71,11 +71,11 @@ export default class Connection {
 
     this.socket.onerror = (err) => {
       console.log("ON Error")
-      this.onerror(err)
+      this.onError(err)
     }
     
     this.socket.onmessage = (e) => {
-      console.log("ON Message", e)
+      // console.log("ON Message", e)
 
       this.onMessage(e)
     }
@@ -121,14 +121,14 @@ export default class Connection {
 
 
   onMessage(event) {
-    console.log("ON MESSAG", event.data)
+    // console.log("ON MESSAG", event.data)
     try {
       let msg = JSON.parse(event.data)
-      console.log("msg parse", msg)
+      // console.log("msg parse", msg)
       let topic = msg[0]
       let payload = msg[1]
       // let payload = JSON.parse(msg[1])
-      console.log("pyalod parse = ", payload)
+      // console.log("pyalod parse = ", payload)
       PubSub.publish(this.node.name + "." + topic, payload)
     } catch (error) {
       console.log("ERROR", error)

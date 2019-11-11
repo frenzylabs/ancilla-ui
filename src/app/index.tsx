@@ -70,7 +70,6 @@ export class App extends React.Component {
 
 
   sendData(msg, data) {
-    console.log( msg, data );
     this.state.connection.send(JSON.stringify(data))
   }
 
@@ -79,10 +78,10 @@ export class App extends React.Component {
   componentDidMount() {
     // this.getPrinters()
   }
+
   componentDidUpdate(prevProps, prevState) {
     let prevNode = prevProps.activeNode
     if (this.props.activeNode && (!prevNode || prevNode.apiUrl != this.props.activeNode.apiUrl)) {
-      console.log("APP COMPUPdae", this.props.activeNode.hostname);
       PubSub.unsubscribe(this.pubsubToken)
       this.pubsubToken = PubSub.subscribe(this.props.activeNode.name, this.sendData);
       this.setState({connection: new Connection({node: this.props.activeNode})})
@@ -94,34 +93,10 @@ export class App extends React.Component {
       <NodeView {...this.props} node={this.props.activeNode} ></NodeView>
     )
   }
-  // render() {
-  //   return (
-  //     <Pane display="flex" flex={1} height="100%">
-  //       <Pane display="flex" flex={0}>
-  //         <Nav/>
-  //         <SubNav {...this.props} />
-  //       </Pane>
-
-  //       <Pane background='#f6f6f6' width="100%" display="flex" flexDirection="column">
-  //         <Switch>
-  //           <Route path={`/printers/:printerId`}  exact={true} render={ props => {
-  //             var printer = this.props.node.devices.printers[parseInt(props.match.params.printerId)];
-  //             return <MainView {...props} printer={printer} /> 
-  //           }
-  //           }/>
-  //         </Switch>
-          
-  //       </Pane>
-  //     </Pane>
-  //   )
-  // }
 }
 
 const mapStateToProps = (state) => {
   return state
-  // return {
-  //   details: state.notification.notification
-  // }
 }
 
 export default withRouter(connect(mapStateToProps)(App))

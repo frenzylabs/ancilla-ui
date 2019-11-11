@@ -29,23 +29,18 @@ class PrinterView extends React.Component {
   constructor(props:any) {
     super(props)
 
+    
     this.state = {
       printerState: {
         open: false
       },
       connected: false
     }
-    window.pv = this;
 
-    
-    // this.toggleDialog = this.toggleDialog.bind(this)
-    // this.savePrinter  = this.savePrinter.bind(this)
-    // this.getPrinters  = this.getPrinters.bind(this)
-    this.receiveData  = this.receiveData.bind(this)
-    this.setupPrinter = this.setupPrinter.bind(this)
+    this.receiveRequest  = this.receiveRequest.bind(this)
+    this.receiveEvent    = this.receiveEvent.bind(this)
+    this.setupPrinter    = this.setupPrinter.bind(this)
 
-    console.log("PRINTER VIEW ", this.props)
-    // PubSub.subscribe()
     this.setupPrinter()
     
   }
@@ -54,33 +49,65 @@ class PrinterView extends React.Component {
     if (this.props.printer) {
       PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "SUB", ""])
       PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "REQUEST.get_state"])
-      console.log("Has printer")
-      this.topic = `${this.props.node.name}.${this.props.printer.name}.request`
+      // console.log("Has printer")
+      this.requestTopic = `${this.props.node.name}.${this.props.printer.name}.request`
+      this.eventTopic = `${this.props.node.name}.${this.props.printer.name}.events`
+      if (this.pubsubRequestToken) {
+        PubSub.unsubscribe(this.pubsubRequestToken)
+      }
       if (this.pubsubToken) {
         PubSub.unsubscribe(this.pubsubToken)
       }
-      this.pubsubToken = PubSub.subscribe(this.topic, this.receiveData);
+      this.pubsubRequestToken = PubSub.subscribe(this.requestTopic, this.receiveRequest);
+      this.pubsubToken = PubSub.subscribe(this.eventTopic, this.receiveEvent);
     }
   }
 
-  receiveData(msg, data) {
-    console.log("PV Received Data here1", msg)    
-    console.log("PV Received Data here2", data)
-    console.log(typeof(data))
+  receiveRequest(msg, data) {
+    // console.log("PV Received Data here1", msg)    
+    // console.log("PV Received Data here2", data)
+    // console.log(typeof(data))
     if(!data)
       return
     if (data["action"] == "get_state") {
-      console.log("get sTATE")
+      // console.log("get STATE", data)
       this.setState({printerState: data["resp"]})
     }
-    else if (data["action"] == "connect") {
-      if (data["resp"]["status"] == "error") {
-        this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
-      } else {
-        this.setState({...this.state, printerState: {...this.state.printerState, open: true}})
-        // this.setState({connected: true})
-      }
-    }
+    // else if (data["action"] == "connect") {
+    //   if (data["resp"]["status"] == "error") {
+    //     this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
+    //   } else {
+    //     this.setState({...this.state, printerState: {...this.state.printerState, open: true}})
+    //     // this.setState({connected: true})
+    //   }
+    // }
+  }
+
+  receiveEvent(msg, data) {
+    // console.log("PV Received Event here1", msg)    
+    // console.log("PV Received Event here2", data)
+    // console.log(typeof(data))
+    var [to, kind] = msg.split("events.")
+    // console.log("EVENT KIND", kind)
+    switch(kind) {
+      case 'connection.closed':
+          this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
+          break
+      case 'connection.opened':
+          this.setState({...this.state, printerState: {...this.state.printerState, open: true}})
+          break
+      case 'print.started':
+          this.setState({...this.state, printerState: {...this.state.printerState, printing: true}})
+          break
+      case 'print.cancelled':
+          this.setState({...this.state, printerState: {...this.state.printerState, printing: false}})
+          break
+      case 'print.failed':
+          this.setState({...this.state, printerState: {...this.state.printerState, printing: false, status: "print_failed"}})
+          break
+      default:
+        break
+    }    
   }
 
     
@@ -94,17 +121,10 @@ class PrinterView extends React.Component {
       this.setupPrinter()
     }
   }
-    
-  // power(){
-  //   console.log("STATUSBAR: ", this.props)
-  //   var res = PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "connect"])
-  //   console.log("PUBSLISH SYNC", res)
 
-  // }
 
   render() {
-    // const Component = this.props.component;
-    console.log(this.state)
+    // const Component = this.props.component;    
     return (
       <div id="" className="has-navbar-fixed-top" style={{height: '100vh', flex: '1'}}>
           <Statusbar {...this.props} printerState={this.state.printerState}/>
@@ -123,8 +143,8 @@ export class NodeView extends React.Component {
     // this.toggleDialog = this.toggleDialog.bind(this)
     // this.savePrinter  = this.savePrinter.bind(this)
     // this.getPrinters  = this.getPrinters.bind(this)
-    console.log("NODE VIEW", this.props)
-    window.nv = this
+    // console.log("NODE VIEW", this.props)
+    // window.nv = this
   }
   
 
@@ -144,7 +164,6 @@ export class NodeView extends React.Component {
           <Switch>
             <Route path={`/printers/:printerId`}  exact={true} render={ props => {
               var printer = this.props.node.printers.find((item) => item.id == parseInt(props.match.params.printerId));
-              console.log("PRINTER = ", printer)
               if (!printer) {
                 return null
               }

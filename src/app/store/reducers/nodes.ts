@@ -59,17 +59,16 @@ export const NodeAction = {
 export function nodeReducer(state = initialState.activeNode, action) {
   switch(action.type) {
   case 'RECEIVED_PRINTERS':
-    console.log("INSIDE RECEIVE PRINTERS", action.data)
-    console.log("CURRENT STATE = ", state)
+    // console.log("INSIDE RECEIVE PRINTERS", action.data)
+    // console.log("CURRENT STATE = ", state)
     
     let clone = Object.assign( Object.create( Object.getPrototypeOf(state)), state)
     clone.printers = action.data.printers
     // var newstate = Object.assign({}, state, {
     //   printers: action.data.printers
     // })
-    console.log("HOSTName= ", clone.hostname)
-    
-    console.log("NEWSTATE ", clone)
+    // console.log("HOSTName= ", clone.hostname)    
+    // console.log("NEWSTATE ", clone)
     // state.printers = action.data.printers
     return clone
     // var newstate = {

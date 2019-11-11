@@ -34,15 +34,15 @@ export default class Body extends React.Component {
        
     
     if (this.props.printer) {
-      this.topic = `${this.props.node.name}.${this.props.printer.name}.connector`
+      this.topic = `${this.props.node.name}.${this.props.printer.name}.events.printer.data_received`
       this.pubsubToken = PubSub.subscribe(this.topic, this.receiveData);
     }
   }
 
 
   receiveData(msg, data) {
-    console.log("Received Data here1", msg)
-    console.log("Received Data here2", data)
+    // console.log("Received Data here1", msg)
+    // console.log("Received Data here2", data)
     if (data["resp"]) {
       if (data["resp"] != '\n') {
         this.setState(prevState => ({        

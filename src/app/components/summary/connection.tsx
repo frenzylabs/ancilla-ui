@@ -37,6 +37,12 @@ export default class Connection extends React.Component {
     loading: false
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.printerState.printing != this.props.printerState.printing) {
+      this.setState({showing: false})
+    }
+  }
+
   toggleDialog(show:boolean) {
     this.setState({
       ...this.state,
@@ -45,8 +51,6 @@ export default class Connection extends React.Component {
   }
 
   startPrint() {
-    console.log("START PRINT")
-    console.log(this.form)
     if (!(this.form.state.newPrint && this.form.state.newPrint.file_id)) {
       toaster.danger("Select a File")
       return
@@ -54,6 +58,11 @@ export default class Connection extends React.Component {
 
     this.topic = `${this.props.node.name}.${this.props.printer.name}.request`
     let cmd = [this.props.printer.name, "start_print", this.form.state.newPrint]
+    PubSub.publish(this.props.node.name + ".request", cmd)
+  }
+
+  cancelPrint() {
+    let cmd = [this.props.printer.name, "cancel"]
     PubSub.publish(this.props.node.name + ".request", cmd)
 
     // this.pubsubToken = PubSub.publish(this.topic, );
@@ -69,12 +78,13 @@ export default class Connection extends React.Component {
     )
   }
 
-  renderPrintAction() {
-    return (
-      <React.Fragment key="printers">
+  renderStartPrint() {
+    if (!this.props.printerState.printing) {
+      return (
+        <React.Fragment key="print">
         <Dialog
           isShown={this.state.showing}
-          title="Add Printer"
+          title="Start Print"
           confirmLabel="Save"
           onCloseComplete={() => this.toggleDialog(false)}
           onConfirm={this.startPrint.bind(this)}
@@ -83,10 +93,43 @@ export default class Connection extends React.Component {
         </Dialog>
 
         <Pane display="flex" marginBottom={6}>
-          <Button onClick={() => this.toggleDialog(true)} minWidth={180} iconBefore="application" appearance="minimal" color="#f0f0f0">Print</Button>          
+          <Button onClick={() => this.toggleDialog(true)} minWidth={180} iconBefore="application" >Print</Button>          
         </Pane>
-        
-      </React.Fragment>
+        </React.Fragment>
+      )
+    }
+    return null
+  }
+
+  renderCancelPrint() {
+    if (this.props.printerState.printing) {
+      return (
+        <React.Fragment key="print">
+          <Dialog
+            isShown={this.state.showing}
+            title="Cancel Print"          
+            confirmLabel="Yes"
+            onCloseComplete={() => this.toggleDialog(false)}
+            onConfirm={this.cancelPrint.bind(this)}
+          >        
+            <p>Are you sure you want to cancel this Print?</p>  
+          </Dialog>
+
+          <Pane display="flex" marginBottom={6}>
+            <Button onClick={() => this.toggleDialog(true)} minWidth={180} iconBefore="application" >Cancel Print</Button>
+          </Pane>
+        </React.Fragment>
+      )
+    }
+    return null
+  }
+
+  renderPrintAction() {
+    return (
+      <div>
+        {this.renderStartPrint()}
+        {this.renderCancelPrint()}
+      </div>
     )
   }
   

@@ -53,30 +53,6 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
 
   componentDidMount() {
     this.getFiles()
-
-    // printer.ports()
-    // .then(res => {
-    //   let ports = res.data['ports'] || []
-
-    //   this.setState({
-    //     ports: ports
-    //   })
-    // })
-    // .catch((err) => {
-    //   console.log(err)
-    // })
-
-    // printer.list()
-    // .then(res => {
-    //   this.setState({
-    //     printers: res.data['printers'].map((printer) => {
-    //       return {name: printer.name, port: printer.port, id: printer.id}
-    //     })
-    //   })
-    // })
-    // .catch((err) => {
-    //   toaster.danger(err)
-    // })
   }
 
   save() {
@@ -114,7 +90,6 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
           isLoading={this.props.loading}
           disabled={this.state.files.length < 1}
           onChange={selected => {
-            console.log(selected)
             this.setState({
               newPrint: {
                 ...this.state.newPrint,

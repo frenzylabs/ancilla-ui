@@ -24,7 +24,6 @@ export default class Printers extends React.Component<{status?: string}> {
     }
   }
   render() {
-    console.log(this.props)
     return (
       <Pane flex={1} alignItems="center" display="flex">
         <Icon icon="dot" size={22} color={this.getColorState()}/>

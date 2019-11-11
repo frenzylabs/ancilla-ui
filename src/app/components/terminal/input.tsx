@@ -47,15 +47,9 @@ export default class Input extends React.Component {
 
   sendAction() {
     (this.state.entry.includes('&&') ? this.state.entry.split('&&') : [this.state.entry]).map((item) => {
-
-      console.log(this.props)
       let cmd = [this.props.printer.name, "command", item.trim()]
       PubSub.publish(this.props.node.name + ".request", cmd)
       return cmd
-      // return JSON.stringify({
-      //   action: 'command',
-      //   code: item.trim()
-      // })
     }).forEach((cmd) => { console.log("send: ", cmd)})
   }
 
@@ -153,6 +147,7 @@ export default class Input extends React.Component {
         <Pane display="flex" width="100%" flex={1} marginRight={8}>
           <input 
             type="text" 
+            disabled={!this.props.printerState.open}
             placeholder="Enter command..." 
             name="cmd"
             id="terminal-input-field" 

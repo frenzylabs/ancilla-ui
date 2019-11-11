@@ -21,7 +21,7 @@ export default class Summary extends React.Component {
       <Pane display="flex">
         <Pane display="flex" width="100%">
           <Connection {...this.props} />
-          <State/>
+          <State {...this.props} />
         </Pane>
       </Pane>
     )

@@ -18,6 +18,7 @@ export default class Node {
   port: string
   devices: Array<Device> = Array()
   printers: Array<Printer> = Array()
+  cameras: Array<{}> = Array()
 
   constructor(name: string, hostname: string, port: string = "", nodepath: string = "") {
     // ...

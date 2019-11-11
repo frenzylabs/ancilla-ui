@@ -26,7 +26,7 @@ import printer, {default as request} from '../../network/printer'
 
 import {
   Printers,
-  Devices,
+  Cameras,
   Files
 } from './sections'
 
@@ -42,8 +42,8 @@ export default class SubNav extends React.Component {
         <Pane width={180} padding={0} margin={0}>
           <br/>
           <Printers {...this.props} />
-          <Devices/>
-          <Files/>
+          <Cameras {...this.props} />
+          <Files {...this.props}/>
         </Pane>
 
       </Pane>

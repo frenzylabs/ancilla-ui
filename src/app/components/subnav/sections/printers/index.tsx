@@ -38,6 +38,7 @@ export class Printers extends React.Component {
     this.toggleDialog = this.toggleDialog.bind(this)
     this.savePrinter  = this.savePrinter.bind(this)
     this.getPrinters  = this.getPrinters.bind(this)
+    window.prn = this
   }
 
   componentDidMount() {
@@ -112,7 +113,7 @@ export class Printers extends React.Component {
   }
 
   render() {
-    let printers = Object.values(this.props.printers)
+    let printers = this.props.printers //Object.values(this.props.printers)
     let items =  printers.length > 0 ? printers : [{name: "No printers found."}]
     
     return ( 
@@ -136,8 +137,9 @@ export class Printers extends React.Component {
 
 const mapStateToProps = (state) => {
   // return state
+  
   return {
-    printers: state.node.devices.printers
+    printers: state.activeNode.printers
   }
 }
 

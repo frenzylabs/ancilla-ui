@@ -1,27 +1,33 @@
 
 import {Printer} from '../../network/printer'
 
-export function NodeState(list = {"printers": {}, "cameras": {}}, state = {}) {
-  return {
-    devices: list,
-    state: state
-  }
-}
+import { initialState } from './state'
+import { node } from 'prop-types'
+
+// export function NodeState(initialState, state = {}) {
+//   return {
+//     activeNode: initialState.activeNode,
+//     state: state
+//   }
+// }
 
 
 
 export const NodeAction = {
   listPrinters() {
-    return dispatch => {
+    return (dispatch, getState) => {
+      console.log("NODE ACTION state", getState())
+      let activeNode = getState().activeNode
       var cancelRequest    = Printer.cancelSource();  
       // dispatch(requestFeatures(username, cancelRequest))
       return Printer.list({cancelToken: cancelRequest.token})
-            .then(response => dispatch(NodeAction.receivedPrinters(response.data)))
+            .then(response => dispatch(NodeAction.receivedPrinters(activeNode, response.data)))
     }
   },
 
-  receivedPrinters: (printers) => ({
+  receivedPrinters: (node, printers) => ({
     type: 'RECEIVED_PRINTERS',
+    node: node,
     data: printers
   }),
   
@@ -48,21 +54,40 @@ export const NodeAction = {
   }
 }
 
-const initialState = NodeState();
+// const initialState = NodeState();
 
-export function nodeReducer(state = initialState, action) {
+export function nodeReducer(state = initialState.activeNode, action) {
   switch(action.type) {
   case 'RECEIVED_PRINTERS':
     console.log("INSIDE RECEIVE PRINTERS", action.data)
+    console.log("CURRENT STATE = ", state)
+    
+    let clone = Object.assign( Object.create( Object.getPrototypeOf(state)), state)
+    clone.printers = action.data.printers
+    // var newstate = Object.assign({}, state, {
+    //   printers: action.data.printers
+    // })
+    console.log("HOSTName= ", clone.hostname)
+    
+    console.log("NEWSTATE ", clone)
+    // state.printers = action.data.printers
+    return clone
+    // var newstate = {
+    //   ...state, 
+    //   printers: action.data.printers
+    // }
+    // console.log("NEWSTATE ", newstate)
+    // return newstate
+
     var printers = action.data.printers.reduce((acc, item) => {
         acc[item.id] = item
         return acc
     }, {})
     
-    return {
-      ...state, 
-      devices: {...state.devices, printers: printers} 
-    }
+    // return {
+    //   ...state, 
+    //   printers: {...state.printers, printers: printers} 
+    // }
 
   case 'ADD_PRINTER':
     var dv = state.devices.printers

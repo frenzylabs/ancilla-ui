@@ -31,18 +31,24 @@ import {
   Terminal
 } from './components'
 
-class MainView extends React.Component {
-  render() {
-    // const Component = this.props.component;
-    return (
-      <div id="" className="has-navbar-fixed-top" style={{height: '100vh', flex: '1'}}>
-          <Statusbar printer={this.props.printer} />
-          <Summary printer={this.props.printer} />
-          <Terminal printer={this.props.printer} />
-      </div>
-    );
- }
-}
+import NodeView from './components/nodes/show'
+
+import Connection from './network/connection'
+
+import PubSub from 'pubsub-js'
+
+// class MainView extends React.Component {
+//   render() {
+//     // const Component = this.props.component;
+//     return (
+//       <div id="" className="has-navbar-fixed-top" style={{height: '100vh', flex: '1'}}>
+//           <Statusbar printer={this.props.printer} />
+//           <Summary printer={this.props.printer} />
+//           <Terminal printer={this.props.printer} />
+//       </div>
+//     );
+//  }
+// }
 
 
 export class App extends React.Component {
@@ -52,36 +58,64 @@ export class App extends React.Component {
     // this.toggleDialog = this.toggleDialog.bind(this)
     // this.savePrinter  = this.savePrinter.bind(this)
     // this.getPrinters  = this.getPrinters.bind(this)
-    console.log(this.props)
+    console.log("APP CONSTUCTOR", this.props.activeNode)
+    // this.props.activeNode
+    this.state = {
+      connection: new Connection({node: this.props.activeNode})
+    }
+    this.sendData  = this.sendData.bind(this)
+    window.app = this
+    this.pubsubToken = PubSub.subscribe(this.props.activeNode.name + ".request", this.sendData);
   }
+
+
+  sendData(msg, data) {
+    console.log( msg, data );
+    this.state.connection.send(JSON.stringify(data))
+  }
+
+  
 
   componentDidMount() {
     // this.getPrinters()
   }
+  componentDidUpdate(prevProps, prevState) {
+    let prevNode = prevProps.activeNode
+    if (this.props.activeNode && (!prevNode || prevNode.apiUrl != this.props.activeNode.apiUrl)) {
+      console.log("APP COMPUPdae", this.props.activeNode.hostname);
+      PubSub.unsubscribe(this.pubsubToken)
+      this.pubsubToken = PubSub.subscribe(this.props.activeNode.name, this.sendData);
+      this.setState({connection: new Connection({node: this.props.activeNode})})
+    }
+  }
 
   render() {
     return (
-      <Pane display="flex" flex={1} height="100%">
-        <Pane display="flex" flex={0}>
-          <Nav/>
-          <SubNav {...this.props} />
-        </Pane>
-
-        <Pane background='#f6f6f6' width="100%" display="flex" flexDirection="column">
-          <Switch>
-            <Route path={`/printers/:printerId`}  exact={true} render={ props => {
-              var printer = this.props.node.devices.printers[parseInt(props.match.params.printerId)];
-              return <MainView {...props} printer={printer} /> 
-            }
-            }/>
-          </Switch>
-          
-        </Pane>
-      </Pane>
+      <NodeView {...this.props} node={this.props.activeNode} ></NodeView>
     )
   }
-}
+  // render() {
+  //   return (
+  //     <Pane display="flex" flex={1} height="100%">
+  //       <Pane display="flex" flex={0}>
+  //         <Nav/>
+  //         <SubNav {...this.props} />
+  //       </Pane>
 
+  //       <Pane background='#f6f6f6' width="100%" display="flex" flexDirection="column">
+  //         <Switch>
+  //           <Route path={`/printers/:printerId`}  exact={true} render={ props => {
+  //             var printer = this.props.node.devices.printers[parseInt(props.match.params.printerId)];
+  //             return <MainView {...props} printer={printer} /> 
+  //           }
+  //           }/>
+  //         </Switch>
+          
+  //       </Pane>
+  //     </Pane>
+  //   )
+  // }
+}
 
 const mapStateToProps = (state) => {
   return state

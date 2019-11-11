@@ -7,6 +7,7 @@
 //
 
 import React from 'react'
+import PubSub from 'pubsub-js'
 
 import {
   Pane,
@@ -14,11 +15,20 @@ import {
 } from 'evergreen-ui'
 
 export default class Devices extends React.Component {
+  power(){
+    console.log("STATUSBAR: ", this.props)
+    if (this.props.printerState.open) {
+      var res = PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "REQUEST.close"])
+    } else {
+      var res = PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "REQUEST.connect"])
+    }
+  }
+
   render() {
     return (
       <Pane alignItems="center" display="flex">
         <IconButton icon="console" iconSize={20} appearance="minimal" className="statusBarButton"/>
-        <IconButton icon="power" iconSize={20} appearance="minimal" className="statusBarButton"/>
+        <IconButton icon="power" iconSize={20} appearance="minimal" className="statusBarButton" onClick={this.power.bind(this)}/>
       </Pane>
     )
   }

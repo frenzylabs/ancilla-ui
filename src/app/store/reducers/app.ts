@@ -1,5 +1,9 @@
 
-const appReducer = (state = {notifications: {}}, action) => {
+import { initialState } from './state'
+
+import { nodeReducer } from './nodes'
+
+const appReducer = (state = initialState, action) => {
   // console.log("APP REDUCER: ", action)
   switch (action.type) {
     case 'RECEIVED_FEATURES':
@@ -14,7 +18,11 @@ const appReducer = (state = {notifications: {}}, action) => {
       return { ...state, notifications: {...state.notifications, ...notifications}}  
 
     default:
-      return state
+        // note: since state doesn't have "user",
+        // so it will return undefined when you access it.
+        // this will allow you to use default value from actually reducer.
+      return {...state, activeNode: nodeReducer(state.activeNode, action)}
+      // return state
   }
 }
 

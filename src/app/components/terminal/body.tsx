@@ -14,21 +14,60 @@ import {
   Text
 } from 'evergreen-ui'
 
+import PubSub from 'pubsub-js'
+
 export default class Body extends React.Component {
   lastLine?:any
+  pubsubToken = null
+  topic = null
 
   constructor(props:any) {
     super(props)
 
+    this.state = {
+      buffer: []
+    }
+
     this.renderLine   = this.renderLine.bind(this)
     this.renderLines  = this.renderLines.bind(this)
+    this.receiveData  = this.receiveData.bind(this)
+       
+    
+    if (this.props.printer) {
+      this.topic = `${this.props.node.name}.${this.props.printer.name}.connector`
+      this.pubsubToken = PubSub.subscribe(this.topic, this.receiveData);
+    }
+  }
+
+
+  receiveData(msg, data) {
+    console.log("Received Data here1", msg)
+    console.log("Received Data here2", data)
+    if (data["resp"]) {
+      if (data["resp"] != '\n') {
+        this.setState(prevState => ({        
+          buffer: [...prevState.buffer, data["resp"]]
+        }))
+      }
+    }
+  }
+  
+  componentWillUnmount() {
+    if (this.pubsubToken)
+      PubSub.unsubscribe(this.pubsubToken)
   }
 
   componentDidMount() {
     this.scrollToBottom()
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
+    if (this.props.printer && prevProps.printer != this.props.printer) {
+      if (this.pubsubToken)
+        PubSub.unsubscribe(this.pubsubToken)
+      this.topic = `${this.props.node.name}.${this.props.printer.name}.connector`
+      this.pubsubToken = PubSub.subscribe(this.topic, this.receiveData);
+    }
     this.scrollToBottom()
   }
 
@@ -47,13 +86,7 @@ export default class Body extends React.Component {
   }
 
   renderLines() {
-    return [
-      "one", "two", "three", "four", "five",
-      "one", "two", "three", "four", "five",
-      "one", "two", "three", "four", "five",
-      "one", "two", "three", "four", "five",
-      "one", "two", "three", "four", "five",
-    ].map((item, index) => {
+    return this.state.buffer.map((item, index) => {
       return this.renderLine(item, index)
     })
   }

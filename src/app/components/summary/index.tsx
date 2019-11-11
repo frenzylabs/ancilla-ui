@@ -20,7 +20,7 @@ export default class Summary extends React.Component {
     return (
       <Pane display="flex">
         <Pane display="flex" width="100%">
-          <Connection/>
+          <Connection {...this.props} />
           <State/>
         </Pane>
       </Pane>

@@ -15,12 +15,19 @@ import Body   from './body'
 import Input  from './input'
 
 export default class Terminal extends React.Component {
+  // constructor(props:any) {
+  //   super(props)
+
+  //   this.renderLine   = this.renderLine.bind(this)
+  //   this.renderLines  = this.renderLines.bind(this)
+  // }
+
   render() {
     return(
       <Pane display="flex">
         <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={10} border="default">
-          <Body/>
-          <Input/>
+          <Body {...this.props} />
+          <Input {...this.props} />
         </Pane>
       </Pane>
     )

@@ -15,6 +15,7 @@ import {
 } from 'evergreen-ui'
 
 import PubSub from 'pubsub-js'
+import PrinterActions from '../../../../store/actions/printers'
 
 export default class Body extends React.Component {
   lastLine?:any
@@ -45,9 +46,17 @@ export default class Body extends React.Component {
     // console.log("Received Data here2", data)
     if (data["resp"]) {
       if (data["resp"] != '\n') {
-        this.setState(prevState => ({        
-          buffer: [...prevState.buffer, data["resp"]]
-        }))
+        // var evt = {
+        //   type: 'PRINTER_RECEIVED_DATA',
+        //   printer: this.props.printer,
+        //   data: data["resp"]
+        // }
+        this.props.dispatch(PrinterActions.updateLogs(this.props.printer, data["resp"]))
+        // this.props.dispatch(evt)
+
+        // this.setState(prevState => ({        
+        //   buffer: [...prevState.buffer, data["resp"]]
+        // }))
       }
     }
   }
@@ -62,7 +71,7 @@ export default class Body extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.printer && prevProps.printer != this.props.printer) {
+    if (this.props.printer.model && prevProps.printer.model != this.props.printer.model) {
       if (this.pubsubToken)
         PubSub.unsubscribe(this.pubsubToken)
       this.topic = `${this.props.node.name}.${this.props.printer.name}.events.printer.data_received`
@@ -86,7 +95,7 @@ export default class Body extends React.Component {
   }
 
   renderLines() {
-    return this.state.buffer.map((item, index) => {
+    return this.props.printer.logs.map((item, index) => {
       return this.renderLine(item, index)
     })
   }

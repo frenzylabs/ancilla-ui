@@ -126,6 +126,7 @@ export default class Connection {
       let msg = JSON.parse(event.data)
       // console.log("msg parse", msg)
       let topic = msg[0]
+      console.log("TOPIC: ", topic)
       let payload = msg[1]
       // let payload = JSON.parse(msg[1])
       // console.log("pyalod parse = ", payload)

@@ -100,10 +100,12 @@ export default class CameraView extends React.Component {
   }
 
     
-  // componentWillUnmount() {
-  //   if (this.pubsubToken)
-  //     PubSub.unsubscribe(this.pubsubToken)
-  // }
+  componentWillUnmount() {
+    if (this.pubsubToken)
+      PubSub.unsubscribe(this.pubsubToken)
+    if (this.pubsubRequestToken)
+      PubSub.unsubscribe(this.pubsubRequestToken)
+  }
 
   // componentDidUpdate(prevProps, prevState) {
   //   if (prevProps.printer != this.props.printer) {

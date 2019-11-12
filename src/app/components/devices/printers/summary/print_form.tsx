@@ -15,7 +15,7 @@ import {
   toaster
 } from 'evergreen-ui'
 
-import {default as request} from '../../../network/files'
+import request from '../../../../network/files'
 
 export default class PrintForm extends React.Component<{save:Function, loading:boolean}> {
   state = {

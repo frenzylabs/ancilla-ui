@@ -23,6 +23,11 @@ export const Printer = {
 
   ports: () => {
     return Request.get('/ports')
+  },
+
+  lastPrint: (node, printer, options = {}) => {
+    options['params'] = {printer_id: printer.id, limit: 1}
+    return Request.get(node.apiUrl + '/prints', options)
   }
 }
 

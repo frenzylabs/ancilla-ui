@@ -36,8 +36,8 @@ export class NodeView extends React.Component {
     // this.toggleDialog = this.toggleDialog.bind(this)
     // this.savePrinter  = this.savePrinter.bind(this)
     // this.getPrinters  = this.getPrinters.bind(this)
-    // console.log("NODE VIEW", this.props)
-    // window.nv = this
+    console.log("NODE VIEW", this.props)
+    window.nv = this
   }
   
 
@@ -60,7 +60,7 @@ export class NodeView extends React.Component {
                 if (!printer) {
                   return null
                 }
-                return <PrinterView {...props} node={this.props.node} printer={printer} /> 
+                return <PrinterView {...this.props} {...props} printer={printer} /> 
               }
             } />
             <Route path={`/cameras/:cameraId`}  exact={true} render={ props => {
@@ -68,7 +68,7 @@ export class NodeView extends React.Component {
                 if (!camera) {
                   return null
                 }
-                return <CameraView {...props} node={this.props.node} camera={camera} /> 
+                return <CameraView {...this.props} {...props} node={this.props.node} camera={camera} /> 
               }
             } />
           </Switch>

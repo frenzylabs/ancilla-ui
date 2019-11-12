@@ -14,13 +14,16 @@ import {
 } from 'evergreen-ui'
 
 import React  from 'react'
-import {
-  Nav,
-  SubNav,
-  Statusbar,
-  Summary,
-  Terminal
-} from '../../'
+// import {
+//   Nav,
+//   SubNav
+// } from '../../'
+
+import Statusbar from './statusbar'
+import Summary from './summary/index'
+import Terminal from './terminal'
+
+import PrinterActions from '../../../store/actions/printers'
 
 import PubSub from 'pubsub-js'
 
@@ -39,10 +42,50 @@ export default class PrinterView extends React.Component {
     this.receiveRequest  = this.receiveRequest.bind(this)
     this.receiveEvent    = this.receiveEvent.bind(this)
     this.setupPrinter    = this.setupPrinter.bind(this)
+    this.getPrint        = this.getPrint.bind(this)
 
-    this.setupPrinter()
+    
     
   }
+
+  componentDidMount() {
+    this.setupPrinter()
+    this.getPrint()
+  }
+
+  componentWillUnmount() {
+    if (this.pubsubToken)
+      PubSub.unsubscribe(this.pubsubToken)
+    if (this.pubsubRequestToken)
+      PubSub.unsubscribe(this.pubsubRequestToken)
+  }  
+
+  componentDidUpdate(prevProps, prevState) {
+    // console.log("component Will update", prevProps, this.props)
+    // if (prevProps.node != this.props.node) {
+    //   // console.log("NODE HAD BEEN UPDATED")
+    // }
+
+    // if (prevProps.printer.state != this.props.printer.state) {
+    //   console.log("PRINTER HAS BEEN UPDATED")
+    //   // this.setupPrinter()
+    // }
+
+    // if (prevProps.printer.currentPrint != this.props.printer.currentPrint) {
+    //   console.log("PRINTER PRINT HAS BEEN UPDATED")
+    //   // this.setupPrinter()
+    // }
+
+    if (prevProps.printer.model != this.props.printer.model) {
+      // console.log("PRINTER MODEL HAS BEEN UPDATED")
+      this.setupPrinter()
+    }
+  }
+
+  getPrint() {
+    this.props.dispatch(PrinterActions.lastPrint(this.props.printer))
+  }
+
 
   setupPrinter() {
     if (this.props.printer) {
@@ -65,12 +108,13 @@ export default class PrinterView extends React.Component {
   receiveRequest(msg, data) {
     // console.log("PV Received Data here1", msg)    
     // console.log("PV Received Data here2", data)
-    // console.log(typeof(data))
     if(!data)
       return
     if (data["action"] == "get_state") {
       // console.log("get STATE", data)
-      this.setState({printerState: data["resp"]})
+      this.props.dispatch(PrinterActions.updateState(this.props.printer, data["resp"]))
+
+      // this.setState({printerState: data["resp"]})
     }
     // else if (data["action"] == "connect") {
     //   if (data["resp"]["status"] == "error") {
@@ -90,19 +134,24 @@ export default class PrinterView extends React.Component {
     // console.log("EVENT KIND", kind)
     switch(kind) {
       case 'connection.closed':
-          this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
+          this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, connected: false}))
+          // this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
           break
-      case 'connection.opened':
-          this.setState({...this.state, printerState: {...this.state.printerState, open: true}})
+      case 'connection.opened':          
+          this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, connected: true}))
+          // this.setState({...this.state, printerState: {...this.state.printerState, open: true}})
           break
       case 'print.started':
-          this.setState({...this.state, printerState: {...this.state.printerState, printing: true}})
+          this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, printing: true}))
+          // this.setState({...this.state, printerState: {...this.state.printerState, printing: true}})
           break
       case 'print.cancelled':
-          this.setState({...this.state, printerState: {...this.state.printerState, printing: false}})
+          this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, printing: false}))
+          // this.setState({...this.state, printerState: {...this.state.printerState, printing: false}})
           break
       case 'print.failed':
-          this.setState({...this.state, printerState: {...this.state.printerState, printing: false, status: "print_failed"}})
+          this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, printing: false, status: "print_failed"}))
+          // this.setState({...this.state, printerState: {...this.state.printerState, printing: false, status: "print_failed"}})
           break
       default:
         break
@@ -110,25 +159,15 @@ export default class PrinterView extends React.Component {
   }
 
     
-  componentWillUnmount() {
-    if (this.pubsubToken)
-      PubSub.unsubscribe(this.pubsubToken)
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevProps.printer != this.props.printer) {
-      this.setupPrinter()
-    }
-  }
 
 
   render() {
     // const Component = this.props.component;    
     return (
       <div id="" className="has-navbar-fixed-top" style={{height: '100vh', flex: '1'}}>
-          <Statusbar {...this.props} printerState={this.state.printerState}/>
-          <Summary {...this.props} printerState={this.state.printerState} />
-          <Terminal {...this.props} printerState={this.state.printerState} />
+          <Statusbar {...this.props} />
+          <Summary {...this.props}  />
+          <Terminal {...this.props}  />
       </div>
     );
  }

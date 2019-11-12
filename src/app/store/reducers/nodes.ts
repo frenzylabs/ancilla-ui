@@ -4,6 +4,7 @@ import {Printer} from '../../network/printer'
 import { initialState } from './state'
 import { node } from 'prop-types'
 import Camera from '../../network/camera'
+import { PrinterState, printerReducer } from './printers'
 
 // export function NodeState(initialState, state = {}) {
 //   return {
@@ -17,7 +18,7 @@ import Camera from '../../network/camera'
 export const NodeAction = {
   listPrinters() {
     return (dispatch, getState) => {
-      console.log("NODE ACTION state", getState())
+      // console.log("NODE ACTION state", getState())
       let activeNode = getState().activeNode
       var cancelRequest    = Printer.cancelSource();  
       // dispatch(requestFeatures(username, cancelRequest))
@@ -34,7 +35,7 @@ export const NodeAction = {
 
   listCameras() {
     return (dispatch, getState) => {
-      console.log("NODE ACTION state", getState())
+      // console.log("NODE ACTION state", getState())
       let activeNode = getState().activeNode
       var cancelRequest    = Camera.cancelSource();  
       // dispatch(requestFeatures(username, cancelRequest))
@@ -78,11 +79,21 @@ export function nodeReducer(state = initialState.activeNode, action) {
   switch(action.type) {
   case 'RECEIVED_PRINTERS':
     // console.log("INSIDE RECEIVE PRINTERS", action.data)
-    // console.log("CURRENT STATE = ", state)
-    
-    var clone = Object.assign( Object.create( Object.getPrototypeOf(state)), state)
-    clone.printers = action.data.printers
-    return clone
+    // console.log("CURRENT STATE = ", state)    
+    // var clone = Object.assign( Object.create( Object.getPrototypeOf(state)), state)
+    var printers = action.data.printers.reduce((acc, item) => {
+      acc = acc.concat(PrinterState(item))
+      return acc
+    }, [])
+
+    var newstate = {
+      ...state, 
+      printers: printers
+    }
+    // console.log("NEW STATE: ", newstate)
+    return newstate
+    // clone.printers = printers //action.data.printers
+    // return clone
     // var newstate = Object.assign({}, state, {
     //   printers: action.data.printers
     // })
@@ -97,10 +108,10 @@ export function nodeReducer(state = initialState.activeNode, action) {
     // console.log("NEWSTATE ", newstate)
     // return newstate
 
-    var printers = action.data.printers.reduce((acc, item) => {
-        acc[item.id] = item
-        return acc
-    }, {})
+    // var printers = action.data.printers.reduce((acc, item) => {
+    //     acc[item.id] = item
+    //     return acc
+    // }, {})
     
     // return {
     //   ...state, 
@@ -127,7 +138,23 @@ export function nodeReducer(state = initialState.activeNode, action) {
       connected: action.data
     }  
   default:
-    return state;
+    if (action.type.startsWith("PRINTER")) {
+      var printers = state.printers.map((item) => {
+        if (item.id == action.printer.id) {
+          return printerReducer(item, action)
+        }
+        return item
+      })
+      return {...state, printers: printers}
+    } else {
+      return state
+    }
+      // note: since state doesn't have "user",
+      // so it will return undefined when you access it.
+      // this will allow you to use default value from actually reducer.
+    // return {...state, activeNode: nodeReducer(state.activeNode, action)}
+  // default:
+  //   return state;
   }
 }
 

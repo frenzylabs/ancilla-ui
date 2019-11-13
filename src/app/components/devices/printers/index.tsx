@@ -79,6 +79,7 @@ export default class PrinterView extends React.Component {
     if (prevProps.printer.model != this.props.printer.model) {
       // console.log("PRINTER MODEL HAS BEEN UPDATED")
       this.setupPrinter()
+      this.getPrint()
     }
   }
 
@@ -111,7 +112,7 @@ export default class PrinterView extends React.Component {
     if(!data)
       return
     if (data["action"] == "get_state") {
-      // console.log("get STATE", data)
+      console.log("get STATE", data)
       this.props.dispatch(PrinterActions.updateState(this.props.printer, data["resp"]))
 
       // this.setState({printerState: data["resp"]})
@@ -133,6 +134,12 @@ export default class PrinterView extends React.Component {
     var [to, kind] = msg.split("events.")
     // console.log("EVENT KIND", kind)
     switch(kind) {
+      case 'printer.state':
+          console.log(data)
+          this.props.dispatch(PrinterActions.updateState(this.props.printer, data))
+          // this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, connected: false}))
+          // this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
+          break
       case 'connection.closed':
           this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, connected: false}))
           // this.setState({...this.state, printerState: {...this.state.printerState, open: false}})

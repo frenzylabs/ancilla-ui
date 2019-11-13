@@ -37,6 +37,7 @@ export default class CameraView extends React.Component {
     this.receiveRequest  = this.receiveRequest.bind(this)
     this.receiveEvent    = this.receiveEvent.bind(this)
     this.setupCamera    = this.setupCamera.bind(this)
+    this.toggleRecording = this.toggleRecording.bind(this)
 
     this.setupCamera()
     
@@ -69,6 +70,13 @@ export default class CameraView extends React.Component {
     if (data["action"] == "get_state") {
       // console.log("get STATE", data)
       this.setState({deviceState: data["resp"]})
+    }
+    if (data["action"] == "start_recording") {
+      // console.log("get STATE", data)
+      this.setState({...this.state, deviceState: {...this.state.deviceState, recording: true}})
+    } else if (data["action"] == "stop_recording") {
+      // console.log("get STATE", data)
+      this.setState({...this.state, deviceState: {...this.state.deviceState, recording: false}})
     }
   }
 
@@ -112,6 +120,13 @@ export default class CameraView extends React.Component {
   //     this.setupPrinter()
   //   }
   // }
+  toggleRecording() {
+    if (this.state.deviceState.recording) {
+      PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.stop_recording", {"tada": "hi"}])
+    } else {
+      PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.start_recording", {"tada": "he"}])
+    }
+  }
 
   renderDisplay() {
       if (this.state.deviceState.open) {
@@ -119,6 +134,7 @@ export default class CameraView extends React.Component {
         return (
           <Pane display="flex">
             <Pane display="flex" width="100%">
+              <button onClick={this.toggleRecording}>Record</button>
               <img src={`${url}/webcam/${this.props.camera.name}`} />
             </Pane>
           </Pane>

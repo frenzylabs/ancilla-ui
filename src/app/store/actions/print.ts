@@ -9,7 +9,7 @@
 import types from './types'
 import Printer from '../../network/printer'
 
-export const PrinterAction = {
+export const PrintAction = {
   // listPrints() {
   //   return (dispatch, getState) => {
   //     console.log("NODE ACTION state", getState())
@@ -20,27 +20,21 @@ export const PrinterAction = {
   //           .then(response => dispatch(NodeAction.receivedPrinters(activeNode, response.data)))
   //   }
   // },
-  lastPrint(printer) {
-    return (dispatch, getState) => {
-      // console.log("NODE ACTION state", getState())
-      let activeNode = getState().activeNode
-      var cancelRequest    = Printer.cancelSource();  
-      // dispatch(requestFeatures(username, cancelRequest))
-      return Printer.lastPrint(activeNode, printer, {cancelToken: cancelRequest.token})
-            .then((response) => {
-              dispatch(PrinterAction.updateLastPrint(printer, response.data.prints[0] || {}))
-            })
-    }
-  },
+  // lastPrint(printer) {
+  //   return (dispatch, getState) => {
+  //     // console.log("NODE ACTION state", getState())
+  //     let activeNode = getState().activeNode
+  //     var cancelRequest    = Printer.cancelSource();  
+  //     // dispatch(requestFeatures(username, cancelRequest))
+  //     return Printer.lastPrint(activeNode, printer, {cancelToken: cancelRequest.token})
+  //           .then((response) => {
+  //             dispatch(PrinterAction.updateLastPrint(printer, response.data.prints[0] || {}))
+  //           })
+  //   }
+  // },
 
   updatePrint: (printer, prnt) => ({
-    type: 'PRINTER_PRINT_UPDATED',
-    printer: printer,
-    data: prnt
-  }),
-
-  updateLastPrint: (printer, prnt) => ({
-    type: 'PRINTER_RECEIVED_PRINT',
+    type: 'PRINT_UPDATED',
     printer: printer,
     data: prnt
   }),
@@ -55,22 +49,7 @@ export const PrinterAction = {
     type: 'PRINTER_RECEIVED_DATA',
     printer: printer,
     data: log
-  }),
-  
-
-  list: (list = {data: [], meta: {}}) => {
-    return {
-      type: 'PROJECT_LIST',
-      data: list
-    }
-  },
-
-  view: (project = {}) => {
-    return {
-      type: 'PROJECT_VIEW',
-      data: project
-    }
-  }
+  })
 }
 
-export default PrinterAction
+export default PrintAction

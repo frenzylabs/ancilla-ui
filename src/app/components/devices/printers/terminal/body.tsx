@@ -51,7 +51,7 @@ export default class Body extends React.Component {
         //   printer: this.props.printer,
         //   data: data["resp"]
         // }
-        this.props.dispatch(PrinterActions.updateLogs(this.props.printer, data["resp"]))
+        this.props.dispatch(PrinterActions.updateLogs(this.props.printer, data))
         // this.props.dispatch(evt)
 
         // this.setState(prevState => ({        
@@ -84,11 +84,37 @@ export default class Body extends React.Component {
     document.getElementById('terminal-body-last-line').scrollIntoView({behavior: 'smooth'})
   }
 
+  renderCommand(prevItem:object, item:object, index:number) {
+    var command = null
+    if (item.command && prevItem.command != item.command) {
+      command = item.command
+    }
+    // console.log(`CMD: ${command}, INDEX ${index}`)
+    if (command) {      
+      return (
+        <Pane key={`${index}`} display="flex" width="100%" background={"#fff" } style={{flexDirection: "column"}}>
+            <Pane display="flex" width="100%" padding={8} background={"#f0fff0"}>
+              <Pane display="flex" flex={1} width="100%">
+                <Text size={300} color="black">{command}</Text> 
+              </Pane>
+            </Pane>     
+            <Pane display="flex" width="100%" padding={8} background={(index % 2 > 0) ? "#f0f0f0" : "#fff" }>
+              <Pane display="flex" flex={1} width="100%">
+                <Text size={300} color="black">{item.resp}</Text>
+              </Pane>
+            </Pane>
+        </Pane>
+      )
+    }else {      
+        return this.renderLine(item.resp, index)
+    }
+  }
+
   renderLine(item:string, index:number) {
     return (
       <Pane key={index} display="flex" width="100%" padding={8} background={(index % 2 > 0) ? "#f0f0f0" : "#fff" }>
         <Pane display="flex" flex={1} width="100%">
-        <Text size={300} color="black">{item}</Text>
+          <Text size={300} color="black">{item}</Text>
         </Pane>
       </Pane>
     )
@@ -96,7 +122,14 @@ export default class Body extends React.Component {
 
   renderLines() {
     return this.props.printer.logs.map((item, index) => {
-      return this.renderLine(item, index)
+      var prevItem = {}
+      if (index > 0) {
+        prevItem = this.props.printer.logs[index-1]
+      }
+      if (item.command) {
+        return this.renderCommand(prevItem, item, index)
+      }
+      return this.renderLine(item.resp, index)
     })
   }
 

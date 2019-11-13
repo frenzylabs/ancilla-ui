@@ -1,5 +1,6 @@
 import { Printer } from "../../models"
 import PrinterAction from '../actions/printers'
+import { PrintState, printState } from './prints'
 
 // baud_rate: "115200"
 // created_at: 1573066173
@@ -37,7 +38,7 @@ export type PrinterState = {
   model: PrinterModel,
   state: object,
   logs: [],
-  currentPrint: object
+  currentPrint?: PrintState
 }
 
 export function PrinterState(model: PrinterModel, state: {} = {}, logs: [] = [], currentPrint = {}) {
@@ -57,11 +58,17 @@ export function PrinterState(model: PrinterModel, state: {} = {}, logs: [] = [],
 
 export function printerReducer(printerstate: PrinterState, action) {
   switch(action.type) {
+  case 'PRINTER_PRINT_UPDATED':
+    // console.log("PRINTER RECEIVED PRINT", action)
+    return {
+      ...printerstate,
+      currentPrint: action.data
+    }
   case 'PRINTER_RECEIVED_PRINT':
       // console.log("PRINTER RECEIVED PRINT", action)
       return {
         ...printerstate,
-        currentPrint: action.data
+        currentPrint: printState(action.data)
       }
   case 'PRINTER_RECEIVED_STATE':
     // console.log("PRINTER RECEIVED STATE", action)

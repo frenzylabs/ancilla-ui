@@ -17,6 +17,8 @@ import {
 
 import PubSub from 'pubsub-js'
 
+import PrinterAction from '../../../../store/actions/printers'
+
 export default class State extends React.Component {
   constructor(props:any) {
     super(props)
@@ -39,9 +41,20 @@ export default class State extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps.printer.model != this.props.printer.model) {
-      this.setupPrint()
+    var prevPrint = prevProps.printer.currentPrint
+    var curPrint = this.props.printer.currentPrint
+    if (prevPrint.model && curPrint.model && prevPrint.model.id != curPrint.model.id) {
+
+
+    } else {
+      if (prevPrint.model != curPrint.model) {
+        this.setupPrint()
+      }
     }
+
+    // if (prevProps.printer.model != this.props.printer.model) {
+    //   this.setupPrint()
+    // }
   }
 
   setupPrint() {
@@ -59,17 +72,21 @@ export default class State extends React.Component {
   receiveEvent(msg, data) {
     var [to, kind] = msg.split("events.")
     switch(kind) {
-      case 'print.state':
-          this.setState({...this.state, printState: data})
+      case 'print.state':          
+          this.props.dispatch(PrinterAction.updatePrint(this.props.printer, data))
+          // this.setState({...this.state, printState: data})
           break
       case 'print.started':
-          this.setState({...this.state, printState: data})
+          this.props.dispatch(PrinterAction.updatePrint(this.props.printer, {...this.props.printer.currentPrint, status: "running"}))
+          // this.setState({...this.state, printState: data})
           break
       case 'print.cancelled':
-          this.setState({...this.state, printState: data})
+          this.props.dispatch(PrinterAction.updatePrint(this.props.printer, {...this.props.printer.currentPrint, status: "cancelled"}))
+          // this.setState({...this.state, printState: data})
           break
       case 'print.failed':
-          this.setState({...this.state, printState: data})
+          this.props.dispatch(PrinterAction.updatePrint(this.props.printer, {...this.props.printer.currentPrint, status: "failed"}))
+          // this.setState({...this.state, printState: data})
           break
       default:
         break
@@ -85,34 +102,39 @@ export default class State extends React.Component {
     )
   }
   getProgress() {
-    if (this.state.printState.print.state) {
-      let pg = (this.state.printState.print.state.pos / this.state.printState.print.state.end_pos * 100).toFixed(2)
+    var curprnt = (this.props.printer.currentPrint.id ? this.props.printer.currentPrint.model : {})
+    if (curprnt.state) {
+      let pg = (curprnt.state.pos / curprnt.state.end_pos * 100).toFixed(2)
       return `${pg}%` 
     }
     return ``
   }
 
   renderLastPrint() {
-    var curprnt = this.props.printer.currentPrint
-    if (curprnt.name && curprnt.status != "running") {
+    console.log("CURRENT PRINT", this.props.printer.currentPrint)
+    var curprnt = (this.props.printer.currentPrint.id ? this.props.printer.currentPrint.model : {})
+    if (curprnt && curprnt.name && curprnt.status != "running") {
       return (
         <div>
           {this.renderRow("Last Print", curprnt.name)}
           {this.renderRow("Status", curprnt.status)}
           {this.renderRow("Started On", curprnt.created_at)}
           {this.renderRow("Duration", String(curprnt.updated_at - curprnt.created_at))}
-          {this.renderRow("SliceFile", curprnt.slice_file.name)}
+          {this.renderRow("Slice File", curprnt.slice_file.name)}
         </div>
       )
     }
   }
 
   renderCurrentPrint() {
-    var curprnt = this.props.printer.currentPrint
-    if (curprnt.status == "running") {
+    var curprnt = (this.props.printer.currentPrint.id ? this.props.printer.currentPrint.model : {})
+    if (curprnt && curprnt.status == "running") {
       return (
         <div>
-          {this.renderRow("State", this.state.printState.status)}
+          {this.renderRow("Current Print", curprnt.name)}
+          {this.renderRow("Slice File", curprnt.slice_file.name)}
+          {this.renderRow("State", curprnt.status)}
+          {this.renderRow("Started On", curprnt.created_at)}
           {/* {this.renderRow("Filament", "14.41m")}
           {this.renderRow("Est Time", "12.4 hours")}
           {this.renderRow("Time left", "00:00:00")} */}

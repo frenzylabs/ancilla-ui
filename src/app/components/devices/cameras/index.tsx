@@ -10,7 +10,8 @@ import {
 import SplitPane from 'react-split-pane'
 
 import {
-  Pane
+  Pane,
+  TextInput
 } from 'evergreen-ui'
 
 import React  from 'react'
@@ -31,7 +32,13 @@ export default class CameraView extends React.Component {
     
     this.state = {
       connected: false,
-      deviceState: {}
+      deviceState: {},
+      recordSettings: {
+        videoSettings: {
+          fps: 10
+        },
+        timelapse: 2
+      }
     }
 
     this.receiveRequest  = this.receiveRequest.bind(this)
@@ -87,6 +94,10 @@ export default class CameraView extends React.Component {
     var [to, kind] = msg.split("events.")
     // console.log("EVENT KIND", kind)
     switch(kind) {
+      case 'camera_recording.state':
+          console.log("Camera Recording STate", data)
+          // this.setState({...this.state, deviceState: {...this.state.deviceState, open: false}})
+          break
       case 'connection.closed':
           this.setState({...this.state, deviceState: {...this.state.deviceState, open: false}})
           break
@@ -122,9 +133,9 @@ export default class CameraView extends React.Component {
   // }
   toggleRecording() {
     if (this.state.deviceState.recording) {
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.stop_recording", {"tada": "hi"}])
+      PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.stop_recording", this.state.recordSettings])
     } else {
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.start_recording", {"tada": "he"}])
+      PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.start_recording", this.state.recordSettings])
     }
   }
 
@@ -133,9 +144,35 @@ export default class CameraView extends React.Component {
         let url = this.props.node.apiUrl
         return (
           <Pane display="flex">
-            <Pane display="flex" width="100%">
-              <button onClick={this.toggleRecording}>Record</button>
+            <Pane display="flex" width="100%">              
               <img src={`${url}/webcam/${this.props.camera.name}`} />
+            </Pane>
+            <Pane display="flex" width="100%">
+              <button onClick={this.toggleRecording}>{this.state.deviceState.recording ? "Stop Recording" : "Record"}</button>
+              <TextInput 
+                name="timelapse" 
+                placeholder="Timelapse in seconds" 
+                marginBottom={4}
+                width="100%" 
+                height={48}
+                onChange={e => 
+                  this.setState({
+                    recordSettings: {...this.state.recordSettings, timelapse: e.target.value}
+                  })
+                }
+              />
+              <TextInput 
+                name="fps" 
+                placeholder="Frames Per Second" 
+                marginBottom={4}
+                width="100%" 
+                height={48}
+                onChange={e => 
+                  this.setState({recordSettings: {...this.state.recordSettings, 
+                    videoSettings: {...this.state.recordSettings.videoSettings, fps: e.target.value}
+                  }})
+                }
+              />
             </Pane>
           </Pane>
         )

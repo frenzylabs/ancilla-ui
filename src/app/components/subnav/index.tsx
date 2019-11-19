@@ -31,11 +31,22 @@ import {
 } from './sections'
 
 export default class SubNav extends React.Component {
+	constructor(props:any) {
+		super(props)
+
+		this.filesSelected = this.filesSelected.bind(this)
+	}
+
   componentDidMount() {
     // this.getPrinters()
     // console.log("INSIDE SUBNAV ", this.props)
     // window.snav = this;
-  }
+	}
+	
+	filesSelected() {
+		this.props.history.push('/files')
+	}
+
   render() {
     return (
       <Pane margin={0} padding={0} height="100%" display="flex" flexDirection="column" background="#425A70">
@@ -43,7 +54,8 @@ export default class SubNav extends React.Component {
           <br/>
           <Printers {...this.props} />
           <Cameras {...this.props} />
-          <Files {...this.props}/>
+          {/*<Files {...this.props}/>*/}
+					<Tree.Node name="Files" selectItem={this.filesSelected}/>
         </Pane>
 
       </Pane>

@@ -27,7 +27,8 @@ namespace Tree {
 
       this.toggleMenu   = this.toggleMenu.bind(this)
       this.renderSingle = this.renderSingle.bind(this)
-      this.renderGroup  = this.renderGroup.bind(this)
+			this.renderGroup  = this.renderGroup.bind(this)
+			this.onSelect 		= this.onSelect.bind(this)
     }
 
     toggleMenu(e) {
@@ -35,16 +36,18 @@ namespace Tree {
         ...this.state,
         expanded: !this.state.expanded
       })
-    }
+		}
+		
     onSelect() {
-      if (this.props.selectItem)
-        this.props.selectItem(this.props.item)
+      if (this.props.selectItem) {
+				this.props.selectItem(this.props.item)
+			}
     }
 
     renderSingle() {
       return (
         <Pane width={180} height={20}>
-          <Button onClick={() => this.onSelect()} minWidth={180} iconBefore="application" appearance="minimal" color="#f0f0f0">{this.props.name}</Button>
+          <Button onClick={this.onSelect} minWidth={180} iconBefore="application" appearance="minimal" color="#f0f0f0">{this.props.name}</Button>
         </Pane>
       )
     }

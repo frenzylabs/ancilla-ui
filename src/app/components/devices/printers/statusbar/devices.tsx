@@ -11,7 +11,11 @@ import PubSub from 'pubsub-js'
 
 import {
   Pane,
-  IconButton,
+	IconButton,
+	Popover,
+	Menu,
+	Position,
+	Text
 } from 'evergreen-ui'
 
 export default class Devices extends React.Component {
@@ -23,11 +27,37 @@ export default class Devices extends React.Component {
     }
   }
 
+	settingsMenu() {
+		return (
+			<Menu>
+				<Menu.Group>
+					<Menu.Item>
+						Edit
+					</Menu.Item>
+				</Menu.Group>
+				<Menu.Divider />
+				<Menu.Group>
+					<Menu.Item>
+						<Text color="red">Delete</Text>
+					</Menu.Item>
+				</Menu.Group>
+			</Menu>
+		)
+	}
+
+	renderSettingsMenu() {
+		return (
+			<Popover position={Position.BOTTOM_RIGHT} content={this.settingsMenu()}>
+				<IconButton icon="cog" iconSize={20} appearance="minimal" className="statusBarButton"/>
+			</Popover>
+		)
+	}
+
   render() {
     return (
       <Pane alignItems="center" display="flex">
-        <IconButton icon="console" iconSize={20} appearance="minimal" className="statusBarButton"/>
         <IconButton icon="power" iconSize={20} appearance="minimal" className="statusBarButton" onClick={this.power.bind(this)}/>
+        {this.renderSettingsMenu()}
       </Pane>
     )
   }

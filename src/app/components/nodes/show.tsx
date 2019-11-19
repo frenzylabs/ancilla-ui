@@ -25,8 +25,9 @@ import {
 
 import PubSub from 'pubsub-js'
 
-import PrinterView from '../devices/printers/index'
-import CameraView from '../devices/cameras/index'
+import PrinterView 	from '../devices/printers/index'
+import CameraView 	from '../devices/cameras/index'
+import FilesView 		from '../files'
 
 
 export class NodeView extends React.Component {
@@ -71,6 +72,9 @@ export class NodeView extends React.Component {
                 return <CameraView {...this.props} {...props} node={this.props.node} camera={camera} /> 
               }
             } />
+						<Route path="/files" exact={true} render={ props => {
+							return <FilesView {...this.props} {...props}/>
+						}}/>
           </Switch>
           
         </Pane>

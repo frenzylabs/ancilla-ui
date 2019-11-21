@@ -15,11 +15,12 @@ export const Request = axios.create({
     'Content-Type'      : 'application/json',
     'Accept'            : 'application/json',
     'X-Requested-With'  : 'XMLHttpRequest',
-    'Access-Control-Allow-Origin' : '*',
+		'Access-Control-Allow-Origin' : '*',
+		'Access-Control-Allow-Methods': '*',
   }
 })
 
-export const isCancel = axios.isCancel;
-export const CancelToken = axios.CancelToken;
+export const isCancel 		= axios.isCancel;
+export const CancelToken 	= axios.CancelToken;
 
 export default Request;

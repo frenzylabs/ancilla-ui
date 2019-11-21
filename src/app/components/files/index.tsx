@@ -1,203 +1,283 @@
 //
-//  index.tsx
 //  ancilla
+//  index.tsx
 // 
 //  Created by Wess Cope (me@wess.io) on 11/16/19
 //  Copyright 2019 Wess Cope
 //
 
 import React from 'react'
+import Dayjs from 'dayjs'
 
 import {
-	Pane,
-	TabNavigation,
-	Tab,
-	IconButton,
-	Button,
-	Dialog
+  Pane,
+  TabNavigation,
+  Tab,
+  IconButton,
+  Button,
+  Dialog,
+  Text,
+  toaster
 } from 'evergreen-ui'
 
-import Form from '../subnav/sections/files/form'
+import Form 				from '../subnav/sections/files/form'
+import FileRequest 	from '../../network/files'
 
 export default class FilesView extends React.Component {
-	state = {
-		dialogShowing: false,
-		isSaving: false,
-		sections: {
-			'all': [
-				'all-file-1',
-				'all-file-2',
-				'all-file-3',
-				'all-file-4',
-				'all-file-5',
-			],
-			'LayerKeep': [
-				'layerkeep-file-1',
-				'layerkeep-file-2',
-				'layerkeep-file-3',
-				'layerkeep-file-4',
-				'layerkeep-file-5',
-			],
-			'Local': [
-				'local-file-1',
-				'local-file-2',
-				'local-file-3', 
-				'local-file-4',
-				'local-file-5',
-			],
-			'SD Card': [
-				'sd-card-file-1',
-				'sd-card-file-2',
-				'sd-card-file-3',
-				'sd-card-file-4',
-				'sd-card-file-5',
-			]
-		},
 
-		currentSection: 0
-	}
+  state = {
+    dialog: {
+      layerkeep: 	false,
+      local: 			false,
+      sd: 				false
+    },
+    isSaving: false,
+    sections: {
+      'all': [],
+      // 'LayerKeep': [
+      // 	'layerkeep-file-1',
+      // 	'layerkeep-file-2',
+      // 	'layerkeep-file-3',
+      // 	'layerkeep-file-4',
+      // 	'layerkeep-file-5',
+      // ],
+      'Local': [
+        /* {name:, id:, updated_at} */
+      ],
+      // 'SD Card': [
+      // 	'sd-card-file-1',
+      // 	'sd-card-file-2',
+      // 	'sd-card-file-3',
+      // 	'sd-card-file-4',
+      // 	'sd-card-file-5',
+      // ]
+    },
 
-	form:Form = {}
-	
-	constructor(props:any) {
-		super(props)
+    currentSection: 0
+  }
 
-		this.selectSection	= this.selectSection.bind(this)
-		this.saveFile				= this.saveFile.bind(this)
-		this.toggleDialog		= this.toggleDialog.bind(this)
-		this.renderRow 			= this.renderRow.bind(this)
-		this.renderGroup 		= this.renderGroup.bind(this)
-		this.renderGroups		= this.renderGroups.bind(this)
-		this.renderTopBar		= this.renderTopBar.bind(this)
-		this.renderSection	= this.renderSection.bind(this)
-	}
+  form:Form = {}
+  
+  constructor(props:any) {
+    super(props)
 
-	selectSection(index:number) {
-		this.setState({
-			...this.state,
-			currentSection: index
-		})
-	}
+    this.listLocal      = this.listLocal.bind(this)
+    this.selectSection	= this.selectSection.bind(this)
+    this.deleteFile     = this.deleteFile.bind(this)
+    this.saveFile				= this.saveFile.bind(this)
+    this.toggleDialog		= this.toggleDialog.bind(this)
+    this.renderRow 			= this.renderRow.bind(this)
+    this.renderGroup 		= this.renderGroup.bind(this)
+    this.renderGroups		= this.renderGroups.bind(this)
+    this.renderTopBar		= this.renderTopBar.bind(this)
+    this.renderSection	= this.renderSection.bind(this)
+  }
 
-	saveFile() {
+  componentDidMount() {
+    this.listLocal()
+  }
 
-	}
+  listLocal() {
+    FileRequest.listLocal()
+    .then((res) => {
+      let files = res.data['files'] || []
 
-	toggleDialog(show:boolean) {
-		if(show == this.state.dialogShowing) { return }
-		
-    this.setState({
-      ...this.state,
-      dialogShowing: show
+      this.setState({
+        ...this.state,
+        sections: {
+          Local: files
+        }
+      })
+    })
+    .catch((err) => {
+      console.log(err)
     })
   }
 
-	renderAddFile() {
-		return (
-			<React.Fragment>
-				<Dialog
-					isShown={this.state.dialogShowing}
-					title="Add File"
-					confirmLabel="Save"
-					onCloseComplete={() => this.toggleDialog(false)}
-					onConfirm={this.saveFile}
-				>
-					<Form ref={frm => this.form = frm} save={this.saveFile} loading={this.state.isSaving}/>
-				</Dialog>
+  selectSection(index:number) {
+    this.setState({
+      ...this.state,
+      currentSection: index
+    })
+  }
 
-				<IconButton appearance='minimal' icon="add" onClick={() => this.toggleDialog(true)}/>
-			</React.Fragment>
-		)
-	}
-	renderRow(key:number, name:string, caption:string = "") {
-		return (
-			<Pane display="flex" flex={1} key={key} background={key % 2 ? "#f9f9f9" : "#fff"} padding={10} alignItems="center" borderTop>
-				<Pane display="flex" flex={1}>
-					{name}
-				</Pane>
+  saveFile() {
+    this.setState({
+      ...this.state,
+      isSaving: true
+    })
 
-				<Pane>
-					{caption}
-				</Pane>
+    FileRequest.create(this.form.state.file)
+    .then((res) => {
+      this.setState({
+        ...this.state,
+        isSaving: false,
+        dialog: {
+          layerkeep: 	false,
+          local: 			false,
+          sd: 				false
+        },		
+        sections: {
+          ...this.state.sections,
+          Local: (this.state.sections.Local || []).concat(res.data.file)
+        }
+      })
 
-				<Pane>
-					<IconButton appearance="minimal" icon="download"/>
-				</Pane>
+      toaster.success(`File ${res.data.file.name} has been successfully added`)
+    })
+    .catch((err) => {
+      this.setState({
+        ...this.state,
+        isSaving: false,
+        dialog: {
+          layerkeep: 	false,
+          local: 			false,
+          sd: 				false
+        }
+      })
 
-				<Pane>
-					<IconButton appearance="minimal" icon="trash"/>
-				</Pane>
-			</Pane>
-		)
-	}
+      let errors = Object.keys(err.response.data.errors).map((key, index) => {
+        return  `${key} : ${err.response.data.errors[key]}<br/>`
+      })
 
-	renderGroup(name:string, index:number) {
-		let key 	= Object.keys(this.state.sections)[index]
-		let files = this.state.sections[key] || []
+      toaster.danger(
+        `Unable to save file ${this.form.state.file.name}`, 
+        {description: errors}
+      )
+    })
+  }
 
-		return (
-			<Pane display="flex">
-				<Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={10} border="default">
-					<Pane display="flex">
-						<Pane display="flex" flex={1}>
-							<Button data-index={index} appearance="minimal" size={600} color="black" marginLeft={0} marginBottom={8} paddingLeft={0} onClick={() => this.selectSection(index) }>{name}</Button>
-						</Pane>
-						<Pane>
-							{this.renderAddFile()}
-						</Pane>
-					</Pane>
+  deleteFile(e) {
+    let name  = e.currentTarget.getAttribute('data-name')
+    let id    = e.currentTarget.getAttribute('data-id')
 
-					<Pane borderBottom borderLeft borderRight>
-						{files.map((row, index) => this.renderRow(index, row))}
-					</Pane>
-				</Pane>
-			</Pane>
-		)
-	}
+    FileRequest.delete(id)
+    .then((res) => {
+      this.listLocal()
 
-	renderGroups() {
-		return (
-			<React.Fragment>
-				{this.renderGroup("LayerKeep", 1)}
-				{this.renderGroup("Local", 2)}
-				{this.renderGroup("SD Card", 3)}
-			</React.Fragment>
-		)
-	}
+      toaster.success(`${name} has been successfully deleted.`)
+    })
+    .catch((_err) => {})
+  }
 
-	renderTopBar() {
-		return (
-			<Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={6} border="default">
-				<TabNavigation>
-					{
-						Object.keys(this.state.sections).map((tab, index) => (
-							<Tab key={tab} data-index={index} onSelect={() => this.selectSection(index)}  isSelected={index === this.state.currentSection}>
-								{tab}
-							</Tab>
-						))
-					}
-				</TabNavigation>
-				</Pane>
-		)
-	}
+  toggleDialog(show:boolean, section:string) {
+    var _dialog = this.state.dialog
+    _dialog[section] = show
 
-	renderSection() {
-		return (
-			<Pane>
-				{this.state.currentSection == 0 && this.renderGroups()}
-				{this.state.currentSection == 1 && this.renderGroup("LayerKeep", 1)}
-				{this.state.currentSection == 2 && this.renderGroup("Local", 2)}
-				{this.state.currentSection == 3 && this.renderGroup("SD Card", 3)}
-			</Pane>
-		)
-	}
+    this.setState({
+      ...this.state,
+      dialog: _dialog
+    })
+  }
 
-	render() {
-		return (
-			<Pane>
-				{this.renderTopBar()}
-				{this.renderSection()}
-			</Pane>
-		)
-	}	
+  renderAddFile(section) {
+    if(typeof section === 'undefined' || section == 'all') { return }
+
+    return (
+      <React.Fragment>
+        <Dialog
+          isShown={this.state.dialog[section] || false}
+          title="Add File"
+          confirmLabel="Save"
+          onCloseComplete={() => this.toggleDialog(false, section)}
+          onConfirm={this.saveFile}
+        >
+          <Form ref={frm => this.form = frm} save={this.saveFile} loading={this.state.isSaving}/>
+        </Dialog>
+
+        <IconButton appearance='minimal' icon="add" onClick={() => this.toggleDialog(true, section)}/>
+      </React.Fragment>
+    )
+  }
+  renderRow(key:number, name:string, timestamp:string = "") {
+    return (
+      <Pane display="flex" flex={1} key={key} background={key % 2 ? "#f9f9f9" : "#fff"} padding={10} alignItems="center" borderTop>
+        <Pane display="flex" flex={1}>
+          {name}
+        </Pane>
+
+        <Pane marginRight={50}>
+          <Text size={300}>Updated:</Text> <Text size={400} color="dark">{timestamp}</Text>
+        </Pane>
+
+        <Pane>
+          <IconButton appearance="minimal" icon="download"/>
+        </Pane>
+
+        <Pane>
+          <IconButton data-id={key} data-name={name} appearance="minimal" icon="trash" onClick={this.deleteFile}/>
+        </Pane>
+      </Pane>
+    )
+  }
+
+  renderGroup(name:string, index:number) {
+    let key 	= Object.keys(this.state.sections)[index]
+    let files = this.state.sections[name] || []
+
+    return (
+      <Pane display="flex" key={key}>
+        <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={10} border="default">
+          <Pane display="flex">
+            <Pane display="flex" flex={1}>
+              <Button data-index={index} appearance="minimal" size={600} color="black" marginLeft={0} marginBottom={8} paddingLeft={0} onClick={() => this.selectSection(index) }>{name}</Button>
+            </Pane>
+            <Pane>
+              {this.renderAddFile(name.toLowerCase())}
+            </Pane>
+          </Pane>
+
+          <Pane borderBottom borderLeft borderRight>
+            {files.map((row, index) => this.renderRow(row.id, row.name, Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')))}
+          </Pane>
+        </Pane>
+      </Pane>
+    )
+  }
+
+  renderGroups() {
+    return (
+      <React.Fragment>
+        {Object.keys(this.state.sections)
+               .filter((section) => section.toLowerCase() != 'all')
+               .map((section, index) => this.renderGroup(section, index))}
+      </React.Fragment>
+    )
+  }
+
+  renderTopBar() {
+    return (
+      <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={6} border="default">
+        <TabNavigation>
+          {
+            Object.keys(this.state.sections).map((tab, index) => (
+              <Tab key={tab} data-index={index} onSelect={() => this.selectSection(index)}  isSelected={index === this.state.currentSection}>
+                {tab}
+              </Tab>
+            ))
+          }
+        </TabNavigation>
+        </Pane>
+    )
+  }
+
+  renderSection() {
+    return (
+      <Pane>
+        {this.state.currentSection == 0 && this.renderGroups()}
+        {/* {this.state.currentSection == 1 && this.renderGroup("LayerKeep", 1)} */}
+        {this.state.currentSection == 1 && this.renderGroup("Local", 1)}
+        {/* {this.state.currentSection == 3 && this.renderGroup("SD Card", 3)} */}
+      </Pane>
+    )
+  }
+
+  render() {
+    return (
+      <Pane>
+        {this.renderTopBar()}
+        {this.renderSection()}
+      </Pane>
+    )
+  }	
 }

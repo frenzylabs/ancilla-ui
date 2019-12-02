@@ -87,7 +87,7 @@ export class Cameras extends React.Component {
   }
 
   selectCamera(item) {
-    let url = `/cameras/${item.id}`
+    let url = `/cameras/${item.service.id}`
     this.props.history.push(`${url}`);    
   }
 

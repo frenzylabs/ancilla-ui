@@ -1,5 +1,7 @@
 import { PrintState, printState } from './prints'
 
+import { ServiceModel, ServiceState } from './service'
+
 // baud_rate: "115200"
 // created_at: 1573066173
 // device: {id: 1, created_at: 1573066173, updated_at: 1573066173, name: "ender3", device_type: "Printer"}
@@ -18,6 +20,7 @@ import { PrintState, printState } from './prints'
 //   updated_at: 0
 // }
 
+
 type PrinterModel = {
   baud_rate: string,
   created_at: number,
@@ -28,27 +31,36 @@ type PrinterModel = {
   updated_at: number
 }
 
-var defaultState = {}
+type PrinterServiceModel = ServiceModel & { model: PrinterModel}
 
-export type PrinterState = {
-  id: number,
-  name: string,
-  model: PrinterModel,
-  state: object,
-  logs: [],
-  currentPrint?: PrintState,
-  attachments: []
+export type PrinterState = ServiceState & {
+  model: PrinterServiceModel,
+  currentPrint?: PrintState
 }
 
-export function PrinterState(model: PrinterModel, state: {} = {}, logs: [] = [], currentPrint = {}) {
-  return {
-    id: model.id,
-    name: model.name,
-    model: model,
-    state: state,
-    logs: logs,
-    currentPrint: currentPrint
-  }
+// export type PrinterState = ServiceState & {
+//   id: number,
+//   name: string,
+//   model: PrinterModel,
+//   state: object,
+//   logs: [],
+//   currentPrint?: PrintState,
+//   attachments: []
+// }
+
+
+export function PrinterState(model: PrinterServiceModel, state: {} = {}, logs: [] = [], currentPrint = {}) {
+  var res = ServiceState.call(this, ...arguments)  
+  res["currentPrint"] = currentPrint
+  return res
+  // return {
+  //   id: model.id,
+  //   name: model.name,
+  //   model: model,
+  //   state: state,
+  //   logs: logs,
+  //   currentPrint: currentPrint
+  // }
 }
 
 
@@ -64,7 +76,6 @@ export function printerReducer(printerstate: PrinterState, action) {
       currentPrint: action.data
     }
   case 'PRINTER_RECEIVED_PRINTS':
-      console.log("PRINTER RECEIVED PRINTS", action)
       var prints = action.data.prints.reduce((acc, item) => {
         acc = acc.concat(printState(item))
         return acc
@@ -76,7 +87,6 @@ export function printerReducer(printerstate: PrinterState, action) {
       }
       return newstate
   case 'PRINTER_RECEIVED_LAST_PRINT':
-      console.log("PRINTER RECEIVED PRINT", action)
       return {
         ...printerstate,
         currentPrint: printState(action.data)

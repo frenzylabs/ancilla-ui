@@ -17,7 +17,7 @@ import {
 
 export default class Cameras extends React.Component<{status?: string}> {
   getColorState() {
-    if (this.props.serviceState.open) {
+    if (this.props.service.state.open) {
       return 'success'
     } else {
       return 'danger'
@@ -27,7 +27,7 @@ export default class Cameras extends React.Component<{status?: string}> {
     return (
       <Pane flex={1} alignItems="center" display="flex">
         <Icon icon="dot" size={22} color={this.getColorState()}/>
-        <Text color="muted">Camera: <Strong color="rgba(255.0, 255.0, 255.0, 0.8)">{this.props.camera && this.props.camera.name}</Strong></Text>
+        <Text color="muted">Camera: <Strong color="rgba(255.0, 255.0, 255.0, 0.8)">{this.props.service && this.props.service.name}</Strong></Text>
       </Pane>
     )
   }

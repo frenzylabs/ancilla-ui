@@ -34,7 +34,7 @@ export default class Connection extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.printer.state.printing != this.props.printer.state.printing) {
+    if (prevProps.service.state.printing != this.props.service.state.printing) {
       this.setState({showing: false})
     }
   }
@@ -53,7 +53,7 @@ export default class Connection extends React.Component {
     }
 
     var newPrint = this.form.state.newPrint
-    PrinterHandler.start_print(this.props.node, this.props.printer.model.service, newPrint)
+    PrinterHandler.start_print(this.props.node, this.props.service, newPrint)
     .then((response) => {
       // var attachments = this.state.attachments
       console.log("START PRINT", response.data)
@@ -64,7 +64,7 @@ export default class Connection extends React.Component {
       //   attachments: attachments
       // })
 
-      toaster.success(`Print Started ${f.name} has been successfully added`)
+      toaster.success(`Print Started ${newPrint.name} has been successfully added`)
       // closeDialog()
     })
     .catch((error) => {
@@ -87,7 +87,7 @@ export default class Connection extends React.Component {
   }
 
   cancelPrint() {
-    let cmd = [this.props.printer.name, "cancel"]
+    let cmd = [this.props.service.name, "cancel"]
     PubSub.publish(this.props.node.name + ".request", cmd)
 
     // this.pubsubToken = PubSub.publish(this.topic, );
@@ -104,7 +104,7 @@ export default class Connection extends React.Component {
   }
 
   renderStartPrint() {
-    if (!this.props.printer.state.printing) {
+    if (!this.props.service.state.printing) {
       return (
         <React.Fragment key="print">
         <Dialog
@@ -127,7 +127,7 @@ export default class Connection extends React.Component {
   }
 
   renderCancelPrint() {
-    if (this.props.printer.state.printing) {
+    if (this.props.service.state.printing) {
       return (
         <React.Fragment key="print">
           <Dialog
@@ -161,8 +161,8 @@ export default class Connection extends React.Component {
   render() {
     return (
       <Pane display="flex" flex={1} padding={20} margin={10} background="white" border="default" flexDirection="column">
-        {this.renderRow("Connection", this.props.printer.model.port)}
-        {this.renderRow("Baudrate", this.props.printer.model.baud_rate)}
+        {this.renderRow("Connection", this.props.service.model.model.port)}
+        {this.renderRow("Baudrate", this.props.service.model.model.baud_rate)}
         {this.renderPrintAction()}
       </Pane>
     )

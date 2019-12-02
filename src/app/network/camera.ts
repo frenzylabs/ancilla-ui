@@ -28,7 +28,11 @@ export const Camera = {
 
   disconnect: (node, cameraService, options = {}) => {
     return Request.delete(`${node.apiUrl}/services/camera/${cameraService.id}/connection`, options)
-  }
+  },
+
+  recordings: (node, cameraService, options= {}) => {
+    return Request.get(`${node.apiUrl}/services/camera/${cameraService.id}/recordings`, options)
+  },
 
 
   // ports: () => {

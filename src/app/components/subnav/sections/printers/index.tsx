@@ -42,7 +42,7 @@ export class Printers extends React.Component<{node: object, printer: PrinterSta
   }
 
   componentDidMount() {
-    this.props.listPrinters()
+    // this.props.listPrinters()
     // this.getPrinters()
 
   }
@@ -101,7 +101,7 @@ export class Printers extends React.Component<{node: object, printer: PrinterSta
   }
 
   render() {
-    let printers = this.props.printers //Object.values(this.props.printers)
+    let printers = this.props.node.services.filter((item) => item.kind == "printer") //Object.values(this.props.printers)
     let items =  printers.length > 0 ? printers : [{name: "No printers found."}]
     
     return ( 

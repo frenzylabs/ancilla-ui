@@ -71,7 +71,7 @@ export default class SettingsForm extends React.Component<{save:Function, loadin
           onChange={e => 
             this.setState({
               newPrint: {
-                ...this.state.newPrint,
+                ...this.state.newSettings,
                 name: e.target.value     
               }
             })
@@ -92,7 +92,7 @@ export default class SettingsForm extends React.Component<{save:Function, loadin
           onChange={selected => {
             this.setState({
               newPrint: {
-                ...this.state.newPrint,
+                ...this.state.newSettings,
                 file_id: (selected && selected.id)
               }
             })

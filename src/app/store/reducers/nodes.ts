@@ -4,6 +4,7 @@
 import { initialState } from './state'
 import { PrinterState, printerReducer } from './printers'
 import { CameraState, cameraReducer } from './cameras'
+import { ServiceState, serviceReducer } from './service'
 
 // export function NodeState(initialState, state = {}) {
 //   return {
@@ -13,6 +14,15 @@ import { CameraState, cameraReducer } from './cameras'
 // }
 
 
+function getServiceReducer(item) {
+  switch(item.kind) {
+    case 'printer':
+      return PrinterState(item)
+    default:
+      return ServiceState(item)
+      break
+  }
+}
 // const initialState = NodeState();
 
 export function nodeReducer(state = initialState.activeNode, action) {
@@ -39,12 +49,33 @@ export function nodeReducer(state = initialState.activeNode, action) {
     clone.cameras = action.data.cameras
     return clone
 
-  case 'RECEIVED_SERVICES':
+  case 'RECEIVED_SERVICES': {
       // console.log("INSIDE RECEIVE PRINTERS", action.data)
       // console.log("CURRENT STATE = ", state)
     // var dv = state.printers
     // dv[action.data.id] = action.data
-    return {...state, services: action.data.services}   
+    var services = action.data.services.reduce((acc, item) => {
+      var itemstate = item
+      switch(item.kind) {
+        case 'printer':
+          itemstate = PrinterState(item)
+          break
+        default:
+          itemstate = ServiceState(item)
+          break
+      }
+      
+      acc = acc.concat(itemstate)
+      return acc
+    }, [])
+
+    var newstate = {
+      ...state, 
+      services: services
+    }
+    return newstate
+  }
+
     // var clone = Object.assign( Object.create( Object.getPrototypeOf(state)), state)
     // clone.cameras = action.data.cameras
     // return clone
@@ -59,18 +90,29 @@ export function nodeReducer(state = initialState.activeNode, action) {
       ...state, 
       connected: action.data
     }  
-  default:
-    if (action.type.startsWith("PRINTER")) {
-      var printers = state.printers.map((item) => {
+  default: {
+    if (action.type.startsWith("SERVICE")) {
+      var services = state.services.map((item) => {
+        if (item.id == action.service.id) {
+          return serviceReducer(item, action)
+        }
+        return item
+      })
+      return {...state, services: services}
+
+    } else if (action.type.startsWith("PRINTER")) {
+      var services = state.services.map((item) => {
         if (item.id == action.printer.id) {
           return printerReducer(item, action)
         }
         return item
       })
-      return {...state, printers: printers}
-    } else {
+      return {...state, services: services}
+    }
+    else {
       return state
     }
+  }
       // note: since state doesn't have "user",
       // so it will return undefined when you access it.
       // this will allow you to use default value from actually reducer.

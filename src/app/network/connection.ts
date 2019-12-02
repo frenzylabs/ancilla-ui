@@ -54,8 +54,8 @@ export default class Connection {
   connect() {
     this.retryConnect = true
     if(this.socket && this.socket.readyState === this.socket.OPEN) { return }
-    console.log(`ws://${this.node.hostname}:${this.node.port}/node/`)
-    this.socket = new WebSocket(`ws://${this.node.hostname}:${this.node.port}/node`)
+    console.log(`ws://${this.node.hostname}:${this.node.port}/ws`)
+    this.socket = new WebSocket(`ws://${this.node.hostname}:${this.node.port}/ws`)
     // this.socket.binaryType = 'arraybuffer';
 
     this.socket.onopen = (e) => {

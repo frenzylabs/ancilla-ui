@@ -15,7 +15,7 @@ import {
 } from 'evergreen-ui'
 
 import PubSub from 'pubsub-js'
-import PrinterActions from '../../../../store/actions/printers'
+import ServiceActions from '../../../../store/actions/services'
 
 export default class Body extends React.Component {
   lastLine?:any
@@ -34,8 +34,8 @@ export default class Body extends React.Component {
     this.receiveData  = this.receiveData.bind(this)
        
     
-    if (this.props.printer) {
-      this.topic = `${this.props.node.name}.${this.props.printer.name}.events.printer.data_received`
+    if (this.props.service) {
+      this.topic = `${this.props.node.name}.${this.props.service.name}.events.printer.data_received`
       this.pubsubToken = PubSub.subscribe(this.topic, this.receiveData);
     }
   }
@@ -43,7 +43,7 @@ export default class Body extends React.Component {
 
   receiveData(msg, data) {
     // console.log("Received Data here1", msg)
-    console.log("Terminal Received Data here2", data)
+    // console.log("Terminal Received Data here2", data)
     if (data["resp"]) {
       if (data["resp"] != '\n') {
         // var evt = {
@@ -51,7 +51,7 @@ export default class Body extends React.Component {
         //   printer: this.props.printer,
         //   data: data["resp"]
         // }
-        this.props.dispatch(PrinterActions.updateLogs(this.props.printer, data))
+        this.props.dispatch(ServiceActions.updateLogs(this.props.service, data))
         // this.props.dispatch(evt)
 
         // this.setState(prevState => ({        
@@ -71,10 +71,10 @@ export default class Body extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.printer.model && prevProps.printer.model != this.props.printer.model) {
+    if (this.props.service.model && prevProps.service.model != this.props.service.model) {
       if (this.pubsubToken)
         PubSub.unsubscribe(this.pubsubToken)
-      this.topic = `${this.props.node.name}.${this.props.printer.name}.events.printer.data_received`
+      this.topic = `${this.props.node.name}.${this.props.service.name}.events.printer.data_received`
       this.pubsubToken = PubSub.subscribe(this.topic, this.receiveData);
     }
     this.scrollToBottom()
@@ -121,10 +121,10 @@ export default class Body extends React.Component {
   }
 
   renderLines() {
-    return this.props.printer.logs.map((item, index) => {
+    return this.props.service.logs.map((item, index) => {
       var prevItem = {}
       if (index > 0) {
-        prevItem = this.props.printer.logs[index-1]
+        prevItem = this.props.service.logs[index-1]
       }
       if (item.command) {
         return this.renderCommand(prevItem, item, index)

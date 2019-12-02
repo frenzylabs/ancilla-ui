@@ -25,7 +25,7 @@ import {
 
 import PubSub from 'pubsub-js'
 
-import PrinterView 	from '../services/printers/index'
+import PrinterIndex 	from '../services/printers/index'
 import CameraView 	from '../services/cameras/index'
 import FilesView 		from '../files'
 
@@ -59,23 +59,23 @@ export class NodeView extends React.Component {
 
         <Pane background='#f6f6f6' width="100%" display="flex" flexDirection="column">
           <Switch>
-            <Route path={`/printers/:printerId`}  exact={true} render={ props => {
-                var printer = this.props.node.printers.find((item) => item.id == parseInt(props.match.params.printerId));
-                if (!printer) {
+            <Route path={`/:service(printers)/:serviceId`}  render={ props => {
+                var service = this.props.node.services.find((item) => item.id == parseInt(props.match.params.serviceId));
+                if (!service) {
                   return null
                 }
-                return <PrinterView {...this.props} {...props} printer={printer} /> 
+                return <PrinterIndex {...this.props} {...props} service={service} /> 
               }
             } />
-            <Route path={`/cameras/:cameraId`}  exact={true} render={ props => {
-                var camera = this.props.node.cameras.find((item) => item.id == parseInt(props.match.params.cameraId));
-                if (!camera) {
+            <Route path={`/:service(cameras)/:serviceId`} render={ props => {
+                var service = this.props.node.services.find((item) => item.id == parseInt(props.match.params.serviceId));
+                if (!service) {
                   return null
                 }
-                return <CameraView {...this.props} {...props} node={this.props.node} camera={camera} /> 
+                return <CameraView {...this.props} {...props} node={this.props.node} service={service} /> 
               }
             } />
-						<Route path="/files" exact={true} render={ props => {
+						<Route path="/files" render={ props => {
 							return <FilesView {...this.props} {...props}/>
 						}}/>
           </Switch>

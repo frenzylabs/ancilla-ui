@@ -1,4 +1,5 @@
 import { PrintState, printState } from './prints'
+import { ServiceModel, ServiceState } from './service'
 
 // baud_rate: "115200"
 // created_at: 1573066173
@@ -28,6 +29,14 @@ type CameraModel = {
 }
 
 var defaultState = {}
+
+type PrinterServiceModel = ServiceModel & { model: PrinterModel}
+
+export type PrinterState = ServiceState & {
+  model: PrinterServiceModel,
+  currentRecordings?: [PrintState
+}
+
 
 export type CameraState = {
   id: number,
@@ -67,7 +76,7 @@ export function cameraReducer(camState: CameraState, action) {
       currentPrint: action.data
     }
   case 'PRINTER_RECEIVED_PRINTS':
-      console.log("PRINTER RECEIVED PRINTS", action)
+      // console.log("PRINTER RECEIVED PRINTS", action)
       var prints = action.data.prints.reduce((acc, item) => {
         acc = acc.concat(printState(item))
         return acc
@@ -79,7 +88,6 @@ export function cameraReducer(camState: CameraState, action) {
       }
       return newstate
   case 'PRINTER_RECEIVED_LAST_PRINT':
-      console.log("PRINTER RECEIVED PRINT", action)
       return camState
       return {
         ...camState,

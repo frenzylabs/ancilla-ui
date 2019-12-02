@@ -12,12 +12,11 @@ import Printer from '../../network/printer'
 export const PrinterAction = {
   listPrints(printerState) {
     return (dispatch, getState) => {
-      console.log("LIST PRINTS NODE ACTION state", getState())
       let activeNode = getState().activeNode
       var cancelRequest    = Printer.cancelSource();  
       // dispatch(requestFeatures(username, cancelRequest))
-      if (printerState.model && printerState.model.service) {
-        return Printer.prints(activeNode, printerState.model.service, {cancelToken: cancelRequest.token})
+      if (printerState.model) {
+        return Printer.prints(activeNode, printerState.model, {cancelToken: cancelRequest.token})
             .then((response) => {
               dispatch(PrinterAction.updateLastPrint(printerState, response.data.prints || []))
             })
@@ -26,14 +25,13 @@ export const PrinterAction = {
   },
   lastPrint(printerState) {
     return (dispatch, getState) => {
-      console.log("LAST PRINT NODE ACTION state", getState())
       let activeNode = getState().activeNode
       var cancelRequest    = Printer.cancelSource();  
       // dispatch(requestFeatures(username, cancelRequest))
-      if (printerState.model && printerState.model.service) {
-        return Printer.lastPrint(activeNode, printerState.model.service, {cancelToken: cancelRequest.token})
+      // console.log("PRINTER STATE =", printerState)
+      if (printerState.model) {
+        return Printer.lastPrint(activeNode, printerState.model, {cancelToken: cancelRequest.token})
               .then((response) => {
-                console.log("LAST PRINT = ", response.data.prints)
                 dispatch(PrinterAction.updateLastPrint(printerState, response.data.prints[0] || {}))
               })
       }

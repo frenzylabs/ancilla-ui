@@ -17,14 +17,14 @@ import {
 
 export default class Service extends React.Component {
   power(){
-    if (this.props.serviceState.open) {
-      CameraHandler.disconnect(this.props.node, this.props.camera.service)
+    if (this.props.service.state.open) {
+      CameraHandler.disconnect(this.props.node, this.props.service)
       .then((response) => {
         console.log("disconnected", response)
       })
       // var res = PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.close"])
     } else {
-      CameraHandler.connect(this.props.node, this.props.camera.service)
+      CameraHandler.connect(this.props.node, this.props.service)
       .then((response) => {
         console.log("CONNECT resp ", response)
         // var attachments = this.state.attachments

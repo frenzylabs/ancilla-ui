@@ -21,15 +21,19 @@ export const ServiceHandler = {
       return Request.get(`${node.apiUrl}/services`, options)
   },
 
-  attachments: (node, service_id, options = {}) => {
-    // options['params'] = {printer_id: printer.id, limit: 1}
-    return Request.get(`${node.apiUrl}/services/${service_id}/attachments`, options)
+  state: (node, service, options= {}) => {
+    return Request.get(`${node.apiUrl}/services/${service.kind}/${service.id}/state`, options)
   },
 
-  addAttachment: (node, service_id, data, options = {}) => {
+  attachments: (node, service, options = {}) => {
+    // options['params'] = {printer_id: printer.id, limit: 1}
+    return Request.get(`${node.apiUrl}/services/${service.kind}/${service.id}/attachments`, options)
+  },
+
+  addAttachment: (node, service, data, options = {}) => {
     // var data = Object.assign(options['params'] || {}, {attachment_id: attachment_id})
     console.log("ADD OPTIONS", options)
-    return Request.post(`${node.apiUrl}/services/${service_id}/attachments`, data, options)
+    return Request.post(`${node.apiUrl}/services/${service.kind}/${service.id}/attachments`, data, options)
   }
 }
 

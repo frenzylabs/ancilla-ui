@@ -65,7 +65,7 @@ export default class ServiceAttachment extends React.Component<{node: object, se
   getAttachments() {
     if (this.props.service) {
       this.setState({isLoading: true})
-      ServiceHandler.attachments(this.props.node, this.props.service.id)
+      ServiceHandler.attachments(this.props.node, this.props.service)
       .then((response) => {
         this.setState({isLoading: false, attachments: response.data.attachments})
       }).catch((err) => {
@@ -95,7 +95,7 @@ export default class ServiceAttachment extends React.Component<{node: object, se
     })
 
     var attachment = this.form.state.newAttachment
-    ServiceHandler.addAttachment(this.props.node, this.props.service.id, attachment)
+    ServiceHandler.addAttachment(this.props.node, this.props.service, attachment)
     .then((response) => {
       var attachments = this.state.attachments
       var f = response.data.attachment

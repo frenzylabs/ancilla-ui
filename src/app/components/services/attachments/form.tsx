@@ -52,7 +52,7 @@ export default class AttachmentForm extends React.Component {
 
   componentDidMount() {
     // this.getFiles()
-    console.log(this.props)
+    // console.log(this.props)
   }
 
   save() {
@@ -78,7 +78,7 @@ export default class AttachmentForm extends React.Component {
           }
         />
 
-        {/* <Combobox 
+        <Combobox 
           openOnFocus 
           items={this.props.node.services} 
           itemToString={item => item ? item.name : ''}
@@ -98,7 +98,7 @@ export default class AttachmentForm extends React.Component {
             })
           }
           }
-        /> */}
+        />
       </Pane>
     )
   }

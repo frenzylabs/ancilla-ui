@@ -23,15 +23,14 @@ import { PrinterState } from '../../../../store/reducers/printers'
 
 export default class Service extends React.Component<{status?: string, printer: PrinterState, node: object}> {
 	power(){
-		console.log("POWER IT", this.props)
-    if (this.props.printer.state.connected) {
-      PrinterHandler.disconnect(this.props.node, this.props.printer.model.service)
+    if (this.props.service.state.connected) {
+      PrinterHandler.disconnect(this.props.node, this.props.service)
       .then((response) => {
         console.log("disconnected", response)
       })
       // var res = PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.close"])
     } else {
-      PrinterHandler.connect(this.props.node, this.props.printer.model.service)
+      PrinterHandler.connect(this.props.node, this.props.service)
       .then((response) => {
         console.log("CONNECT resp ", response)
         // var attachments = this.state.attachments

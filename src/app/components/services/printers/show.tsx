@@ -24,15 +24,16 @@ import Statusbar from './statusbar'
 import Summary from './summary/index'
 import Terminal from './terminal'
 import SettingsForm from './settings'
-import PrinterShow from './show'
 
 import ServiceAttachment from '../attachments/index'
 
 import PrinterActions from '../../../store/actions/printers'
+import ServiceActions from '../../../store/actions/services'
+
 
 import PubSub from 'pubsub-js'
 
-export default class PrinterIndex extends React.Component {
+export default class PrinterShow extends React.Component {
   constructor(props:any) {
     super(props)
 
@@ -54,15 +55,15 @@ export default class PrinterIndex extends React.Component {
   }
 
   componentDidMount() {
-    // this.setupPrinter()
-    // this.getPrint()
+    this.setupPrinter()
+    this.getPrint()
   }
 
   componentWillUnmount() {
-    // if (this.pubsubToken)
-    //   PubSub.unsubscribe(this.pubsubToken)
-    // if (this.pubsubRequestToken)
-    //   PubSub.unsubscribe(this.pubsubRequestToken)
+    if (this.pubsubToken)
+      PubSub.unsubscribe(this.pubsubToken)
+    if (this.pubsubRequestToken)
+      PubSub.unsubscribe(this.pubsubRequestToken)
   }  
 
   componentDidUpdate(prevProps, prevState) {
@@ -81,11 +82,11 @@ export default class PrinterIndex extends React.Component {
     //   // this.setupPrinter()
     // }
 
-    // if (prevProps.service.model != this.props.service.model) {
-    //   // console.log("PRINTER MODEL HAS BEEN UPDATED")
-    //   this.setupPrinter()
-    //   this.getPrint()
-    // }
+    if (prevProps.service.model != this.props.service.model) {
+      // console.log("PRINTER MODEL HAS BEEN UPDATED")
+      this.setupPrinter()
+      this.getPrint()
+    }
   }
 
   getPrint() {
@@ -95,7 +96,7 @@ export default class PrinterIndex extends React.Component {
 
   setupPrinter() {
     if (this.props.service) {
-      this.props.dispatch(PrinterActions.getState(this.props.service))
+      this.props.dispatch(ServiceActions.getState(this.props.service))
       PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", ""])
       // PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "REQUEST.get_state"])
       // console.log("Has printer")
@@ -120,8 +121,17 @@ export default class PrinterIndex extends React.Component {
     if (data["action"] == "get_state") {
       console.log("get STATE", data)
       this.props.dispatch(PrinterActions.updateState(this.props.service, data["resp"]))
+
       // this.setState({printerState: data["resp"]})
     }
+    // else if (data["action"] == "connect") {
+    //   if (data["resp"]["status"] == "error") {
+    //     this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
+    //   } else {
+    //     this.setState({...this.state, printerState: {...this.state.printerState, open: true}})
+    //     // this.setState({connected: true})
+    //   }
+    // }
   }
 
   receiveEvent(msg, data) {
@@ -129,32 +139,31 @@ export default class PrinterIndex extends React.Component {
     // console.log("PV Received Event here2", data)
     // console.log(typeof(data))
     var [to, kind] = msg.split("events.")
-    // console.log("EVENT KIND", kind)
     switch(kind) {
       case 'printer.state':
-          // console.log(data)
-          this.props.dispatch(PrinterActions.updateState(this.props.service, data))
+          console.log(data)
+          this.props.dispatch(ServiceActions.updateState(this.props.service, data))
           // this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, connected: false}))
           // this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
           break
       case 'printer.connection.closed':
-          this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
           // this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
           break
       case 'printer.connection.opened':          
-          this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: true}))
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: true}))
           // this.setState({...this.state, printerState: {...this.state.printerState, open: true}})
           break
       case 'printer.print.started':
-          this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, printing: true}))
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, printing: true}))
           // this.setState({...this.state, printerState: {...this.state.printerState, printing: true}})
           break
       case 'printer.print.cancelled':
-          this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, printing: false}))
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, printing: false}))
           // this.setState({...this.state, printerState: {...this.state.printerState, printing: false}})
           break
       case 'printer.print.failed':
-          this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, printing: false, status: "print_failed"}))
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, printing: false, status: "print_failed"}))
           // this.setState({...this.state, printerState: {...this.state.printerState, printing: false, status: "print_failed"}})
           break
       default:
@@ -163,47 +172,36 @@ export default class PrinterIndex extends React.Component {
   }
 
 
-  // renderSettings() {
-  //   return (
-	// 		<React.Fragment>
-	// 			<Dialog
-  //         isShown={this.state.showing}
-  //         title="Attach Service"
-  //         confirmLabel="Save"
-  //         onCloseComplete={() => this.toggleDialog(false)}
-  //         onConfirm={this.saveAttachment}
-  //       >              
-  //         <SettingsForm ref={frm => this.form = frm} {...this.props} />
-  //       </Dialog>
-
-	// 			<IconButton appearance='minimal' icon="add" onClick={(e) => this.setState({showing: true})}/>
-	// 		</React.Fragment>
-	// 	)
-  // }
-
-    
-  render() {
-    var params = this.props.match.params;
+  renderSettings() {
     return (
-      <div className="flex-wrapper">
-        <div>
-          <Switch >                  
-              {/* <Route path={`${this.props.match.path}/new`} render={ props =>
-                <PrinterNew {...this.props}  {...props}/> 
-              }/> */}
-              {/* <Route path={`${this.props.match.path}/:printerId/edit`} exact={true} render={ props =>
-                <PrinterEdit {...this.props}  {...props} /> 
-              }/>
-              <Route path={`${this.props.match.path}/:printerId`} render={ props =>
-                <PrinterDetails  {...this.props} {...props} /> 
-              }/> */}
-              <Route path={`${this.props.match.path}`} render={ props =>
-                <PrinterShow {...this.props}  {...props} /> 
-              }/>
-            </Switch>
-        </div>
-      </div>
-    );
+			<React.Fragment>
+				<Dialog
+          isShown={this.state.showing}
+          title="Attach Service"
+          confirmLabel="Save"
+          onCloseComplete={() => this.toggleDialog(false)}
+          onConfirm={this.saveAttachment}
+        >              
+          <SettingsForm ref={frm => this.form = frm} {...this.props} />
+        </Dialog>
+
+				<IconButton appearance='minimal' icon="add" onClick={(e) => this.setState({showing: true})}/>
+			</React.Fragment>
+		)
   }
 
+    
+
+
+  render() {
+    // const Component = this.props.component;    
+    return (
+      <div id="" className="has-navbar-fixed-top" style={{height: '100vh', flex: "1 auto", overflow: 'scroll'}}>
+          <Statusbar {...this.props} />
+          <Summary {...this.props}  />
+          <ServiceAttachment {...this.props} device={this.props.service && this.props.service.model}/>
+          <Terminal {...this.props}  />
+      </div>
+    );
+ }
 }

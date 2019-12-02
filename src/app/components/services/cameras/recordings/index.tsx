@@ -21,14 +21,13 @@ import React  from 'react'
 //   Statusbar,
 //   Summary
 // } from '../../'
-import Statusbar from './statusbar/index'
+import Statusbar from '../statusbar/index'
 
 import PubSub from 'pubsub-js'
 
-import ServiceActions from '../../../store/actions/services'
-import CameraHandler from '../../../network/camera'
+import ServiceActions from '../../../../store/actions/services'
 
-export default class CameraView extends React.Component<{node: object, service: object}> {
+export default class CameraRecording extends React.Component<{node: object, service: object}> {
   constructor(props:any) {
     super(props)
 
@@ -142,7 +141,7 @@ export default class CameraView extends React.Component<{node: object, service: 
   //   }
   // }
   toggleRecording() {
-    if (this.props.service.state.recording) {
+    if (this.props.service.recording) {
       PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.stop_recording", this.state.recordSettings])
     } else {
       PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.start_recording", this.state.recordSettings])
@@ -158,7 +157,7 @@ export default class CameraView extends React.Component<{node: object, service: 
               <img src={`${url}/webcam/${this.props.service.name}`} />
             </Pane>
             <Pane display="flex" width="100%">
-              <button onClick={this.toggleRecording}>{this.props.service.state.recording ? "Stop Recording" : "Record"}</button>
+              <button onClick={this.toggleRecording}>{this.props.service.recording ? "Stop Recording" : "Record"}</button>
               <TextInput 
                 name="timelapse" 
                 placeholder="Timelapse in seconds" 

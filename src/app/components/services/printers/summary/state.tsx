@@ -60,7 +60,7 @@ export default class State extends React.Component {
   setupPrint() {
     // console.log("SETUP PRINT")
     if (this.props.printer) {
-      this.eventTopic = `${this.props.node.name}.${this.props.printer.name}.events.print`
+      this.eventTopic = `${this.props.node.name}.${this.props.printer.name}.events.printer.print`
 
       if (this.pubsubToken) {
         PubSub.unsubscribe(this.pubsubToken)
@@ -72,19 +72,19 @@ export default class State extends React.Component {
   receiveEvent(msg, data) {
     var [to, kind] = msg.split("events.")
     switch(kind) {
-      case 'print.state':          
+      case 'printer.print.state':          
           this.props.dispatch(PrinterAction.updatePrint(this.props.printer, data))
           // this.setState({...this.state, printState: data})
           break
-      case 'print.started':
+      case 'printer.print.started':
           this.props.dispatch(PrinterAction.updatePrint(this.props.printer, {...this.props.printer.currentPrint, status: "running"}))
           // this.setState({...this.state, printState: data})
           break
-      case 'print.cancelled':
+      case 'printer.print.cancelled':
           this.props.dispatch(PrinterAction.updatePrint(this.props.printer, {...this.props.printer.currentPrint, status: "cancelled"}))
           // this.setState({...this.state, printState: data})
           break
-      case 'print.failed':
+      case 'printer.print.failed':
           this.props.dispatch(PrinterAction.updatePrint(this.props.printer, {...this.props.printer.currentPrint, status: "failed"}))
           // this.setState({...this.state, printState: data})
           break

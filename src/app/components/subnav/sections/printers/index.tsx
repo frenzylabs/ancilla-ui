@@ -20,24 +20,25 @@ import {
 
 import Tree from '../../../tree'
 import Form from './form'
-import { NodeAction } from '../../../../store/reducers/nodes'
+import { NodeAction } from '../../../../store/actions/node'
 
 import printer, {default as request} from '../../../../network/printer'
+import { PrinterState }  from '../../../../store/reducers/printers'
 
-export class Printers extends React.Component {  
+export class Printers extends React.Component<{node: object, printer: PrinterState, listPrinters: Function}> {  
   state = {
     printers: Array<Printer>(),
     showing: false,
     loading: false
   }
-  form: Form = {}
+  form: Form = null
 
   constructor(props:any) {
     super(props)    
 
     this.toggleDialog = this.toggleDialog.bind(this)
     this.savePrinter  = this.savePrinter.bind(this)
-    this.getPrinters  = this.getPrinters.bind(this)
+    // this.getPrinters  = this.getPrinters.bind(this)
   }
 
   componentDidMount() {
@@ -58,15 +59,6 @@ export class Printers extends React.Component {
     })
   }
 
-  getPrinters() {
-    request.list()
-    .then((response) => {
-      if (response.data && response.data.printers) {
-        this.setState({printers: response.data.printers})
-      }
-    })
-  }
-
   savePrinter(closeDialog) {
 
     this.setState({
@@ -75,7 +67,7 @@ export class Printers extends React.Component {
     })
 
 
-    request.create(this.form.state.newPrinter)
+    request.create(this.props.node, this.form.state.newPrinter)
     .then((response) => {
       console.log(response)
 
@@ -105,8 +97,7 @@ export class Printers extends React.Component {
 
   selectPrinter(item) {
     let url = `/printers/${item.id}`
-    this.props.history.push(`${url}`);
-    
+    this.props.history.push(`${url}`);    
   }
 
   render() {

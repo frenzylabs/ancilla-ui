@@ -12,7 +12,7 @@ type NodeState = {
   nodepath: string,
   hostname:string,
   port: string,
-  devices: Array<{}>,
+  services: Array<{}>,
   printers: Array<PrinterState>,
   cameras: Array<{}>
 }
@@ -33,7 +33,7 @@ function createNodeState(name: string, hostname: string, port: string = "", node
     port: port,
     nodepath: nodepath,
     apiUrl: apiUrl,
-    devices: [],
+    services: [],
     printers: [],
     cameras: []
   }

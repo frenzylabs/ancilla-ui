@@ -15,7 +15,7 @@ import {
 } from 'evergreen-ui'
 
 import Tree from '../../../tree'
-import { NodeAction } from '../../../../store/reducers/nodes'
+import { NodeAction } from '../../../../store/actions/node'
 
 import Form from './form'
 import {default as request} from '../../../../network/camera'

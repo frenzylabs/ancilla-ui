@@ -25,9 +25,11 @@ import {
 
 import PubSub from 'pubsub-js'
 
-import PrinterView 	from '../devices/printers/index'
-import CameraView 	from '../devices/cameras/index'
+import PrinterView 	from '../services/printers/index'
+import CameraView 	from '../services/cameras/index'
 import FilesView 		from '../files'
+
+import { NodeAction } from '../../store/actions/node'
 
 
 export class NodeView extends React.Component {
@@ -43,12 +45,13 @@ export class NodeView extends React.Component {
   
 
   componentDidMount() {
-    // this.getPrinters()
+    // this.getDevices()
+    this.props.getServices()
   }
 
   render() {
     return (
-      <Pane display="flex" flex={1} height="100%">
+      <Pane display="flex" flex={1} height="100%" style={{overflow: 'scroll'}}>
         <Pane display="flex" flex={0}>
           <Nav/>
           <SubNav {...this.props} />
@@ -83,4 +86,17 @@ export class NodeView extends React.Component {
   }
 }
 
-export default NodeView
+const mapStateToProps = (state) => {
+  return state
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    getServices: () => dispatch(NodeAction.getServices())
+  }
+}
+
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(NodeView))
+
+// export default NodeView

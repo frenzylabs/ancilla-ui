@@ -15,7 +15,9 @@ import {
   Icon
 } from 'evergreen-ui'
 
-export default class Printers extends React.Component<{status?: string}> {
+import { PrinterState } from '../../../../store/reducers/printers'
+
+export default class Printers extends React.Component<{status?: string, printer: PrinterState}> {
   getColorState() {
     if (this.props.printer.state.connected) {
       return 'success'

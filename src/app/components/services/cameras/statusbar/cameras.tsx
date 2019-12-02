@@ -17,7 +17,7 @@ import {
 
 export default class Cameras extends React.Component<{status?: string}> {
   getColorState() {
-    if (this.props.deviceState.open) {
+    if (this.props.serviceState.open) {
       return 'success'
     } else {
       return 'danger'

@@ -74,17 +74,23 @@ export default class Form extends React.Component<{save:Function, loading:boolea
       console.log(err)
     })
 
-    printer.list()
-    .then(res => {
-      this.setState({
-        printers: res.data['printers'].map((printer) => {
-          return {name: printer.name, port: printer.port, id: printer.id}
-        })
-      })
-    })
-    .catch((err) => {
-      toaster.danger(err)
-    })
+    // this.setState({
+    //   printers: this.props.printers.data['printers'].map((printer) => {
+    //     return {name: printer.name, port: printer.port, id: printer.id}
+    //   })
+    // })
+
+    // printer.list(this.props.)
+    // .then(res => {
+    //   this.setState({
+    //     printers: res.data['printers'].map((printer) => {
+    //       return {name: printer.name, port: printer.port, id: printer.id}
+    //     })
+    //   })
+    // })
+    // .catch((err) => {
+    //   toaster.danger(err)
+    // })
   }
 
   save() {

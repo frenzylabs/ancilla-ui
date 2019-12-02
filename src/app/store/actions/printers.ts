@@ -10,26 +10,33 @@ import types from './types'
 import Printer from '../../network/printer'
 
 export const PrinterAction = {
-  // listPrints() {
-  //   return (dispatch, getState) => {
-  //     console.log("NODE ACTION state", getState())
-  //     let activeNode = getState().activeNode
-  //     var cancelRequest    = Printer.cancelSource();  
-  //     // dispatch(requestFeatures(username, cancelRequest))
-  //     return Printer.list({cancelToken: cancelRequest.token})
-  //           .then(response => dispatch(NodeAction.receivedPrinters(activeNode, response.data)))
-  //   }
-  // },
-  lastPrint(printer) {
+  listPrints(printerState) {
     return (dispatch, getState) => {
-      // console.log("NODE ACTION state", getState())
+      console.log("LIST PRINTS NODE ACTION state", getState())
       let activeNode = getState().activeNode
       var cancelRequest    = Printer.cancelSource();  
       // dispatch(requestFeatures(username, cancelRequest))
-      return Printer.lastPrint(activeNode, printer, {cancelToken: cancelRequest.token})
+      if (printerState.model && printerState.model.service) {
+        return Printer.prints(activeNode, printerState.model.service, {cancelToken: cancelRequest.token})
             .then((response) => {
-              dispatch(PrinterAction.updateLastPrint(printer, response.data.prints[0] || {}))
+              dispatch(PrinterAction.updateLastPrint(printerState, response.data.prints || []))
             })
+      }
+    }
+  },
+  lastPrint(printerState) {
+    return (dispatch, getState) => {
+      console.log("LAST PRINT NODE ACTION state", getState())
+      let activeNode = getState().activeNode
+      var cancelRequest    = Printer.cancelSource();  
+      // dispatch(requestFeatures(username, cancelRequest))
+      if (printerState.model && printerState.model.service) {
+        return Printer.lastPrint(activeNode, printerState.model.service, {cancelToken: cancelRequest.token})
+              .then((response) => {
+                console.log("LAST PRINT = ", response.data.prints)
+                dispatch(PrinterAction.updateLastPrint(printerState, response.data.prints[0] || {}))
+              })
+      }
     }
   },
 
@@ -39,11 +46,34 @@ export const PrinterAction = {
     data: prnt
   }),
 
+  updatePrints: (printer, prnts) => ({
+    type: 'PRINTER_RECEIVED_PRINTS',
+    printer: printer,
+    data: prnts
+  }),
+
   updateLastPrint: (printer, prnt) => ({
-    type: 'PRINTER_RECEIVED_PRINT',
+    type: 'PRINTER_RECEIVED_LAST_PRINT',
     printer: printer,
     data: prnt
   }),
+
+  getState(printerState) {
+    return (dispatch, getState) => {
+      // console.log("NODE ACTION state", getState())
+      let activeNode = getState().activeNode
+      var cancelRequest    = Printer.cancelSource();  
+      // dispatch(requestFeatures(username, cancelRequest))
+      // console.log(printerState)
+      if (printerState.model && printerState.model.service) {
+        return Printer.state(activeNode, printerState.model.service, {cancelToken: cancelRequest.token})
+              .then((response) => {
+                // dispatch(PrinterAction.updateState(printer, {...printer.state, connected: false}))
+                dispatch(PrinterAction.updateState(printerState, response.data || {}))
+              })
+      }
+    }
+  },
 
   updateState: (printer, printer_state) => ({
     type: 'PRINTER_RECEIVED_STATE',

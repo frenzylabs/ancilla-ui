@@ -43,7 +43,7 @@ export default class Body extends React.Component {
 
   receiveData(msg, data) {
     // console.log("Received Data here1", msg)
-    // console.log("Received Data here2", data)
+    console.log("Terminal Received Data here2", data)
     if (data["resp"]) {
       if (data["resp"] != '\n') {
         // var evt = {

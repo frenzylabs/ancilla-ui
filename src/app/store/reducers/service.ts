@@ -18,29 +18,28 @@ import { PrintState, printState } from './prints'
 //   updated_at: 0
 // }
 
-type PrinterModel = {
-  baud_rate: string,
-  created_at: number,
-  service: object,
+type ServiceModel = {
   id: number,
   name: string,
-  port: string,
+  settings: object,
+  configuration: object,
+  created_at: number,
   updated_at: number
 }
 
 var defaultState = {}
 
-export type PrinterState = {
+export type ServiceState = {
   id: number,
   name: string,
-  model: PrinterModel,
+  model: ServiceModel,
   state: object,
   logs: [],
   currentPrint?: PrintState,
   attachments: []
 }
 
-export function PrinterState(model: PrinterModel, state: {} = {}, logs: [] = [], currentPrint = {}) {
+export function PrinterState(model: ServiceModel, state: {} = {}, logs: [] = [], currentPrint = {}) {
   return {
     id: model.id,
     name: model.name,
@@ -55,12 +54,12 @@ export function PrinterState(model: PrinterModel, state: {} = {}, logs: [] = [],
 
 // const initialState = PrinterState({});
 
-export function printerReducer(printerstate: PrinterState, action) {
+export function printerReducer(serviceState: ServiceState, action) {
   switch(action.type) {
   case 'PRINTER_PRINT_UPDATED':
     // console.log("PRINTER RECEIVED PRINT", action)
     return {
-      ...printerstate,
+      ...serviceState,
       currentPrint: action.data
     }
   case 'PRINTER_RECEIVED_PRINTS':
@@ -71,41 +70,41 @@ export function printerReducer(printerstate: PrinterState, action) {
       }, [])
   
       var newstate = {
-        ...printerstate, 
+        ...serviceState, 
         prints: prints
       }
       return newstate
   case 'PRINTER_RECEIVED_LAST_PRINT':
       console.log("PRINTER RECEIVED PRINT", action)
       return {
-        ...printerstate,
+        ...serviceState,
         currentPrint: printState(action.data)
       }
   case 'PRINTER_RECEIVED_STATE':
     // console.log("PRINTER RECEIVED STATE", action)
     return {
-      ...printerstate,
+      ...serviceState,
       state: action.data
     }
   case 'PRINTER_RECEIVED_DATA':
     // console.log("PRINTER RECEIVED DATA", action)
     // var logs = printerstate.logs.concat(action.data)
     return {
-      ...printerstate,
-      logs: [...printerstate.logs, action.data]
+      ...serviceState,
+      logs: [...serviceState.logs, action.data]
     }
     
   case 'PRINTER_LIST':
     return {
-      ...printerstate, 
+      ...serviceState, 
       list: action.data
     }
   case 'RECEIVED_LOGS':
     return {
-      ...printerstate, 
+      ...serviceState, 
       project: action.data
     }  
   default:
-    return printerstate;
+    return serviceState;
   }
 }

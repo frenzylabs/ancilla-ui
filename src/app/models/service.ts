@@ -6,7 +6,7 @@
 //  Copyright 2019 Wess Cope
 //
 
-export default interface Device {
+export default interface Service {
   id:number
   name:string
 }

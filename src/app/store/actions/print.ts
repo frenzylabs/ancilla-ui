@@ -34,7 +34,7 @@ export const PrintAction = {
   // },
 
   updatePrint: (printer, prnt) => ({
-    type: 'PRINT_UPDATED',
+    type: 'PRINTER_PRINT_UPDATED',
     printer: printer,
     data: prnt
   }),

@@ -17,8 +17,8 @@ export default {
     return Request.post('/files', data, {headers: {'Content-Type' : 'multipart/form-data'}})
   },
 
-  delete: (id) => {
-    return Request.delete('/files', {file_id: id})
+  delete: (id, options={}) => {
+    return Request.delete(`/files/${id}`, options)
   },
 
   listLocal: (options= {}) => {

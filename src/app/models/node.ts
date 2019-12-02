@@ -1,13 +1,16 @@
-import { node } from "prop-types"
-import Device from "./device"
-import Printer from "./printer"
+
 //
-//  printer.ts
+//  node.ts
 //  ancilla
 // 
-//  Created by Wess Cope (me@wess.io) on 11/05/19
-//  Copyright 2019 Wess Cope
+//  Created by Kevin Musselman (kmussel@gmail.com) on 11/05/19
+//  Copyright Frenzylabs, LLC 2019
 //
+
+
+import { node } from "prop-types"
+import Service from "./service"
+import Printer from "./printer"
 
 export default class Node {  
   name:string
@@ -16,7 +19,7 @@ export default class Node {
   nodepath: string
   hostname:string
   port: string
-  devices: Array<Device> = Array()
+  services: Array<Service> = Array()
   printers: Array<Printer> = Array()
   cameras: Array<{}> = Array()
 

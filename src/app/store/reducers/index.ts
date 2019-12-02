@@ -1,5 +1,5 @@
 import {combineReducers}  from 'redux'
-import nodeReducer         from './nodes'
+// import nodeReducer         from './nodes'
 import appReducer         from './app'
 
 
@@ -9,3 +9,5 @@ export default appReducer
 //   node: nodeReducer,
 //   app: appReducer
 // })
+
+// export NodeState from './state'

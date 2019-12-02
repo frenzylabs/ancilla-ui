@@ -14,11 +14,11 @@ import {
 
 import Tree from '../../../tree'
 
-export default class Devices extends React.Component {
+export default class Services extends React.Component {
   state = {
     showing: false,
     loading: false,
-    devices: Array<string>()
+    services: Array<string>()
   }
 
   toggleDialog(show:boolean) {
@@ -29,20 +29,20 @@ export default class Devices extends React.Component {
   }
 
   render() {
-    let items =  this.state.devices.length > 0 ? this.state.devices : [{name: "No Devices added."}]
+    let items =  this.state.services.length > 0 ? this.state.services : [{name: "No Services added."}]
 
     return (
-      <React.Fragment key="devices">
+      <React.Fragment key="services">
         <Dialog
           isShown={this.state.showing}
-          title="Add Device"
+          title="Add Service"
           confirmLabel="Save"
           onCloseComplete={() => this.toggleDialog(false)}
         >
           Content
         </Dialog>
 
-        <Tree.Node name="Devices" key="devices" children={items} addAction={() => this.toggleDialog(true)} />
+        <Tree.Node name="Services" key="services" children={items} addAction={() => this.toggleDialog(true)} />
       </React.Fragment>
     )
   }

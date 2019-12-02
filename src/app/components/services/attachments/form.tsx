@@ -15,14 +15,13 @@ import {
   toaster
 } from 'evergreen-ui'
 
-import request from '../../../../network/files'
+import { ServiceHandler } from '../../../network/'
 
-export default class PrintForm extends React.Component<{save:Function, loading:boolean}> {
+export default class AttachmentForm extends React.Component {
   state = {
-    newPrint: {
-      name:     '',
-      file_id:     '',
-      baud_rate: ''
+    newAttachment: {
+      parent_id:     '',
+      attachment_id:     ''
     },
     files: Array<{}>(),
   }
@@ -35,24 +34,25 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
   //   }
   // }
 
-  getFiles() {
-    request.list()
-    .then((response) => {
-      if (response.data && response.data.files) {
-        this.setState({
-          files: response.data.files.map((fp) => {
-            return {name: fp.name, id: fp.id}
-          })
-        })
-        // this.setState({files: response.data.files})
-      }
-    }).catch((err) => {
-      toaster.danger(err)
-    })
-  }
+  // getDevice() {
+  //   request.list()
+  //   .then((response) => {
+  //     if (response.data && response.data.files) {
+  //       this.setState({
+  //         files: response.data.files.map((fp) => {
+  //           return {name: fp.name, id: fp.id}
+  //         })
+  //       })
+  //       // this.setState({files: response.data.files})
+  //     }
+  //   }).catch((err) => {
+  //     toaster.danger(err)
+  //   })
+  // }
 
   componentDidMount() {
-    this.getFiles()
+    // this.getFiles()
+    console.log(this.props)
   }
 
   save() {
@@ -64,41 +64,41 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
       <Pane>
         <TextInput 
           name="name" 
-          placeholder="Print Name" 
+          placeholder="Service Name" 
           marginBottom={4}  
           width="100%" 
           height={48}
           onChange={e => 
             this.setState({
-              newPrint: {
-                ...this.state.newPrint,
+              newAttachment: {
+                ...this.state.newAttachment,
                 name: e.target.value     
               }
             })
           }
         />
 
-        <Combobox 
+        {/* <Combobox 
           openOnFocus 
-          items={this.state.files} 
+          items={this.props.node.services} 
           itemToString={item => item ? item.name : ''}
-          placeholder={this.state.files.length > 0? "File" : "No Files Found"} 
+          placeholder={this.state.files.length > 0? "Select Service" : "No Services Found"} 
           marginTop={4} 
           marginBottom={4}  
           width="100%" 
           height={48}
           isLoading={this.props.loading}
-          disabled={this.state.files.length < 1}
+          disabled={this.props.node.services.length < 1}
           onChange={selected => {
             this.setState({
-              newPrint: {
-                ...this.state.newPrint,
-                file_id: (selected && selected.id)
+              newAttachment: {
+                ...this.state.newAttachment,
+                attachment_id: (selected && selected.id)
               }
             })
           }
           }
-        />
+        /> */}
       </Pane>
     )
   }

@@ -7,6 +7,7 @@
 //
 
 import {Request, CancelToken} from './request'
+import Connection from '../components/services/printers/summary/connection';
 
 export const Camera = {
   cancelSource: () => {
@@ -14,12 +15,21 @@ export const Camera = {
   },
 
   create: (camera) => {
-    return Request.post('/cameras', camera)
+    return Request.post('/services/camera', camera)
   },
 
   list: (options= {}) => {
-      return Request.get('/cameras', options)
+      return Request.get('/services/camera', options)
+  },
+
+  connect: (node, cameraService, options = {}) => {
+    return Request.post(`${node.apiUrl}/services/camera/${cameraService.id}/connection`, options)
+  },
+
+  disconnect: (node, cameraService, options = {}) => {
+    return Request.delete(`${node.apiUrl}/services/camera/${cameraService.id}/connection`, options)
   }
+
 
   // ports: () => {
   //   return Request.get('/ports')

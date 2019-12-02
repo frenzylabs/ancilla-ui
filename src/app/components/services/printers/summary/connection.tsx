@@ -20,6 +20,7 @@ import {
 
 
 // import Form from './form'
+import { PrinterHandler } from '../../../../network'
 // import { NodeAction } from '../../../../store/reducers/nodes'
 
 import PrintForm from './print_form'
@@ -51,9 +52,38 @@ export default class Connection extends React.Component {
       return
     }
 
-    this.topic = `${this.props.node.name}.${this.props.printer.name}.request`
-    let cmd = [this.props.printer.name, "start_print", this.form.state.newPrint]
-    PubSub.publish(this.props.node.name + ".request", cmd)
+    var newPrint = this.form.state.newPrint
+    PrinterHandler.start_print(this.props.node, this.props.printer.model.service, newPrint)
+    .then((response) => {
+      // var attachments = this.state.attachments
+      console.log("START PRINT", response.data)
+      var f = response.data.print
+      // attachments = attachments.concat(f)
+      // this.setState({
+      //   loading: false,
+      //   attachments: attachments
+      // })
+
+      toaster.success(`Print Started ${f.name} has been successfully added`)
+      // closeDialog()
+    })
+    .catch((error) => {
+      console.log(error)
+      this.setState({
+        loading: false,
+      })
+      let errors = Object.keys(error.response.data.errors).map((key, index) => {
+        return  `${key} : ${error.response.data.errors[key]}<br/>`
+      })
+
+      toaster.danger(
+        `Unable to start print ${JSON.stringify(newPrint)}`, 
+        {description: errors}
+      )
+    })
+    // this.topic = `${this.props.node.name}.${this.props.printer.name}.request`
+    // let cmd = [this.props.printer.name, "start_print", this.form.state.newPrint]
+    // PubSub.publish(this.props.node.name + ".request", cmd)
   }
 
   cancelPrint() {

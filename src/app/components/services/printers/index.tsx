@@ -10,7 +10,8 @@ import {
 import SplitPane from 'react-split-pane'
 
 import {
-  Pane
+  Pane,
+  Dialog
 } from 'evergreen-ui'
 
 import React  from 'react'
@@ -22,6 +23,9 @@ import React  from 'react'
 import Statusbar from './statusbar'
 import Summary from './summary/index'
 import Terminal from './terminal'
+import SettingsForm from './settings'
+
+import ServiceAttachment from '../attachments/index'
 
 import PrinterActions from '../../../store/actions/printers'
 
@@ -90,8 +94,9 @@ export default class PrinterView extends React.Component {
 
   setupPrinter() {
     if (this.props.printer) {
+      this.props.dispatch(PrinterActions.getState(this.props.printer))
       PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "SUB", ""])
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "REQUEST.get_state"])
+      // PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "REQUEST.get_state"])
       // console.log("Has printer")
       this.requestTopic = `${this.props.node.name}.${this.props.printer.name}.request`
       this.eventTopic = `${this.props.node.name}.${this.props.printer.name}.events`
@@ -132,7 +137,7 @@ export default class PrinterView extends React.Component {
     // console.log("PV Received Event here2", data)
     // console.log(typeof(data))
     var [to, kind] = msg.split("events.")
-    // console.log("EVENT KIND", kind)
+    console.log("EVENT KIND", kind)
     switch(kind) {
       case 'printer.state':
           console.log(data)
@@ -140,23 +145,23 @@ export default class PrinterView extends React.Component {
           // this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, connected: false}))
           // this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
           break
-      case 'connection.closed':
+      case 'printer.connection.closed':
           this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, connected: false}))
           // this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
           break
-      case 'connection.opened':          
+      case 'printer.connection.opened':          
           this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, connected: true}))
           // this.setState({...this.state, printerState: {...this.state.printerState, open: true}})
           break
-      case 'print.started':
+      case 'printer.print.started':
           this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, printing: true}))
           // this.setState({...this.state, printerState: {...this.state.printerState, printing: true}})
           break
-      case 'print.cancelled':
+      case 'printer.print.cancelled':
           this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, printing: false}))
           // this.setState({...this.state, printerState: {...this.state.printerState, printing: false}})
           break
-      case 'print.failed':
+      case 'printer.print.failed':
           this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, printing: false, status: "print_failed"}))
           // this.setState({...this.state, printerState: {...this.state.printerState, printing: false, status: "print_failed"}})
           break
@@ -165,15 +170,35 @@ export default class PrinterView extends React.Component {
     }    
   }
 
+
+  renderSettings() {
+    return (
+			<React.Fragment>
+				<Dialog
+          isShown={this.state.showing}
+          title="Attach Service"
+          confirmLabel="Save"
+          onCloseComplete={() => this.toggleDialog(false)}
+          onConfirm={this.saveAttachment}
+        >              
+          <SettingsForm ref={frm => this.form = frm} {...this.props} />
+        </Dialog>
+
+				<IconButton appearance='minimal' icon="add" onClick={(e) => this.setState({showing: true})}/>
+			</React.Fragment>
+		)
+  }
+
     
 
 
   render() {
     // const Component = this.props.component;    
     return (
-      <div id="" className="has-navbar-fixed-top" style={{height: '100vh', flex: '1'}}>
+      <div id="" className="has-navbar-fixed-top" style={{height: '100vh', flex: "1 auto", overflow: 'scroll'}}>
           <Statusbar {...this.props} />
           <Summary {...this.props}  />
+          <ServiceAttachment {...this.props} device={this.props.printer.model && this.props.printer.model.device}/>
           <Terminal {...this.props}  />
       </div>
     );

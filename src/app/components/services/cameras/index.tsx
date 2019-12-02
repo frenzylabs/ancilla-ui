@@ -32,7 +32,7 @@ export default class CameraView extends React.Component {
     
     this.state = {
       connected: false,
-      deviceState: {},
+      serviceState: {},
       recordSettings: {
         videoSettings: {
           fps: 10
@@ -52,8 +52,9 @@ export default class CameraView extends React.Component {
 
   setupCamera() {
     if (this.props.camera) {
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "SUB", "events.connection"])
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.get_state"])
+      PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "SUB", "events.camera.connection"])
+
+      // PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.get_state"])
       // console.log("Has printer")
       this.requestTopic = `${this.props.node.name}.${this.props.camera.name}.request`
       this.eventTopic = `${this.props.node.name}.${this.props.camera.name}.events`
@@ -69,49 +70,49 @@ export default class CameraView extends React.Component {
   }
 
   receiveRequest(msg, data) {
-    // console.log("PV Received Data here1", msg)    
-    // console.log("PV Received Data here2", data)
+    console.log("PV Received Data here1", msg)    
+    console.log("PV Received Data here2", data)
     // console.log(typeof(data))
     if(!data)
       return
     if (data["action"] == "get_state") {
       // console.log("get STATE", data)
-      this.setState({deviceState: data["resp"]})
+      this.setState({serviceState: data["resp"]})
     }
     if (data["action"] == "start_recording") {
       // console.log("get STATE", data)
-      this.setState({...this.state, deviceState: {...this.state.deviceState, recording: true}})
+      this.setState({...this.state, serviceState: {...this.state.serviceState, recording: true}})
     } else if (data["action"] == "stop_recording") {
       // console.log("get STATE", data)
-      this.setState({...this.state, deviceState: {...this.state.deviceState, recording: false}})
+      this.setState({...this.state, serviceState: {...this.state.serviceState, recording: false}})
     }
   }
 
   receiveEvent(msg, data) {
-    // console.log("PV Received Event here1", msg)    
-    // console.log("PV Received Event here2", data)
+    console.log("PV Received Event here1", msg)    
+    console.log("PV Received Event here2", data)
     // console.log(typeof(data))
     var [to, kind] = msg.split("events.")
-    // console.log("EVENT KIND", kind)
+    console.log("EVENT KIND", kind)
     switch(kind) {
-      case 'camera_recording.state':
+      case 'camera.recording':
           console.log("Camera Recording STate", data)
-          // this.setState({...this.state, deviceState: {...this.state.deviceState, open: false}})
+          // this.setState({...this.state, serviceState: {...this.state.serviceState, open: false}})
           break
-      case 'connection.closed':
-          this.setState({...this.state, deviceState: {...this.state.deviceState, open: false}})
+      case 'camera.connection.closed':
+          this.setState({...this.state, serviceState: {...this.state.serviceState, open: false}})
           break
-      case 'connection.opened':
-          this.setState({...this.state, deviceState: {...this.state.deviceState, open: true}})
+      case 'camera.connection.opened':
+          this.setState({...this.state, serviceState: {...this.state.serviceState, open: true}})
           break
       case 'print.started':
-          this.setState({...this.state, deviceState: {...this.state.deviceState, printing: true}})
+          this.setState({...this.state, serviceState: {...this.state.serviceState, printing: true}})
           break
       case 'print.cancelled':
-          this.setState({...this.state, deviceState: {...this.state.deviceState, printing: false}})
+          this.setState({...this.state, serviceState: {...this.state.serviceState, printing: false}})
           break
       case 'print.failed':
-          this.setState({...this.state, deviceState: {...this.state.deviceState, printing: false, status: "print_failed"}})
+          this.setState({...this.state, serviceState: {...this.state.serviceState, printing: false, status: "print_failed"}})
           break
       default:
         break
@@ -132,7 +133,7 @@ export default class CameraView extends React.Component {
   //   }
   // }
   toggleRecording() {
-    if (this.state.deviceState.recording) {
+    if (this.state.serviceState.recording) {
       PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.stop_recording", this.state.recordSettings])
     } else {
       PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.start_recording", this.state.recordSettings])
@@ -140,7 +141,7 @@ export default class CameraView extends React.Component {
   }
 
   renderDisplay() {
-      if (this.state.deviceState.open) {
+      if (this.state.serviceState.open) {
         let url = this.props.node.apiUrl
         return (
           <Pane display="flex">
@@ -148,7 +149,7 @@ export default class CameraView extends React.Component {
               <img src={`${url}/webcam/${this.props.camera.name}`} />
             </Pane>
             <Pane display="flex" width="100%">
-              <button onClick={this.toggleRecording}>{this.state.deviceState.recording ? "Stop Recording" : "Record"}</button>
+              <button onClick={this.toggleRecording}>{this.state.serviceState.recording ? "Stop Recording" : "Record"}</button>
               <TextInput 
                 name="timelapse" 
                 placeholder="Timelapse in seconds" 
@@ -184,7 +185,7 @@ export default class CameraView extends React.Component {
     // const Component = this.props.component;    
     return (
       <div id="" className="has-navbar-fixed-top" style={{height: '100vh', flex: '1'}}>
-          <Statusbar {...this.props} deviceState={this.state.deviceState}/>
+          <Statusbar {...this.props} serviceState={this.state.serviceState}/>
           {this.renderDisplay()}
       </div>
     );

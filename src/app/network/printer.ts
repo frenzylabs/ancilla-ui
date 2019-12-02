@@ -13,22 +13,44 @@ export const Printer = {
     return CancelToken.source();
   },
 
-  create: (printer) => {
-    return Request.post('/printers', printer)
+  create: (node, printer) => {
+    return Request.post(`${node.apiUrl}/services/printer`, printer)
   },
 
-  list: (options= {}) => {
-      return Request.get('/printers', options)
+  list: (node, options= {}) => {
+      return Request.get(`${node.apiUrl}/services/printer`, options)
+  },
+
+  state: (node, printerService, options= {}) => {
+    return Request.get(`${node.apiUrl}/services/printer/${printerService.id}/state`, options)
   },
 
   ports: () => {
     return Request.get('/ports')
   },
 
-  lastPrint: (node, printer, options = {}) => {
-    options['params'] = {printer_id: printer.id, limit: 1}
-    return Request.get(node.apiUrl + '/prints', options)
-  }
+  prints: (node, printerService, options = {}) => { 
+    return Request.get(`${node.apiUrl}/services/printer/${printerService.id}/prints`, options)
+  },
+
+  lastPrint: (node, printerService, options = {}) => {
+    options['params'] = {limit: 1}
+    return Request.get(`${node.apiUrl}/services/printer/${printerService.id}/prints`, options)
+  },
+
+  connect: (node, printer, options = {}) => {
+    console.log(node)
+    return Request.post(`${node.apiUrl}/services/printer/${printer.id}/connection`, options)
+  },
+
+  disconnect: (node, printerService, options = {}) => {
+    return Request.delete(`${node.apiUrl}/services/printer/${printerService.id}/connection`, options)
+  },
+
+  start_print: (node, printerService, options = {}) => {
+    return Request.post(`${node.apiUrl}/services/printer/${printerService.id}/print`, options)
+  },
+
 }
 
 

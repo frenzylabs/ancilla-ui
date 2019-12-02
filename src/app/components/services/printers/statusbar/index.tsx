@@ -17,7 +17,7 @@ import {
 } from 'evergreen-ui'
 
 import Printers from './printers'
-import Devices  from './devices'
+import Service  from './service'
 
 export default class Statusbar extends React.Component {
   state = {
@@ -28,7 +28,7 @@ export default class Statusbar extends React.Component {
     return (
       <Pane background="#122330" height={42} width="100%" display="flex" paddingLeft={20} paddingRight={20}>
         <Printers {...this.props} />
-        <Devices {...this.props} />
+        <Service {...this.props} />
       </Pane>
     )
   }

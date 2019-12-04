@@ -17,17 +17,15 @@ import {
 import React  from 'react'
 import {
   Nav,
-  SubNav,
-  Statusbar,
-  Summary,
-  Terminal
+  SubNav
 } from '../../components'
 
 import PubSub from 'pubsub-js'
 
 import PrinterIndex 	from '../services/printers/index'
-import CameraView 	from '../services/cameras/index'
-import FilesView 		from '../files'
+import CameraView 	  from '../services/cameras/index'
+import FilesView 		  from '../files'
+import SettingsView   from '../settings'
 
 import { NodeAction } from '../../store/actions/node'
 
@@ -78,6 +76,9 @@ export class NodeView extends React.Component {
 						<Route path="/files" render={ props => {
 							return <FilesView {...this.props} {...props}/>
 						}}/>
+            <Route path="/settings" render={ props => {
+              return <SettingsView {...this.props} {... props}/>
+            }}/>
           </Switch>
           
         </Pane>

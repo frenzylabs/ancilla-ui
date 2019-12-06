@@ -9,7 +9,7 @@
 import axios from 'axios'
 
 export const Request = axios.create({
-  baseURL: 'http://localhost:5000',
+  baseURL: document.location.protocol+ "//" + document.location.hostname + ":5000",
   responseType: 'json',
   headers: {
     'Content-Type'      : 'application/json',

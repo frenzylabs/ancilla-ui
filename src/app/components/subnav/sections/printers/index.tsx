@@ -44,7 +44,8 @@ export class Printers extends React.Component<{node: object, printer: PrinterSta
   componentDidMount() {
     // this.props.listPrinters()
     // this.getPrinters()
-
+      console.log("PINTERs", this.props)
+      window.pr = this
   }
 
   // componentDidUpdate(op, os) {
@@ -74,6 +75,9 @@ export class Printers extends React.Component<{node: object, printer: PrinterSta
       this.setState({
         loading: false
       })
+      console.log("onresponse", this.props.node)
+      console.log("printerresp", response.data.printer)
+      this.props.addPrinter(this.props.node, response.data.printer)
       closeDialog()
       toaster.success(`Printer ${name} has been successfully added`)
     })
@@ -132,7 +136,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    listPrinters: () => dispatch(NodeAction.listPrinters())
+    listPrinters: () => dispatch(NodeAction.listPrinters()),
+    addPrinter: (node, printer) => dispatch(NodeAction.addPrinter(node, printer)),
   }
 }
 

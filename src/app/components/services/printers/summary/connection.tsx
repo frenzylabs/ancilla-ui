@@ -87,7 +87,7 @@ export default class Connection extends React.Component {
   }
 
   cancelPrint() {
-    let cmd = [this.props.service.name, "cancel"]
+    let cmd = [this.props.service.name, "cancel_print"]
     PubSub.publish(this.props.node.name + ".request", cmd)
 
     // this.pubsubToken = PubSub.publish(this.topic, );

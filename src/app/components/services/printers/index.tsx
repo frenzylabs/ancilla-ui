@@ -131,7 +131,7 @@ export default class PrinterIndex extends React.Component {
     var [to, kind] = msg.split("events.")
     // console.log("EVENT KIND", kind)
     switch(kind) {
-      case 'printer.state':
+      case 'printer.state.changed':
           // console.log(data)
           this.props.dispatch(PrinterActions.updateState(this.props.service, data))
           // this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, connected: false}))

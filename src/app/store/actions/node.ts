@@ -72,10 +72,11 @@ export const NodeAction = {
     }
   },
 
-  add_printer: (printer = {}) => {
+  addPrinter: (node, printer_service = {}) => {
     return {
-      type: 'ADD_PRINTER',
-      data: printer
+      type: 'ADDED_PRINTER',
+      node: node,
+      data: printer_service
     }
   },
 

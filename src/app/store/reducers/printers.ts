@@ -100,9 +100,14 @@ export function printerReducer(printerstate: PrinterState, action) {
   case 'PRINTER_RECEIVED_DATA':
     // console.log("PRINTER RECEIVED DATA", action)
     // var logs = printerstate.logs.concat(action.data)
+    var logs = [...printerstate.logs, action.data]
+    if (logs.length > 100) {
+      logs.shift()
+    }
+
     return {
       ...printerstate,
-      logs: [...printerstate.logs, action.data]
+      logs: logs
     }
     
   case 'PRINTER_LIST':

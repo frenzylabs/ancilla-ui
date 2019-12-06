@@ -28,7 +28,7 @@ function getServiceReducer(item) {
 export function nodeReducer(state = initialState.activeNode, action) {
   switch(action.type) {
   case 'RECEIVED_PRINTERS':
-    console.log("INSIDE RECEIVE PRINTERS", action.data)
+    // console.log("INSIDE RECEIVE PRINTERS", action.data)
     // console.log("CURRENT STATE = ", state)    
     // var clone = Object.assign( Object.create( Object.getPrototypeOf(state)), state)
     var printers = action.data.printers.reduce((acc, item) => {
@@ -81,7 +81,6 @@ export function nodeReducer(state = initialState.activeNode, action) {
     // return clone
 
   case 'ADDED_PRINTER':
-    console.log("ADDED PRINTER", action)
     // var dv = state.printers
     // dv[action.data.id] = PrinterState(action.data)
     return {...state, services: [...state.services, PrinterState(action.data)]} 

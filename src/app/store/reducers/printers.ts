@@ -70,7 +70,6 @@ export function PrinterState(model: PrinterServiceModel, state: {} = {}, logs: [
 export function printerReducer(printerstate: PrinterState, action) {
   switch(action.type) {
   case 'PRINTER_PRINT_UPDATED':
-    // console.log("PRINTER RECEIVED PRINT", action)
     return {
       ...printerstate,
       currentPrint: action.data
@@ -101,9 +100,9 @@ export function printerReducer(printerstate: PrinterState, action) {
     // console.log("PRINTER RECEIVED DATA", action)
     // var logs = printerstate.logs.concat(action.data)
     var logs = [...printerstate.logs, action.data]
-    if (logs.length > 100) {
-      logs.shift()
-    }
+    // if (logs.length > 100) {
+    //   logs.shift()
+    // }
 
     return {
       ...printerstate,

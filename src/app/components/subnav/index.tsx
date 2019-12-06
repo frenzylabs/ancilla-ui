@@ -30,8 +30,6 @@ import {
   Files
 } from './sections'
 
-import Toolbar from './toolbar'
-
 export default class SubNav extends React.Component {
 	constructor(props:any) {
 		super(props)
@@ -53,8 +51,6 @@ export default class SubNav extends React.Component {
     return (
       <Pane margin={0} padding={0} height="100%" display="flex" flexDirection="column" background="#425A70">
         <Pane width={180} padding={0} margin={0}>
-          <Toolbar/>
-          
           <br/>
           <Printers {...this.props} />
           <Cameras {...this.props} />

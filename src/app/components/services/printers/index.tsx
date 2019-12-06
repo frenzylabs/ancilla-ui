@@ -190,8 +190,8 @@ export default class PrinterIndex extends React.Component {
           <Switch >                  
               {/* <Route path={`${this.props.match.path}/new`} render={ props =>
                 <PrinterNew {...this.props}  {...props}/> 
-              }/> */}
-              {/* <Route path={`${this.props.match.path}/:printerId/edit`} exact={true} render={ props =>
+              }/> 
+              <Route path={`${this.props.match.path}/:printerId/edit`} exact={true} render={ props =>
                 <PrinterEdit {...this.props}  {...props} /> 
               }/>
               <Route path={`${this.props.match.path}/:printerId`} render={ props =>

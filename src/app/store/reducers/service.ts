@@ -67,9 +67,9 @@ export function serviceReducer(state: ServiceState, action) {
         // console.log("PRINTER RECEIVED DATA", action)
         // var logs = printerstate.logs.concat(action.data)
         var logs = [...state.logs, action.data]
-        if (logs.length > 100) {
-          logs.shift()
-        }
+        // if (logs.length > 100) {
+        //   logs.shift()
+        // }
         return {
           ...state,
           logs: logs

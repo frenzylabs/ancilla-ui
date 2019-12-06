@@ -25,7 +25,14 @@ import { NodeAction } from '../../../../store/actions/node'
 import printer, {default as request} from '../../../../network/printer'
 import { PrinterState }  from '../../../../store/reducers/printers'
 
-export class Printers extends React.Component<{node: object, printer: PrinterState, listPrinters: Function}> {  
+type Props = {
+  node: object,
+  printer: PrinterState,
+  listPrinters: Function,
+  addPrinter: Function
+}
+
+export class Printers extends React.Component<Props> {  
   state = {
     printers: Array<Printer>(),
     showing: false,
@@ -44,8 +51,6 @@ export class Printers extends React.Component<{node: object, printer: PrinterSta
   componentDidMount() {
     // this.props.listPrinters()
     // this.getPrinters()
-      console.log("PINTERs", this.props)
-      window.pr = this
   }
 
   // componentDidUpdate(op, os) {
@@ -75,8 +80,6 @@ export class Printers extends React.Component<{node: object, printer: PrinterSta
       this.setState({
         loading: false
       })
-      console.log("onresponse", this.props.node)
-      console.log("printerresp", response.data.printer)
       this.props.addPrinter(this.props.node, response.data.printer)
       closeDialog()
       toaster.success(`Printer ${name} has been successfully added`)

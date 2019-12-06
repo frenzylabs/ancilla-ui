@@ -130,7 +130,6 @@ export default class PrinterIndex extends React.Component {
     // console.log("PV Received Event here2", data)
     // console.log(typeof(data))
     var [to, kind] = msg.split("events.")
-    // console.log("EVENT KIND", kind)
     switch(kind) {
       case 'printer.state.changed':
           // console.log(data)

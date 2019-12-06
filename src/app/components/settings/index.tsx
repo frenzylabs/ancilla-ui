@@ -17,8 +17,32 @@ import {
 
 export default class SettingsView extends React.Component {
   state = {
-    selected: 1,
-    tabs: ["LayerKeep", "Printer", "Camera"] // replace this with an Object, and get tabs with Object.keys()
+    selected: 0,
+    settings: {
+      "one" : {
+        "one_setting_one" : "value",
+        "one_setting_two" : "value",
+        "one_setting_three" : "value",
+        "one_setting_four" : "value",
+        "one_setting_five" : "value",
+      },
+
+      "two" : {
+        "two_setting_one" : "value",
+        "two_setting_two" : "value",
+        "two_setting_three" : "value",
+        "two_setting_four" : "value",
+        "two_setting_five" : "value",
+      },
+
+      "three" : {
+        "three_setting_one" : "value",
+        "three_setting_two" : "value",
+        "three_setting_three" : "value",
+        "three_setting_four" : "value",
+        "three_setting_five" : "value",
+      },
+    }
   }
 
   constructor(props:any) {
@@ -29,7 +53,7 @@ export default class SettingsView extends React.Component {
   }
 
   renderTabs() {
-    return this.state.tabs.map((tab, index) => (
+    return Object.keys(this.state.settings).map((tab, index) => (
       <SidebarTab 
         key={tab} 
         id={`settings-${tab}`} 
@@ -41,9 +65,13 @@ export default class SettingsView extends React.Component {
   }
 
   renderSections() {
-    return this.state.tabs.map((tab, index) => (
+    return Object.keys(this.state.settings).map((tab, index) => (
       <Pane key={tab} id={`settings-${tab}-content`} display={index === this.state.selected ? 'block' : 'none'}>
-        This is tab content for {tab}
+        {this.state.settings[tab] && (
+          Object.keys(this.state.settings[tab]).map((setting, index) => (
+            <p key={`${setting}-${index}`}>{setting} : {this.state.settings[tab][setting]}</p>
+          ))
+        )}
       </Pane>
     ))
   }

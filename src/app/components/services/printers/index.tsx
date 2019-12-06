@@ -25,6 +25,7 @@ import Summary from './summary/index'
 import Terminal from './terminal'
 import SettingsForm from './settings'
 import PrinterShow from './show'
+import Settings from '../../settings'
 
 import ServiceAttachment from '../attachments/index'
 
@@ -197,9 +198,8 @@ export default class PrinterIndex extends React.Component {
               <Route path={`${this.props.match.path}/:printerId`} render={ props =>
                 <PrinterDetails  {...this.props} {...props} /> 
               }/> */}
-              <Route path={`${this.props.match.path}`} render={ props =>
-                <PrinterShow {...this.props}  {...props} /> 
-              }/>
+              <Route path={`${this.props.match.path}/settings`} render={ props => <Settings {...this.props} {...props} /> }/>
+              <Route path={`${this.props.match.path}`} render={ props => <PrinterShow {...this.props}  {...props} />  }/>
             </Switch>
         </div>
       </div>

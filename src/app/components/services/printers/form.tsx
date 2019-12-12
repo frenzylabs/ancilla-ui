@@ -16,18 +16,20 @@ import {
   toaster
 } from 'evergreen-ui'
 
-
 import printer, {default as request} from '../../../network/printer'
 
-export default class Form extends React.Component<{save:Function, loading:boolean}> {
+export default class Form extends React.Component<{save:Function, data:object, loading:boolean}> {
   state = {
     newPrinter: {
       name:     '',
       port:     '',
       baud_rate: '',
+      model: '',
+      description: '',
       layerkeep_sync: false
     },
     layerkeep_sync: true,
+    loadingPorts: true,
     name:     '',
     port:     '',
     baudrate: '',
@@ -66,16 +68,25 @@ export default class Form extends React.Component<{save:Function, loading:boolea
   }
 
   componentDidMount() {
+    console.log("COMPONENT DID MOUNT", this.props.data)
+    if (this.props.data) {
+      var data = this.props.data || {}
+      this.setState({newPrinter: {...this.state.newPrinter, ...data}})
+    }
     printer.ports()
     .then(res => {
       let ports = res.data['ports'] || []
 
       this.setState({
-        ports: ports
+        ports: ports,
+        loadingPorts: false
       })
     })
     .catch((err) => {
       console.log(err)
+      this.setState({
+        loadingPorts: false
+      })
     })
 
     // this.setState({
@@ -97,19 +108,24 @@ export default class Form extends React.Component<{save:Function, loading:boolea
     // })
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    console.log("COMPONENT DID UPdate", prevProps, prevState)
+  }
+
   save() {
     this.props.save(this.values)
   }
 
   render() {
     return (
-      <Pane>
+      <Pane width={"100%"}>
         <TextInput 
           name="name" 
           placeholder="Printer name" 
           marginBottom={4}  
           width="100%" 
           height={48}
+          value={this.state.newPrinter.name}
           onChange={e => 
             this.setState({
               newPrinter: {
@@ -128,7 +144,9 @@ export default class Form extends React.Component<{save:Function, loading:boolea
           marginBottom={4}  
           width="100%" 
           height={48}
-          isLoading={this.props.loading}
+          isLoading={this.state.loadingPorts}
+          selectedItem={this.state.newPrinter.port}
+          initialSelectedItem={this.state.newPrinter.port}
           disabled={this.state.ports.length < 1}
           onChange={selected => 
             this.setState({
@@ -147,7 +165,8 @@ export default class Form extends React.Component<{save:Function, loading:boolea
           marginTop={4}  
           width="100%" 
           height={48} 
-          initialSelectedItem={this.state.baudrate}
+          selectedItem={this.state.newPrinter.baud_rate}
+          initialSelectedItem={this.state.newPrinter.baud_rate}
           onChange={selected => 
             this.setState({
               newPrinter: {
@@ -165,6 +184,7 @@ export default class Form extends React.Component<{save:Function, loading:boolea
           marginBottom={4}  
           width="100%" 
           height={48}
+          value={this.state.newPrinter.model}
           onChange={e => 
             this.setState({
               newPrinter: {
@@ -183,6 +203,7 @@ export default class Form extends React.Component<{save:Function, loading:boolea
           marginBottom={4}  
           width="100%" 
           height={48}
+          value={this.state.newPrinter.description}
           onChange={e => 
             this.setState({
               newPrinter: {

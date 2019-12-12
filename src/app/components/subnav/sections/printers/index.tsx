@@ -22,6 +22,7 @@ import Tree from '../../../tree'
 import Form from './form'
 import { NodeAction } from '../../../../store/actions/node'
 
+import {Form as AuthForm } from '../../../services/layerkeep/form'
 import printer, {default as request} from '../../../../network/printer'
 import { PrinterState }  from '../../../../store/reducers/printers'
 
@@ -36,7 +37,9 @@ export class Printers extends React.Component<Props> {
   state = {
     printers: Array<Printer>(),
     showing: false,
-    loading: false
+    loading: false,
+    auth_showing: false,
+    printerParams: {}
   }
   form: Form = null
 
@@ -72,7 +75,7 @@ export class Printers extends React.Component<Props> {
       loading: true
     })
 
-
+    var printerParams = this.form.state.newPrinter
     request.create(this.props.node, this.form.state.newPrinter)
     .then((response) => {
       console.log(response)
@@ -87,6 +90,10 @@ export class Printers extends React.Component<Props> {
     .catch((error) => {
       console.log(error)
 
+      if (error.response.status == 401) {
+        console.log("Unauthorized")
+        this.setState({auth_showing: true, showing: false, printerParams: printerParams})
+      }
       let errors = Object.keys(error.response.data.errors).map((key, index) => {
         return  `${key} : ${error.response.data.errors[key]}\n`
       })
@@ -106,6 +113,30 @@ export class Printers extends React.Component<Props> {
     let url = `/printers/${item.id}`
     this.props.history.push(`${url}`);    
   }
+  authenticated(res, closeDialog) {
+    console.log("Authenticated", res)
+    this.setState({auth_showing: false, showing: true})
+    
+  }
+
+  renderDialog() {
+    if (this.state.auth_showing) {
+      return (<Dialog
+          isShown={this.state.auth_showing}
+          title="Login to Layerkeep"
+          confirmLabel="Login"
+          onCloseComplete={() => this.setState({auth_showing: false})}
+          hasFooter={false}
+          
+        >
+          {({ close }) => (
+            <AuthForm onSave={(res) => this.authenticated(res, close) } loading={this.state.loading}/>
+        )}
+
+          
+        </Dialog>)
+    }
+  }
 
   render() {
     let printers = this.props.node.services.filter((item) => item.kind == "printer") //Object.values(this.props.printers)
@@ -120,8 +151,9 @@ export class Printers extends React.Component<Props> {
           onCloseComplete={() => this.toggleDialog(false)}
           onConfirm={this.savePrinter}
         >
-          <Form ref={frm => this.form = frm} save={this.savePrinter} loading={this.state.loading}/>
+          <Form ref={frm => this.form = frm} data={this.state.printerParams} save={this.savePrinter} loading={this.state.loading}/>
         </Dialog>
+        {this.renderDialog()}
 
         <Tree.Node name="Printers" key="printers" children={items} addAction={() => this.toggleDialog(true)} selectItem={this.selectPrinter.bind(this)} />
       </React.Fragment>

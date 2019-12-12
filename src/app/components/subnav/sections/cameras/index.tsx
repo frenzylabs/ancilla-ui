@@ -67,7 +67,7 @@ export class Cameras extends React.Component {
         cameras: cameras
       })
 
-      toaster.success(`File ${f.name} has been successfully added`)
+      toaster.success(`Camera ${f.name} has been successfully added`)
       closeDialog()
     })
     .catch((error) => {

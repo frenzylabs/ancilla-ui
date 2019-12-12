@@ -27,20 +27,18 @@ import ErrorModal from '../../modal/error'
 import Form from './form'
 import { NodeAction } from '../../../store/actions/node'
 import {Form as AuthForm } from '../../services/layerkeep/form'
-import printer, {default as request} from '../../../network/printer'
-import { PrinterState }  from '../../../store/reducers/printers'
+import camera, {default as request} from '../../../network/camera'
+import { CameraState }  from '../../../store/reducers/cameras'
 
 
 type Props = {
   node: object,
-  printer: PrinterState,
-  listPrinters: Function,
-  addPrinter: Function
+  camera: CameraState,
+  addCamera: Function
 }
 
-export class PrinterNew extends React.Component<Props> {  
+export class CameraNew extends React.Component<Props> {  
   state = {
-    printers: Array<Printer>(),
     showing: false,
     loading: false
   }
@@ -73,19 +71,21 @@ export class PrinterNew extends React.Component<Props> {
   }
 
   onSave(response) {
-    console.log("response on save")
-    this.props.addPrinter(this.props.node, response.data.printer) 
+    console.log("response on save", response)
+    this.props.addCamera(this.props.node, response.data.camera) 
+  
   }
 
   onError(error) {
-    if (error.response.status == 401) {
-      console.log("Unauthorized")
-      this.setState({showing: true, loading: false})
-    } else {
+    // if (error.response.status == 401) {
+    //   console.log("Unauthorized")
+    //   this.setState({showing: true, loading: false})
+    // } else {
       // this.setState({requestError: error})
       toaster.danger(<ErrorModal requestError={error} />)
-    }
+    // }
   }
+
 
   authenticated(res) {
     console.log("Authenticated", res)
@@ -93,8 +93,8 @@ export class PrinterNew extends React.Component<Props> {
     
   }
 
-  selectPrinter(item) {
-    let url = `/printers/${item.id}`
+  selectCamera(item) {
+    let url = `/cameras/${item.id}`
     this.props.history.push(`${url}`);    
   }
 
@@ -107,28 +107,19 @@ export class PrinterNew extends React.Component<Props> {
   // }
 
   render() {
-    let printers = this.props.node.services.filter((item) => item.kind == "printer") //Object.values(this.props.printers)
-    let items =  printers.length > 0 ? printers : [{name: "No printers found."}]
+    let cameras = this.props.node.services.filter((item) => item.kind == "camera") //Object.values(this.props.printers)
+    let items =  cameras.length > 0 ? cameras : [{name: "No cameras found."}]
     
     return ( 
       <div>
       <Pane display="flex" is="section" flexDirection="column" padding={16} background="tint2" borderRadius={3}>
         <Pane flex={1} alignItems="center" display="flex">
-          <Heading >Add Printer</Heading>
+          <Heading >Add Camera</Heading>
         </Pane>
         <Pane flex={1} alignItems="center" display="flex">
           <Form ref={frm => this.form = frm} node={this.props.node} onSave={this.onSave} onError={this.onError}/>        
         </Pane>
       </Pane>
-        
-      <Modal
-          component={AuthForm}
-          node={this.props.node}
-          // requestError={this.state.requestError}
-          isActive={this.state.showing}
-          dismissAction={this.authenticated.bind(this)}
-          onAuthenticated={this.authenticated.bind(this)}
-        />
       </div>
     )
   }
@@ -144,11 +135,11 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    addPrinter: (node, printer) => dispatch(NodeAction.addPrinter(node, printer)),
+    addCamera: (node, camera) => dispatch(NodeAction.addCamera(node, camera)),
   }
 }
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(PrinterNew)
+export default connect(mapStateToProps, mapDispatchToProps)(CameraNew)
 
 // export default PrinterNew

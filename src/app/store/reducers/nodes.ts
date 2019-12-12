@@ -100,6 +100,11 @@ export function nodeReducer(state = initialState.activeNode, action) {
     // var dv = state.printers
     // dv[action.data.id] = PrinterState(action.data)
     return {...state, services: [...state.services, PrinterState(action.data)]} 
+  case 'ADDED_CAMERA':
+    console.log("ADDED CAMERA", action.data)
+      // var dv = state.printers
+      // dv[action.data.id] = PrinterState(action.data)
+      return {...state, services: [...state.services, CameraState(action.data)]} 
     
   case 'CONNECT_DEVICE':
     return {
@@ -116,7 +121,16 @@ export function nodeReducer(state = initialState.activeNode, action) {
       return item
     })
     return {...state, services: services}
-    // return {...state, services: [...state.services, PrinterState(action.data)]} 
+  }
+  case 'CAMERA_UPDATED': {
+    var services = state.services.map((item) => {
+      if (item.id == action.data.id) {
+        var st = CameraState(action.data)
+        return {...item, ...st}
+      }
+      return item
+    })
+    return {...state, services: services}
   }
   default: {
     if (action.type.startsWith("SERVICE")) {

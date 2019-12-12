@@ -28,8 +28,7 @@ import { PrinterState }  from '../../../../store/reducers/printers'
 type Props = {
   node: object,
   printer: PrinterState,
-  listPrinters: Function,
-  addPrinter: Function
+  listPrinters: Function
 }
 
 export class Printers extends React.Component<Props> {  
@@ -140,8 +139,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    listPrinters: () => dispatch(NodeAction.listPrinters()),
-    addPrinter: (node, printer) => dispatch(NodeAction.addPrinter(node, printer)),
+    listPrinters: () => dispatch(NodeAction.listPrinters())
   }
 }
 

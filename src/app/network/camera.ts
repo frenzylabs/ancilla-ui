@@ -14,8 +14,12 @@ export const Camera = {
     return CancelToken.source();
   },
 
-  create: (camera) => {
-    return Request.post('/services/camera', camera)
+  create: (node, camera) => {
+    return Request.post(`${node.apiUrl}/services/camera`, camera)
+  },
+
+  update: (node, id, camera) => {
+    return Request.patch(`${node.apiUrl}/services/camera/${id}/`, camera)
   },
 
   list: (options= {}) => {

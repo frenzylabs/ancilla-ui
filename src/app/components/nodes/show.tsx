@@ -25,6 +25,7 @@ import PubSub from 'pubsub-js'
 import PrinterIndex 	from '../services/printers/index'
 import PrinterNew 	  from '../services/printers/new'
 import CameraView 	  from '../services/cameras/index'
+import CameraNew 	  from '../services/cameras/new'
 import FilesView 		  from '../files'
 import SettingsView   from '../settings'
 
@@ -58,6 +59,7 @@ export class NodeView extends React.Component {
 
         <Pane background='#f6f6f6' width="100%" display="flex" flexDirection="column">
           <Switch>
+          <Route path={`/:service(cameras)/new`} render={ props => <CameraNew {...this.props} {...props} /> }/>
             <Route path={`/:service(printers)/new`} render={ props => <PrinterNew {...this.props} {...props} /> }/>
             <Route path={`/:service(printers)/:serviceId`}  render={ props => {
                 var service = this.props.node.services.find((item) => item.id == parseInt(props.match.params.serviceId));

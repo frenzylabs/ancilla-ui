@@ -19,7 +19,14 @@ import {
 
 import printer, {default as request} from '../../../network/printer'
 
-export default class Form extends React.Component<{save:Function, data:object, onSave: Function, onError: Function}> {
+type Props = {
+  save:Function, 
+  data: Object, 
+  onSave: Function, 
+  onError: Function
+}
+
+export default class Form extends React.Component<Props> {
   state = {
     newPrinter: {
       name:     '',
@@ -128,19 +135,13 @@ export default class Form extends React.Component<{save:Function, data:object, o
       if (this.props.onSave) {
         this.props.onSave(response)
       }
-      // this.props.addPrinter(this.props.node, response.data.printer)
-      toaster.success(`Printer ${name} has been successfully added`)
+      toaster.success(`Printer ${name} has been successfully saved`)
     })
     .catch((error) => {
       console.log(error)
       if (this.props.onError) {
         this.props.onError(error)
       }
-      
-      // if (error.response.status == 401) {
-      //   console.log("Unauthorized")
-      //   this.setState({showing: true, loading: false})
-      // }
       else {
         var errors = [""]
         if (error.response.data && error.response.data.errors) {

@@ -11,12 +11,31 @@ import React from 'react'
 import {
   Pane,
   TextInput,
-  Button
+  Button,
+  toaster
 } from 'evergreen-ui'
 
 
+// import {
+//   Pane,
+//   TextInput,
+//   Combobox,
+//   Checkbox,
+//   Button,
+//   toaster
+// } from 'evergreen-ui'
 
-export default class Form extends React.Component<{save:Function, loading:boolean}> {
+import {default as request} from '../../../network/camera'
+
+
+type Props = {
+  save:Function, 
+  data: Object, 
+  onSave: Function, 
+  onError: Function
+}
+
+export default class Form extends React.Component<{Props}> {
   state = {
     newCamera: {
       name:     '',
@@ -24,11 +43,83 @@ export default class Form extends React.Component<{save:Function, loading:boolea
     }    
   }
 
-  componentDidMount() {  
+  constructor(props:any) {
+    super(props)
+
+    this.save = this.save.bind(this)
+    this.saveCamera = this.saveCamera.bind(this)
+  }
+
+  componentDidMount() {
+    if (this.props.data) {
+      var data = this.props.data.model || {}      
+      this.setState({newCamera: {...this.state.newCamera, ...data}})
+    }
+  }
+
+  saveCamera() {
+
+    this.setState({
+      ...this.state,
+      loading: true
+    })
+
+    var req;
+    if (this.props.data && this.props.data.id) {
+      req = request.update(this.props.node, this.props.data.id, this.state.newCamera)
+    } else {
+      req = request.create(this.props.node, this.state.newCamera)
+    }
+
+    req.then((response) => {
+      console.log(response)
+
+      this.setState({
+        loading: false
+      })
+      if (this.props.onSave) {
+        this.props.onSave(response)
+      }
+      // this.props.addPrinter(this.props.node, response.data.printer)
+      toaster.success(`Camera ${name} has been successfully saved`)
+    })
+    .catch((error) => {
+      console.log(error)
+      if (this.props.onError) {
+        this.props.onError(error)
+      }
+      
+      // if (error.response.status == 401) {
+      //   console.log("Unauthorized")
+      //   this.setState({showing: true, loading: false})
+      // }
+      else {
+        var errors = [""]
+        if (error.response.data && error.response.data.errors) {
+            errors = Object.keys(error.response.data.errors).map((key, index) => {
+              return  `${key} : ${error.response.data.errors[key]}\n`
+            })
+        }
+
+        toaster.danger(
+          `Unable to save camera ${name}`, 
+          {description: errors}
+        )
+      }
+      this.setState({
+        loading: false
+      })
+    })
   }
 
   save() {
-    this.props.save(this.values)
+    if(this.props.save  == undefined) {
+      // alert("No save function given")
+      this.saveCamera()
+      // return
+    } else {
+      this.props.save(this.values)
+    }
   }
 
   render() {
@@ -37,6 +128,7 @@ export default class Form extends React.Component<{save:Function, loading:boolea
         <TextInput 
           name="name" 
           placeholder="Camera name" 
+          value={this.state.newCamera.name}
           marginBottom={4}  
           width="100%" 
           height={48}
@@ -52,6 +144,7 @@ export default class Form extends React.Component<{save:Function, loading:boolea
         <TextInput 
           name="url" 
           placeholder="Camera endpoint" 
+          value={this.state.newCamera.endpoint}
           marginBottom={4}  
           width="100%" 
           height={48}
@@ -66,9 +159,7 @@ export default class Form extends React.Component<{save:Function, loading:boolea
         />
 
         <Pane display="flex" marginTop={20}>
-          <Pane display="flex" flex={1}>
-          </Pane>
-          
+
           <Pane paddingTop={6}>
             <Button appearance="primary" onClick={this.save}>Save</Button>
           </Pane>

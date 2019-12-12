@@ -66,7 +66,7 @@ export default class SettingsView extends React.Component {
 
   renderSections() {
     return Object.keys(this.state.settings).map((tab, index) => (
-      <Pane key={tab} id={`settings-${tab}-content`} display={index === this.state.selected ? 'block' : 'none'}>
+      <Pane key={tab} id={`settings-${tab}-content`} display={index === this.state.selected ? 'block' : 'block'}>
         {this.state.settings[tab] && (
           Object.keys(this.state.settings[tab]).map((setting, index) => (
             <p key={`${setting}-${index}`}>{setting} : {this.state.settings[tab][setting]}</p>
@@ -88,7 +88,9 @@ export default class SettingsView extends React.Component {
             </Tablist>
           </Pane>
 
-          <Pane display="flex" flex={1} marginLeft={8}>
+          
+
+          <Pane marginLeft={8}>
             {this.renderSections()}
           </Pane>
         </Pane>

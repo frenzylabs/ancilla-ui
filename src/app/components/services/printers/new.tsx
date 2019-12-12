@@ -23,6 +23,7 @@ import {
 } from '../../../models'
 
 import Modal from '../../modal/index'
+import ErrorModal from '../../modal/error'
 import Form from './form'
 import { NodeAction } from '../../../store/actions/node'
 import {Form as AuthForm } from '../../services/layerkeep/form'
@@ -49,7 +50,9 @@ export class PrinterNew extends React.Component<Props> {
     super(props)    
 
     this.toggleDialog = this.toggleDialog.bind(this)
-    this.savePrinter  = this.savePrinter.bind(this)
+    // this.savePrinter  = this.savePrinter.bind(this)
+    this.onSave       = this.onSave.bind(this)
+    this.onError      = this.onError.bind(this)
     // this.getPrinters  = this.getPrinters.bind(this)
   }
 
@@ -70,7 +73,22 @@ export class PrinterNew extends React.Component<Props> {
     })
   }
 
-  savePrinter(closeDialog) {
+  onSave(response) {
+    console.log("response on save")
+    this.props.addPrinter(this.props.node, response.data.printer) 
+  }
+
+  onError(error) {
+    if (error.response.status == 401) {
+      console.log("Unauthorized")
+      this.setState({showing: true, loading: false})
+    } else {
+      // this.setState({requestError: error})
+      toaster.danger(<ErrorModal requestError={error} />)
+    }
+  }
+
+  savePrinter() {
 
     this.setState({
       ...this.state,
@@ -86,7 +104,6 @@ export class PrinterNew extends React.Component<Props> {
         loading: false
       })
       this.props.addPrinter(this.props.node, response.data.printer)
-      closeDialog()
       toaster.success(`Printer ${name} has been successfully added`)
     })
     .catch((error) => {
@@ -127,22 +144,11 @@ export class PrinterNew extends React.Component<Props> {
     this.props.history.push(`${url}`);    
   }
 
-  // renderDialog() {
-  //   if (this.state.showing) {
-  //     return (<Dialog
-  //         isShown={this.state.showing}
-  //         title="Login to Layerkeep"
-  //         confirmLabel="Login"
-  //         onCloseComplete={() => this.setState({showing: false})}
-  //         hasFooter={false}
-          
-  //       >
-  //         {({ close }) => (
-  //           <AuthForm onSave={(res) => this.authenticated(res, close) } loading={this.state.loading}/>
-  //       )}
-
-          
-  //       </Dialog>)
+  // renderError() {
+  //   if (this.state.requestError) {
+  //     return (<Pane background="redTint" border marginBottom={10} padding={10}>
+  //       <ErrorModal requestError={this.state.requestError} />
+  //     </Pane>)
   //   }
   // }
 
@@ -157,12 +163,7 @@ export class PrinterNew extends React.Component<Props> {
           <Heading >Add Printer</Heading>
         </Pane>
         <Pane flex={1} alignItems="center" display="flex">
-          <Form ref={frm => this.form = frm} save={this.savePrinter} loading={this.state.loading}/>        
-        </Pane>
-        <Pane>
-          {/* Below you can see the marginRight property on a Button. */}
-          {/* <Button marginRight={16} >Button</Button> */}
-          <Button appearance="primary" onClick={() => this.savePrinter()}>Save</Button>
+          <Form ref={frm => this.form = frm} node={this.props.node} onSave={this.onSave} onError={this.onError}/>        
         </Pane>
       </Pane>
         

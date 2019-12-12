@@ -19,7 +19,6 @@ import {
 } from '../../../../models'
 
 import Tree from '../../../tree'
-import Form from './form'
 import { NodeAction } from '../../../../store/actions/node'
 
 import {Form as AuthForm } from '../../../services/layerkeep/form'

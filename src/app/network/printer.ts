@@ -17,6 +17,10 @@ export const Printer = {
     return Request.post(`${node.apiUrl}/services/printer`, printer)
   },
 
+  update: (node, id, printer) => {
+    return Request.patch(`${node.apiUrl}/services/printer/${id}/`, printer)
+  },
+
   list: (node, options= {}) => {
       return Request.get(`${node.apiUrl}/services/printer`, options)
   },

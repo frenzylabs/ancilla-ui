@@ -196,8 +196,7 @@ export default class PrinterShow extends React.Component {
   render() {
     // const Component = this.props.component;    
     return (
-      <div id="" className="has-navbar-fixed-top" style={{height: '100vh', flex: "1 auto", overflow: 'scroll'}}>
-          <Statusbar {...this.props} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
+      <div>
           <Summary {...this.props}  />
           <ServiceAttachment {...this.props} device={this.props.service && this.props.service.model}/>
           <Terminal {...this.props}  />

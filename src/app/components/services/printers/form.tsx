@@ -13,12 +13,13 @@ import {
   TextInput,
   Combobox,
   Checkbox,
+  Button,
   toaster
 } from 'evergreen-ui'
 
 import printer, {default as request} from '../../../network/printer'
 
-export default class Form extends React.Component<{save:Function, data:object, loading:boolean}> {
+export default class Form extends React.Component<{save:Function, data:object, onSave: Function, onError: Function}> {
   state = {
     newPrinter: {
       name:     '',
@@ -28,8 +29,8 @@ export default class Form extends React.Component<{save:Function, data:object, l
       description: '',
       layerkeep_sync: false
     },
-    layerkeep_sync: true,
     loadingPorts: true,
+    loading: false,
     name:     '',
     port:     '',
     baudrate: '',
@@ -55,8 +56,15 @@ export default class Form extends React.Component<{save:Function, data:object, l
       '28800',
       '19200',
       '14400',
-      '9600' 
+      '9600'     
     ]
+  }
+
+  constructor(props:any) {
+    super(props)
+
+    this.save = this.save.bind(this)
+    this.savePrinter = this.savePrinter.bind(this)
   }
 
   get values():{name?:string, port:string, baudrate:string} {
@@ -68,9 +76,12 @@ export default class Form extends React.Component<{save:Function, data:object, l
   }
 
   componentDidMount() {
-    console.log("COMPONENT DID MOUNT", this.props.data)
     if (this.props.data) {
-      var data = this.props.data || {}
+      var data = this.props.data.model || {}
+      
+      if (data.layerkeep_id) {
+        data.layerkeep_sync = true
+      }
       this.setState({newPrinter: {...this.state.newPrinter, ...data}})
     }
     printer.ports()
@@ -89,31 +100,74 @@ export default class Form extends React.Component<{save:Function, data:object, l
       })
     })
 
-    // this.setState({
-    //   printers: this.props.printers.data['printers'].map((printer) => {
-    //     return {name: printer.name, port: printer.port, id: printer.id}
-    //   })
-    // })
-
-    // printer.list(this.props.)
-    // .then(res => {
-    //   this.setState({
-    //     printers: res.data['printers'].map((printer) => {
-    //       return {name: printer.name, port: printer.port, id: printer.id}
-    //     })
-    //   })
-    // })
-    // .catch((err) => {
-    //   toaster.danger(err)
-    // })
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    console.log("COMPONENT DID UPdate", prevProps, prevState)
+  // componentDidUpdate(prevProps, prevState) {
+  //   console.log("COMPONENT DID UPdate", prevProps, prevState)
+  // }
+  savePrinter() {
+
+    this.setState({
+      ...this.state,
+      loading: true
+    })
+
+    var req;
+    if (this.props.data && this.props.data.id) {
+      req = request.update(this.props.node, this.props.data.id, this.state.newPrinter)
+    } else {
+      req = request.create(this.props.node, this.state.newPrinter)
+    }
+
+    req.then((response) => {
+      console.log(response)
+
+      this.setState({
+        loading: false
+      })
+      if (this.props.onSave) {
+        this.props.onSave(response)
+      }
+      // this.props.addPrinter(this.props.node, response.data.printer)
+      toaster.success(`Printer ${name} has been successfully added`)
+    })
+    .catch((error) => {
+      console.log(error)
+      if (this.props.onError) {
+        this.props.onError(error)
+      }
+      
+      // if (error.response.status == 401) {
+      //   console.log("Unauthorized")
+      //   this.setState({showing: true, loading: false})
+      // }
+      else {
+        var errors = [""]
+        if (error.response.data && error.response.data.errors) {
+            errors = Object.keys(error.response.data.errors).map((key, index) => {
+              return  `${key} : ${error.response.data.errors[key]}\n`
+            })
+        }
+
+        toaster.danger(
+          `Unable to save printer ${name}`, 
+          {description: errors}
+        )
+      }
+      this.setState({
+        loading: false
+      })
+    })
   }
 
   save() {
-    this.props.save(this.values)
+    if(this.props.save  == undefined) {
+      // alert("No save function given")
+      this.savePrinter()
+      // return
+    } else {
+      this.props.save(this.values)
+    }
   }
 
   render() {
@@ -160,9 +214,10 @@ export default class Form extends React.Component<{save:Function, data:object, l
 
         <Combobox 
           openOnFocus 
-          items={this.state.baudrates} 
+          items={this.state.baudrates}
           placeholder="Baudrate" 
-          marginTop={4}  
+          marginTop={4} 
+          marginBottom={4}  
           width="100%" 
           height={48} 
           selectedItem={this.state.newPrinter.baud_rate}
@@ -181,6 +236,7 @@ export default class Form extends React.Component<{save:Function, data:object, l
         <TextInput 
           name="model" 
           placeholder="Model Name (optional)" 
+          marginTop={4} 
           marginBottom={4}  
           width="100%" 
           height={48}
@@ -200,6 +256,7 @@ export default class Form extends React.Component<{save:Function, data:object, l
         <TextInput 
           name="description" 
           placeholder="Description (optional)" 
+          marginTop={4} 
           marginBottom={4}  
           width="100%" 
           height={48}
@@ -214,18 +271,25 @@ export default class Form extends React.Component<{save:Function, data:object, l
           }
         />
 
-        <Checkbox
-          label="Create On LayerKeep"
-          checked={this.state.newPrinter.layerkeep_sync}
-          onChange={e => 
-            this.setState({
-              newPrinter: {
-                ...this.state.newPrinter,
-                layerkeep_sync: e.target.checked
+        <Pane display="flex" marginTop={20}>
+          <Pane display="flex" flex={1}>
+            <Checkbox
+              label="Sync On LayerKeep"
+              checked={this.state.newPrinter.layerkeep_sync}
+              onChange={e => 
+                this.setState({
+                  newPrinter: {
+                    ...this.state.newPrinter,
+                    layerkeep_sync: e.target.checked
+                  }
+                })
               }
-            })
-          }
-        />
+            />
+          </Pane>
+        </Pane>
+        <Pane paddingTop={6}>
+            <Button isLoading={this.state.loading} appearance="primary" onClick={this.save}>Save</Button>
+          </Pane>
       </Pane>
     )
   }

@@ -1,36 +1,35 @@
+//
+//  index.tsx
+//  ancilla
+// 
+//  Created by Wess Cope (wess@frenzylabs.com) on 12/06/19
+//  Copyright 2019 FrenzyLabs, LLC.
+//
+
+import React      from 'react'
 import {connect}  from 'react-redux'
 
 import {
   Switch,
   Route,
-  withRouter,
-  matchPath
 } from 'react-router-dom'
-
-import SplitPane from 'react-split-pane'
 
 import {
   Pane,
-  Dialog
+  Dialog,
+  Heading,
+  Button,
+  toaster
 } from 'evergreen-ui'
 
-import React  from 'react'
-// import {
-//   Nav,
-//   SubNav
-// } from '../../'
 
-import Statusbar from './statusbar'
-import Summary from './summary/index'
-import Terminal from './terminal'
-import SettingsForm from './settings'
-import PrinterShow from './show'
-import PrinterNew from './new'
-import Settings from '../../settings'
 
-import ServiceAttachment from '../attachments/index'
-
+import Statusbar      from '../statusbar'
+import PrinterShow    from './show'
+import Settings       from '../../settings'
 import PrinterActions from '../../../store/actions/printers'
+import PrinterForm    from './form'
+import ErrorModal     from '../../modal/error'
 
 import PubSub from 'pubsub-js'
 
@@ -50,9 +49,6 @@ export default class PrinterIndex extends React.Component {
     this.receiveEvent    = this.receiveEvent.bind(this)
     this.setupPrinter    = this.setupPrinter.bind(this)
     this.getPrint        = this.getPrint.bind(this)
-
-    
-    
   }
 
   componentDidMount() {
@@ -163,32 +159,29 @@ export default class PrinterIndex extends React.Component {
     }    
   }
 
+  printerSave(resp) {
+    console.log("printer saved", resp)
+  }
 
-  // renderSettings() {
-  //   return (
-	// 		<React.Fragment>
-	// 			<Dialog
-  //         isShown={this.state.showing}
-  //         title="Attach Service"
-  //         confirmLabel="Save"
-  //         onCloseComplete={() => this.toggleDialog(false)}
-  //         onConfirm={this.saveAttachment}
-  //       >              
-  //         <SettingsForm ref={frm => this.form = frm} {...this.props} />
-  //       </Dialog>
+  saveFailed(error) {
+    console.log("save failed", error)
+    // if (error.response.status == 401) {
+    //   console.log("Unauthorized")
+    //   this.setState({showing: true, loading: false})
+    // } else {
+    // this.setState({requestError: error})
+    toaster.danger(<ErrorModal requestError={error} />)
+    // }
+  }
 
-	// 			<IconButton appearance='minimal' icon="add" onClick={(e) => this.setState({showing: true})}/>
-	// 		</React.Fragment>
-	// 	)
-  // }
-
-    
   render() {
     var params = this.props.match.params;
     return (
       <div className="flex-wrapper">
+        <Statusbar {...this.props} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
+
         <div>
-          <Switch >                  
+          <Switch>                  
               {/* <Route path={`${this.props.match.path}/new`} render={ props =>
                 <PrinterNew {...this.props}  {...props}/> 
               }/> 
@@ -197,9 +190,14 @@ export default class PrinterIndex extends React.Component {
               }/>
               <Route path={`${this.props.match.path}/:printerId`} render={ props =>
                 <PrinterDetails  {...this.props} {...props} /> 
-              }/> */}              
-              <Route path={`${this.props.match.path}/settings`} render={ props => <Settings {...this.props} {...props} /> }/>
-              <Route path={`${this.props.match.path}`} render={ props => <PrinterShow {...this.props}  {...props} />  }/>
+              }/> */}
+              <Route path={`${this.props.match.path}/settings`} render={ props => 
+                <Settings {...this.props} {...props} forms={[<PrinterForm onSave={this.printerSave.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props}/>]} /> 
+              }/>
+
+              <Route path={`${this.props.match.path}`} render={ props => 
+                <PrinterShow {...this.props}  {...props} />  
+              }/>
             </Switch>
         </div>
       </div>

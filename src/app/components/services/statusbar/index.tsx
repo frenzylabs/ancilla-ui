@@ -25,13 +25,12 @@ export default class Statusbar extends React.Component {
         appearance="minimal" 
         className="statusBarButton"
         onClick={target}
+        marginTop={5}
       />
     )
   }
 
   render() {
-    console.log(":: ", this.props)
-
     return (
       <Pane background="#122330" height={42} width="100%" display="flex" paddingLeft={20} paddingRight={20}>
         <Pane flex={1} alignItems="center" display="flex">

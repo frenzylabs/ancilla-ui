@@ -58,9 +58,11 @@ export default class SettingsView extends React.Component {
           {this.renderForms()}
         </Pane>
 
-        <Pane display="flex" flexDirection="column" borderTop marginTop={10} paddingTop={10}>
+        {this.props.service.model.setting && (
+          <Pane display="flex" flexDirection="column" borderTop marginTop={10} paddingTop={10}>
             {this.renderSections()}
-        </Pane>
+          </Pane>
+        )}
       </Pane>
     )
   }

@@ -1,5 +1,5 @@
 //
-//  index.tsx
+//  show.tsx
 //  ancilla
 // 
 //  Created by Wess Cope (wess@frenzylabs.com) on 12/12/19
@@ -7,11 +7,7 @@
 //
 
 import React      from 'react'
-
-import {
-  Switch,
-  Route,
-} from 'react-router-dom'
+import {connect}  from 'react-redux'
 
 import {
   Pane,
@@ -21,13 +17,10 @@ import {
 import PubSub from 'pubsub-js'
 
 import Statusbar      from '../statusbar'
-import ShowView       from './show'
-import CameraForm     from './form'
-import Settings       from '../../settings'
 import ServiceActions from '../../../store/actions/services'
 import CameraHandler  from '../../../network/camera'
 
-export default class CameraView extends React.Component<{node: object, service: object}> {
+export default class ShowView extends React.Component<{node: object, service: object}> {
   constructor(props:any) {
     super(props)
 
@@ -43,10 +36,10 @@ export default class CameraView extends React.Component<{node: object, service: 
       }
     }
 
-    this.receiveRequest = this.receiveRequest.bind(this)
-    this.receiveEvent     = this.receiveEvent.bind(this)
-    this.setupCamera      = this.setupCamera.bind(this)
-    this.toggleRecording  = this.toggleRecording.bind(this)
+    this.receiveRequest  = this.receiveRequest.bind(this)
+    this.receiveEvent    = this.receiveEvent.bind(this)
+    this.setupCamera    = this.setupCamera.bind(this)
+    this.toggleRecording = this.toggleRecording.bind(this)
 
     this.setupCamera()
     
@@ -190,23 +183,11 @@ export default class CameraView extends React.Component<{node: object, service: 
   }
 
   render() {
-    var params = this.props.match.params;
+    // const Component = this.props.component;    
     return (
-      <div className="flex-wrapper">
-        <Statusbar {...this.props} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
-
-        <div>
-          <Switch>                  
-              <Route path={`${this.props.match.path}/settings`} render={ props => 
-                <Settings {...this.props} {...props} forms={[<CameraForm/>]}/> 
-              }/>
-
-              <Route path={`${this.props.match.path}`} render={ props => 
-                <ShowView {...this.props}  {...props} />  
-              }/>
-            </Switch>
-        </div>
+      <div id="" className="has-navbar-fixed-top" style={{height: '100vh', flex: '1'}}>
+          {this.renderDisplay()}
       </div>
     );
-  }
+ }
 }

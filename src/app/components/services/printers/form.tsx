@@ -72,14 +72,12 @@ export default class Form extends React.Component<{save:Function, loading:boolea
   }
 
   componentDidMount() {
-    console.log("#####: ", this.props)
-    
     printer.ports()
     .then(res => {
       let ports = res.data['ports'] || []
 
       this.setState({
-        ports: ports
+        ports: ports,
       })
     })
     .catch((err) => {

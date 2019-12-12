@@ -49,7 +49,7 @@ export class NodeView extends React.Component {
 
   render() {
     return (
-      <Pane display="flex" flex={1} height="100%" style={{overflow: 'scroll'}}>
+      <Pane display="flex" flex={1}>
         <Pane display="flex" flex={0}>
           <Nav/>
           <SubNav {...this.props} />
@@ -76,9 +76,6 @@ export class NodeView extends React.Component {
 						<Route path="/files" render={ props => {
 							return <FilesView {...this.props} {...props}/>
 						}}/>
-            <Route path="/settings" render={ props => {
-              return <SettingsView {...this.props} {... props}/>
-            }}/>
           </Switch>
           
         </Pane>

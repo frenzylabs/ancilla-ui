@@ -13,7 +13,7 @@ import {
   TextInput,
   Combobox,
   Checkbox,
-  toaster
+  Button
 } from 'evergreen-ui'
 
 
@@ -53,8 +53,14 @@ export default class Form extends React.Component<{save:Function, loading:boolea
       '28800',
       '19200',
       '14400',
-      '9600' 
+      '9600'     
     ]
+  }
+
+  constructor(props:any) {
+    super(props)
+
+    this.save = this.save.bind(this)
   }
 
   get values():{name?:string, port:string, baudrate:string} {
@@ -66,6 +72,8 @@ export default class Form extends React.Component<{save:Function, loading:boolea
   }
 
   componentDidMount() {
+    console.log("#####: ", this.props)
+    
     printer.ports()
     .then(res => {
       let ports = res.data['ports'] || []
@@ -78,26 +86,14 @@ export default class Form extends React.Component<{save:Function, loading:boolea
       console.log(err)
     })
 
-    // this.setState({
-    //   printers: this.props.printers.data['printers'].map((printer) => {
-    //     return {name: printer.name, port: printer.port, id: printer.id}
-    //   })
-    // })
-
-    // printer.list(this.props.)
-    // .then(res => {
-    //   this.setState({
-    //     printers: res.data['printers'].map((printer) => {
-    //       return {name: printer.name, port: printer.port, id: printer.id}
-    //     })
-    //   })
-    // })
-    // .catch((err) => {
-    //   toaster.danger(err)
-    // })
   }
 
   save() {
+    if(this.props.save  == undefined) {
+      alert("No save function given")
+      return
+    }
+
     this.props.save(this.values)
   }
 
@@ -106,6 +102,7 @@ export default class Form extends React.Component<{save:Function, loading:boolea
       <Pane>
         <TextInput 
           name="name" 
+          value={this.props.service.model.name || ""}
           placeholder="Printer name" 
           marginBottom={4}  
           width="100%" 
@@ -123,6 +120,7 @@ export default class Form extends React.Component<{save:Function, loading:boolea
         <Combobox 
           openOnFocus 
           items={this.state.ports} 
+          initialSelectedItem={this.props.service.model.model.port}
           placeholder={this.state.ports.length > 0? "Ports" : "No ports found"} 
           marginTop={4} 
           marginBottom={4}  
@@ -143,11 +141,12 @@ export default class Form extends React.Component<{save:Function, loading:boolea
         <Combobox 
           openOnFocus 
           items={this.state.baudrates} 
+          initialSelectedItem={this.props.service.model.model.baud_rate}
           placeholder="Baudrate" 
-          marginTop={4}  
+          marginTop={4} 
+          marginBottom={4}  
           width="100%" 
           height={48} 
-          initialSelectedItem={this.state.baudrate}
           onChange={selected => 
             this.setState({
               newPrinter: {
@@ -161,7 +160,9 @@ export default class Form extends React.Component<{save:Function, loading:boolea
         <div>
         <TextInput 
           name="model" 
+          value={this.props.service.model.model.model || ""}
           placeholder="Model Name (optional)" 
+          marginTop={4} 
           marginBottom={4}  
           width="100%" 
           height={48}
@@ -179,7 +180,9 @@ export default class Form extends React.Component<{save:Function, loading:boolea
 
         <TextInput 
           name="description" 
+          value={this.props.service.model.model.description || ""}
           placeholder="Description (optional)" 
+          marginTop={4} 
           marginBottom={4}  
           width="100%" 
           height={48}
@@ -193,18 +196,26 @@ export default class Form extends React.Component<{save:Function, loading:boolea
           }
         />
 
-        <Checkbox
-          label="Create On LayerKeep"
-          checked={this.state.newPrinter.layerkeep_sync}
-          onChange={e => 
-            this.setState({
-              newPrinter: {
-                ...this.state.newPrinter,
-                layerkeep_sync: e.target.checked
+        <Pane display="flex" marginTop={20}>
+          <Pane display="flex" flex={1}>
+            <Checkbox
+              label="Sync On LayerKeep"
+              checked={this.state.newPrinter.layerkeep_sync}
+              onChange={e => 
+                this.setState({
+                  newPrinter: {
+                    ...this.state.newPrinter,
+                    layerkeep_sync: e.target.checked
+                  }
+                })
               }
-            })
-          }
-        />
+            />
+          </Pane>
+          
+          <Pane paddingTop={6}>
+            <Button appearance="primary" onClick={this.save}>Save</Button>
+          </Pane>
+        </Pane>
       </Pane>
     )
   }

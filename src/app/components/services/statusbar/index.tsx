@@ -25,6 +25,7 @@ export default class Statusbar extends React.Component {
         appearance="minimal" 
         className="statusBarButton"
         onClick={target}
+        marginTop={5}
       />
     )
   }

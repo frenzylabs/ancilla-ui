@@ -17,58 +17,21 @@ import {
 
 export default class SettingsView extends React.Component {
   state = {
-    selected: 0,
-    settings: {
-      "one" : {
-        "one_setting_one" : "value",
-        "one_setting_two" : "value",
-        "one_setting_three" : "value",
-        "one_setting_four" : "value",
-        "one_setting_five" : "value",
-      },
-
-      "two" : {
-        "two_setting_one" : "value",
-        "two_setting_two" : "value",
-        "two_setting_three" : "value",
-        "two_setting_four" : "value",
-        "two_setting_five" : "value",
-      },
-
-      "three" : {
-        "three_setting_one" : "value",
-        "three_setting_two" : "value",
-        "three_setting_three" : "value",
-        "three_setting_four" : "value",
-        "three_setting_five" : "value",
-      },
-    }
   }
 
   constructor(props:any) {
     super(props)
 
-    this.renderTabs     = this.renderTabs.bind(this)
     this.renderSections = this.renderSections.bind(this)
-  }
-
-  renderTabs() {
-    return Object.keys(this.state.settings).map((tab, index) => (
-      <SidebarTab 
-        key={tab} 
-        id={`settings-${tab}`} 
-        isSelected={index === this.state.selected}
-        onSelect={() => this.setState({selected: index})}>
-          {tab}
-      </SidebarTab>
-    ))
+    this.renderForms    = this.renderForms.bind(this)
   }
 
   renderSections() {
-    return Object.keys(this.state.settings).map((tab, index) => (
-      <Pane key={tab} id={`settings-${tab}-content`} display={index === this.state.selected ? 'block' : 'block'}>
-        {this.state.settings[tab] && (
-          Object.keys(this.state.settings[tab]).map((setting, index) => (
+    return Object.keys(this.props.service.model.settings).map((tab, index) => (
+      <Pane key={tab} id={`settings-${tab}-content`} borderBottom={(Object.keys(this.state.settings).length - 1) > index ? true : false} padding={20} paddingTop={0} marginBottom={20}>
+        <h1>{tab}</h1>
+        {this.props.service.model.settings[tab] && (
+          Object.keys(this.props.service.model.settings[tab]).map((setting, index) => (
             <p key={`${setting}-${index}`}>{setting} : {this.state.settings[tab][setting]}</p>
           ))
         )}
@@ -76,23 +39,27 @@ export default class SettingsView extends React.Component {
     ))
   }
 
-  render() {
+  renderForms() {
+    if(this.props.forms == undefined) { return }
+
+    return this.props.forms.map((form, index) => (
+      <Pane key={`form-${index}`} id={`form-${index}-content`} padding={20} marginBottom={20}>
+        {form}
+      </Pane>
+    ))
+  }
+
+  render() {    
     return (
-      <Pane margin={40} padding={20} background="white" elevation={1} border>
+      <Pane margin={40} padding={20} background="white" elevation={1} border className="scrollable-content">
         <Heading size={600}>Settings</Heading>
         
-        <Pane display="flex" borderTop marginTop={10} paddingTop={10}>
-          <Pane display="flex">
-            <Tablist flexBasis={300} width={180} marginBottom={16} marginRight={24}>
-              {this.renderTabs()}
-            </Tablist>
-          </Pane>
+        <Pane display="flex" flexDirection="column" borderTop marginTop={10} paddingTop={10}>
+          {this.renderForms()}
+        </Pane>
 
-          
-
-          <Pane marginLeft={8}>
+        <Pane display="flex" flexDirection="column" borderTop marginTop={10} paddingTop={10}>
             {this.renderSections()}
-          </Pane>
         </Pane>
       </Pane>
     )

@@ -7,6 +7,7 @@
 //
 
 import React      from 'react'
+import {connect}  from 'react-redux'
 
 import {
   Switch,
@@ -28,9 +29,13 @@ import PrinterShow    from './show'
 import Settings       from '../../settings'
 import PrinterActions from '../../../store/actions/printers'
 import PrinterForm    from './form'
+import {Form as AuthForm } from '../layerkeep/form'
+import Modal          from '../../modal/index'
 import ErrorModal     from '../../modal/error'
 import NodeAction  from '../../../store/actions/node'
 import ServiceAction  from '../../../store/actions/services'
+
+
 
 
 import PubSub from 'pubsub-js'
@@ -168,13 +173,19 @@ export class PrinterIndex extends React.Component {
 
   saveFailed(error) {
     // console.log("save failed", error)
-    // if (error.response.status == 401) {
-    //   console.log("Unauthorized")
-    //   this.setState({showing: true, loading: false})
-    // } else {
+    if (error.response.status == 401) {
+      console.log("Unauthorized")
+      this.setState({showing: true, loading: false})
+    } else {
     // this.setState({requestError: error})
-    toaster.danger(<ErrorModal requestError={error} />)
-    // }
+      toaster.danger(<ErrorModal requestError={error} />)
+    }
+  }
+
+  authenticated(res) {
+    console.log("Authenticated", res)
+    this.setState({showing: false})
+    
   }
 
   deletePrinter() {
@@ -216,6 +227,14 @@ export class PrinterIndex extends React.Component {
               }/>
             </Switch>
         </div>
+        <Modal
+          component={AuthForm}
+          node={this.props.node}
+          // requestError={this.state.requestError}
+          isActive={this.state.showing}
+          dismissAction={this.authenticated.bind(this)}
+          onAuthenticated={this.authenticated.bind(this)}
+        />
       </div>
     );
   }

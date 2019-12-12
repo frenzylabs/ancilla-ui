@@ -175,7 +175,7 @@ export class PrinterNew extends React.Component<Props> {
           dismissAction={this.authenticated.bind(this)}
           onAuthenticated={this.authenticated.bind(this)}
         />
-        </div>
+      </div>
     )
   }
 }

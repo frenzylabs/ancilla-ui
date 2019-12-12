@@ -13,12 +13,22 @@ import {
   Route,
 } from 'react-router-dom'
 
+import {
+  Pane,
+  Dialog,
+  Heading,
+  Button,
+  toaster
+} from 'evergreen-ui'
+
+
 
 import Statusbar      from '../statusbar'
 import PrinterShow    from './show'
 import Settings       from '../../settings'
 import PrinterActions from '../../../store/actions/printers'
 import PrinterForm    from './form'
+import ErrorModal     from '../../modal/error'
 
 import PubSub from 'pubsub-js'
 
@@ -148,6 +158,21 @@ export default class PrinterIndex extends React.Component {
     }    
   }
 
+  printerSave(resp) {
+    console.log("printer saved", resp)
+  }
+
+  saveFailed(error) {
+    console.log("save failed", error)
+    // if (error.response.status == 401) {
+    //   console.log("Unauthorized")
+    //   this.setState({showing: true, loading: false})
+    // } else {
+    // this.setState({requestError: error})
+    toaster.danger(<ErrorModal requestError={error} />)
+    // }
+  }
+
   render() {
     var params = this.props.match.params;
     return (
@@ -166,7 +191,7 @@ export default class PrinterIndex extends React.Component {
                 <PrinterDetails  {...this.props} {...props} /> 
               }/> */}
               <Route path={`${this.props.match.path}/settings`} render={ props => 
-                <Settings {...this.props} {...props} forms={[<PrinterForm {...this.props} {...props}/>]} /> 
+                <Settings {...this.props} {...props} forms={[<PrinterForm onSave={this.printerSave.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props}/>]} /> 
               }/>
 
               <Route path={`${this.props.match.path}`} render={ props => 

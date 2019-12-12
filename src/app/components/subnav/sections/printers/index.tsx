@@ -19,7 +19,6 @@ import {
 } from '../../../../models'
 
 import Tree from '../../../tree'
-import Form from './form'
 import { NodeAction } from '../../../../store/actions/node'
 
 import {Form as AuthForm } from '../../../services/layerkeep/form'
@@ -46,8 +45,7 @@ export class Printers extends React.Component<Props> {
   constructor(props:any) {
     super(props)    
 
-    this.toggleDialog = this.toggleDialog.bind(this)
-    this.savePrinter  = this.savePrinter.bind(this)
+    // this.savePrinter  = this.savePrinter.bind(this)
     // this.getPrinters  = this.getPrinters.bind(this)
   }
 
@@ -61,52 +59,50 @@ export class Printers extends React.Component<Props> {
   //   console.log("did update stae", os)
   // }
 
-  toggleDialog(show:boolean) {
-    this.setState({
-      ...this.state,
-      showing: show
-    })
-  }
+  // savePrinter(closeDialog) {
 
-  savePrinter(closeDialog) {
+  //   this.setState({
+  //     ...this.state,
+  //     loading: true
+  //   })
 
-    this.setState({
-      ...this.state,
-      loading: true
-    })
+  //   var printerParams = this.form.state.newPrinter
+  //   request.create(this.props.node, this.form.state.newPrinter)
+  //   .then((response) => {
+  //     console.log(response)
 
-    var printerParams = this.form.state.newPrinter
-    request.create(this.props.node, this.form.state.newPrinter)
-    .then((response) => {
-      console.log(response)
+  //     this.setState({
+  //       loading: false
+  //     })
+  //     this.props.addPrinter(this.props.node, response.data.printer)
+  //     closeDialog()
+  //     toaster.success(`Printer ${name} has been successfully added`)
+  //   })
+  //   .catch((error) => {
+  //     console.log(error)
 
-      this.setState({
-        loading: false
-      })
-      this.props.addPrinter(this.props.node, response.data.printer)
-      closeDialog()
-      toaster.success(`Printer ${name} has been successfully added`)
-    })
-    .catch((error) => {
-      console.log(error)
+  //     if (error.response.status == 401) {
+  //       console.log("Unauthorized")
+  //       this.setState({auth_showing: true, showing: false, printerParams: printerParams})
+  //     }
+  //     let errors = Object.keys(error.response.data.errors).map((key, index) => {
+  //       return  `${key} : ${error.response.data.errors[key]}\n`
+  //     })
 
-      if (error.response.status == 401) {
-        console.log("Unauthorized")
-        this.setState({auth_showing: true, showing: false, printerParams: printerParams})
-      }
-      let errors = Object.keys(error.response.data.errors).map((key, index) => {
-        return  `${key} : ${error.response.data.errors[key]}\n`
-      })
+  //     this.setState({
+  //       loading: false
+  //     })
 
-      this.setState({
-        loading: false
-      })
+  //     toaster.danger(
+  //       `Unable to save printer ${name}`, 
+  //       {description: errors}
+  //     )
+  //   })
+  // }
 
-      toaster.danger(
-        `Unable to save printer ${name}`, 
-        {description: errors}
-      )
-    })
+  addPrinter() {
+    let url = `/printers/new`
+    this.props.history.push(`${url}`);    
   }
 
   selectPrinter(item) {
@@ -119,24 +115,6 @@ export class Printers extends React.Component<Props> {
     
   }
 
-  renderDialog() {
-    if (this.state.auth_showing) {
-      return (<Dialog
-          isShown={this.state.auth_showing}
-          title="Login to Layerkeep"
-          confirmLabel="Login"
-          onCloseComplete={() => this.setState({auth_showing: false})}
-          hasFooter={false}
-          
-        >
-          {({ close }) => (
-            <AuthForm onSave={(res) => this.authenticated(res, close) } loading={this.state.loading}/>
-        )}
-
-          
-        </Dialog>)
-    }
-  }
 
   render() {
     let printers = this.props.node.services.filter((item) => item.kind == "printer") //Object.values(this.props.printers)
@@ -144,18 +122,9 @@ export class Printers extends React.Component<Props> {
     
     return ( 
       <React.Fragment key="printers">
-        <Dialog
-          isShown={this.state.showing}
-          title="Add Printer"
-          confirmLabel="Save"
-          onCloseComplete={() => this.toggleDialog(false)}
-          onConfirm={this.savePrinter}
-        >
-          <Form ref={frm => this.form = frm} data={this.state.printerParams} save={this.savePrinter} loading={this.state.loading}/>
-        </Dialog>
-        {this.renderDialog()}
+        
 
-        <Tree.Node name="Printers" key="printers" children={items} addAction={() => this.toggleDialog(true)} selectItem={this.selectPrinter.bind(this)} />
+        <Tree.Node name="Printers" key="printers" children={items} addAction={() => this.addPrinter()} selectItem={this.selectPrinter.bind(this)} />
       </React.Fragment>
     )
   }

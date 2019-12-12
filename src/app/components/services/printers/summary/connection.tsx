@@ -161,8 +161,8 @@ export default class Connection extends React.Component {
   render() {
     return (
       <Pane display="flex" flex={1} padding={20} margin={10} background="white" border="default" flexDirection="column">
-        {this.renderRow("Connection", this.props.service.model.model.port)}
-        {this.renderRow("Baudrate", this.props.service.model.model.baud_rate)}
+        {this.renderRow("Connection", (this.props.service.model.model && this.props.service.model.model.port))}
+        {this.renderRow("Baudrate", (this.props.service.model.model && this.props.service.model.model.baud_rate))}
         {this.renderPrintAction()}
       </Pane>
     )

@@ -12,6 +12,7 @@ import {
   Pane,
   TextInput,
   Button,
+  Spinner,
   Combobox,
   Checkbox,
   toaster
@@ -19,7 +20,9 @@ import {
 
 import layerkeep, {default as request} from '../../../network/layerkeep'
 
-export class Form extends React.Component<{onSave:Function, onError:Function, loading:boolean}> {
+import ErrorModal from '../../modal/error'
+
+export class Form extends React.Component<{onAuthenticated:Function, onError:Function, loading:boolean}> {
   
 
   constructor(props:any) {
@@ -29,99 +32,98 @@ export class Form extends React.Component<{onSave:Function, onError:Function, lo
     this.state = {
       creds: {
         username:     '',
-        password:     ''
-      }    
+        password:     ''        
+      },
+      isSaving: false,
+      requestError: false
     }
 
     // this.receiveRequest  = this.receiveRequest.bind(this)
     // this.receiveEvent    = this.receiveEvent.bind(this)
-    this.save    = this.save.bind(this)
+    this.signIn    = this.signIn.bind(this)
 
   }
   
 
   componentDidMount() {
-    // printer.ports()
-    // .then(res => {
-    //   let ports = res.data['ports'] || []
 
-    //   this.setState({
-    //     ports: ports
-    //   })
-    // })
-    // .catch((err) => {
-    //   console.log(err)
-    // })
-
-    // this.setState({
-    //   printers: this.props.printers.data['printers'].map((printer) => {
-    //     return {name: printer.name, port: printer.port, id: printer.id}
-    //   })
-    // })
-
-    // printer.list(this.props.)
-    // .then(res => {
-    //   this.setState({
-    //     printers: res.data['printers'].map((printer) => {
-    //       return {name: printer.name, port: printer.port, id: printer.id}
-    //     })
-    //   })
-    // })
-    // .catch((err) => {
-    //   toaster.danger(err)
-    // })
   }
 
-  save() {
-    // layerkeep.sign_in(this.props.node, this.state.creds)
-    console.log("SAVE LK")
-    if (this.props.onSave) {
-      this.props.onSave("tada")
-    }
+  signIn() {
+
+    this.setState({isSaving: true})
+    layerkeep.sign_in(this.props.node, this.state.creds)
+    .then(res => {
+      if (this.props.onAuthenticated) {
+        this.props.onAuthenticated(res)
+      }
+      this.setState({isSaving: false})
+    })
+    .catch((err) => {
+      if (this.props.onError) {
+        this.props.onError(err)
+      } 
+      this.setState({isSaving: false, requestError: err})
+    })
+    
     // this.props.save(this.state.creds)
+  }
+  renderError() {
+    if (this.state.requestError) {
+      return (<Pane background="redTint" border marginBottom={10} padding={10}>
+        <ErrorModal requestError={this.state.requestError} />
+      </Pane>)
+    }
   }
 
   render() {
+    if (this.state.isSaving) {
+      return <Spinner />
+    }
     return (
       <Pane>
-        <TextInput 
-          name="username" 
-          placeholder="Username" 
-          marginBottom={4}  
-          width="100%" 
-          height={48}
-          onChange={e => 
-            this.setState({
-              creds: {
-                ...this.state.creds,
-                username: e.target.value     
-              }
-            })
-          }
-        />
+        {this.renderError()}
+      
+        <Pane>
+          <TextInput 
+            name="username" 
+            placeholder="Username" 
+            marginBottom={4}  
+            width="100%" 
+            height={48}
+            onChange={e => 
+              this.setState({
+                creds: {
+                  ...this.state.creds,
+                  username: e.target.value     
+                }
+              })
+            }
+          />
 
 
-        <TextInput 
-          name="password" 
-          placeholder="Password" 
-          type={"password"}
-          marginBottom={4}  
-          width="100%" 
-          height={48}
-          onChange={e => 
-            this.setState({
-              creds: {
-                ...this.state.creds,
-                password: e.target.value     
-              }
-            })
-          }
-        />
+          <TextInput 
+            name="password" 
+            placeholder="Password" 
+            type={"password"}
+            marginBottom={4}  
+            width="100%" 
+            height={48}
+            onChange={e => 
+              this.setState({
+                creds: {
+                  ...this.state.creds,
+                  password: e.target.value     
+                }
+              })
+            }
+          />
 
-      <Button marginTop={16} onClick={this.save}>
-              Save
-      </Button>
+        <Button marginTop={16} onClick={this.signIn}>
+                Sign In
+        </Button>
 
+        </Pane>
       </Pane>
     )
   }

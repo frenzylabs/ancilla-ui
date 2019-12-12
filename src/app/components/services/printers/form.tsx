@@ -13,21 +13,24 @@ import {
   TextInput,
   Combobox,
   Checkbox,
-  Button
+  Button,
+  toaster
 } from 'evergreen-ui'
-
 
 import printer, {default as request} from '../../../network/printer'
 
-export default class Form extends React.Component<{save:Function, loading:boolean}> {
+export default class Form extends React.Component<{save:Function, data:object, onSave: Function, onError: Function}> {
   state = {
     newPrinter: {
       name:     '',
       port:     '',
       baud_rate: '',
+      model: '',
+      description: '',
       layerkeep_sync: false
     },
-    layerkeep_sync: true,
+    loadingPorts: true,
+    loading: false,
     name:     '',
     port:     '',
     baudrate: '',
@@ -61,6 +64,7 @@ export default class Form extends React.Component<{save:Function, loading:boolea
     super(props)
 
     this.save = this.save.bind(this)
+    this.savePrinter = this.savePrinter.bind(this)
   }
 
   get values():{name?:string, port:string, baudrate:string} {
@@ -72,39 +76,110 @@ export default class Form extends React.Component<{save:Function, loading:boolea
   }
 
   componentDidMount() {
+    if (this.props.data) {
+      var data = this.props.data.model || {}
+      
+      if (data.layerkeep_id) {
+        data.layerkeep_sync = true
+      }
+      this.setState({newPrinter: {...this.state.newPrinter, ...data}})
+    }
     printer.ports()
     .then(res => {
       let ports = res.data['ports'] || []
 
       this.setState({
         ports: ports,
+        loadingPorts: false
       })
     })
     .catch((err) => {
       console.log(err)
+      this.setState({
+        loadingPorts: false
+      })
     })
 
   }
 
-  save() {
-    if(this.props.save  == undefined) {
-      alert("No save function given")
-      return
+  // componentDidUpdate(prevProps, prevState) {
+  //   console.log("COMPONENT DID UPdate", prevProps, prevState)
+  // }
+  savePrinter() {
+
+    this.setState({
+      ...this.state,
+      loading: true
+    })
+
+    var req;
+    if (this.props.data && this.props.data.id) {
+      req = request.update(this.props.node, this.props.data.id, this.state.newPrinter)
+    } else {
+      req = request.create(this.props.node, this.state.newPrinter)
     }
 
-    this.props.save(this.values)
+    req.then((response) => {
+      console.log(response)
+
+      this.setState({
+        loading: false
+      })
+      if (this.props.onSave) {
+        this.props.onSave(response)
+      }
+      // this.props.addPrinter(this.props.node, response.data.printer)
+      toaster.success(`Printer ${name} has been successfully added`)
+    })
+    .catch((error) => {
+      console.log(error)
+      if (this.props.onError) {
+        this.props.onError(error)
+      }
+      
+      // if (error.response.status == 401) {
+      //   console.log("Unauthorized")
+      //   this.setState({showing: true, loading: false})
+      // }
+      else {
+        var errors = [""]
+        if (error.response.data && error.response.data.errors) {
+            errors = Object.keys(error.response.data.errors).map((key, index) => {
+              return  `${key} : ${error.response.data.errors[key]}\n`
+            })
+        }
+
+        toaster.danger(
+          `Unable to save printer ${name}`, 
+          {description: errors}
+        )
+      }
+      this.setState({
+        loading: false
+      })
+    })
+  }
+
+  save() {
+    if(this.props.save  == undefined) {
+      // alert("No save function given")
+      this.savePrinter()
+      // return
+    } else {
+      this.props.save(this.values)
+    }
   }
 
   render() {
     return (
-      <Pane>
+      <Pane width={"100%"}>
         <TextInput 
           name="name" 
-          value={this.props.service.model.name || ""}
           placeholder="Printer name" 
           marginBottom={4}  
           width="100%" 
           height={48}
+          value={this.state.newPrinter.name}
           onChange={e => 
             this.setState({
               newPrinter: {
@@ -118,13 +193,14 @@ export default class Form extends React.Component<{save:Function, loading:boolea
         <Combobox 
           openOnFocus 
           items={this.state.ports} 
-          initialSelectedItem={this.props.service.model.model.port}
           placeholder={this.state.ports.length > 0? "Ports" : "No ports found"} 
           marginTop={4} 
           marginBottom={4}  
           width="100%" 
           height={48}
-          isLoading={this.props.loading}
+          isLoading={this.state.loadingPorts}
+          selectedItem={this.state.newPrinter.port}
+          initialSelectedItem={this.state.newPrinter.port}
           disabled={this.state.ports.length < 1}
           onChange={selected => 
             this.setState({
@@ -138,13 +214,14 @@ export default class Form extends React.Component<{save:Function, loading:boolea
 
         <Combobox 
           openOnFocus 
-          items={this.state.baudrates} 
-          initialSelectedItem={this.props.service.model.model.baud_rate}
+          items={this.state.baudrates}
           placeholder="Baudrate" 
           marginTop={4} 
           marginBottom={4}  
           width="100%" 
           height={48} 
+          selectedItem={this.state.newPrinter.baud_rate}
+          initialSelectedItem={this.state.newPrinter.baud_rate}
           onChange={selected => 
             this.setState({
               newPrinter: {
@@ -158,12 +235,12 @@ export default class Form extends React.Component<{save:Function, loading:boolea
         <div>
         <TextInput 
           name="model" 
-          value={this.props.service.model.model.model || ""}
           placeholder="Model Name (optional)" 
           marginTop={4} 
           marginBottom={4}  
           width="100%" 
           height={48}
+          value={this.state.newPrinter.model}
           onChange={e => 
             this.setState({
               newPrinter: {
@@ -178,12 +255,12 @@ export default class Form extends React.Component<{save:Function, loading:boolea
 
         <TextInput 
           name="description" 
-          value={this.props.service.model.model.description || ""}
           placeholder="Description (optional)" 
           marginTop={4} 
           marginBottom={4}  
           width="100%" 
           height={48}
+          value={this.state.newPrinter.description}
           onChange={e => 
             this.setState({
               newPrinter: {
@@ -209,11 +286,10 @@ export default class Form extends React.Component<{save:Function, loading:boolea
               }
             />
           </Pane>
-          
-          <Pane paddingTop={6}>
-            <Button appearance="primary" onClick={this.save}>Save</Button>
-          </Pane>
         </Pane>
+        <Pane paddingTop={6}>
+            <Button isLoading={this.state.loading} appearance="primary" onClick={this.save}>Save</Button>
+          </Pane>
       </Pane>
     )
   }

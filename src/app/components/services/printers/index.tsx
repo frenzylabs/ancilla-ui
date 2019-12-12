@@ -30,10 +30,13 @@ import Settings       from '../../settings'
 import PrinterActions from '../../../store/actions/printers'
 import PrinterForm    from './form'
 import ErrorModal     from '../../modal/error'
+import NodeAction  from '../../../store/actions/node'
+import ServiceAction  from '../../../store/actions/services'
+
 
 import PubSub from 'pubsub-js'
 
-export default class PrinterIndex extends React.Component {
+export class PrinterIndex extends React.Component {
   constructor(props:any) {
     super(props)
 
@@ -159,12 +162,13 @@ export default class PrinterIndex extends React.Component {
     }    
   }
 
-  printerSave(resp) {
-    console.log("printer saved", resp)
+  printerSaved(resp) {
+    // console.log("printer saved", resp)
+    this.props.printerUpdated(this.props.node, resp.data.service_model)
   }
 
   saveFailed(error) {
-    console.log("save failed", error)
+    // console.log("save failed", error)
     // if (error.response.status == 401) {
     //   console.log("Unauthorized")
     //   this.setState({showing: true, loading: false})
@@ -174,14 +178,27 @@ export default class PrinterIndex extends React.Component {
     // }
   }
 
+  deletePrinter() {
+    console.log("DELETE PRINTER")
+    this.props.deleteService(this.props.node, this.props.service)
+  }
+
+  deleteComponent() {
+    return (
+      <Pane border={true} paddingTop={0} marginBottom={20}>
+        <Button onClick={() => this.deletePrinter()}> Delete </Button>
+      </Pane>
+    )
+  }
+
   render() {
     var params = this.props.match.params;
     return (
       <div className="flex-wrapper">
         <Statusbar {...this.props} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
 
-        <div>
-          <Switch>                  
+        <div className="scrollable-content">
+          <Switch>
               {/* <Route path={`${this.props.match.path}/new`} render={ props =>
                 <PrinterNew {...this.props}  {...props}/> 
               }/> 
@@ -192,7 +209,7 @@ export default class PrinterIndex extends React.Component {
                 <PrinterDetails  {...this.props} {...props} /> 
               }/> */}
               <Route path={`${this.props.match.path}/settings`} render={ props => 
-                <Settings {...this.props} {...props} forms={[<PrinterForm onSave={this.printerSave.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props}/>]} /> 
+                <Settings {...this.props} {...props} forms={[<PrinterForm onSave={this.printerSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props}/>, this.deleteComponent()]} /> 
               }/>
 
               <Route path={`${this.props.match.path}`} render={ props => 
@@ -205,3 +222,22 @@ export default class PrinterIndex extends React.Component {
   }
 
 }
+
+
+
+const mapStateToProps = (state) => {
+  // return state
+  return {
+    // printers: state.activeNode.printers
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    deleteService: (node, service) => dispatch(ServiceAction.deleteService(node, service)),
+    printerUpdated: (node, service) => dispatch(NodeAction.printerUpdated(node, service)),
+  }
+}
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(PrinterIndex)

@@ -175,30 +175,26 @@ export class PrinterNew extends React.Component<Props> {
           dismissAction={this.authenticated.bind(this)}
           onAuthenticated={this.authenticated.bind(this)}
         />
-
-
-
         </div>
     )
   }
 }
 
 
-// const mapStateToProps = (state) => {
-//   // return state
-//   return {
-//     printers: state.activeNode.printers
-//   }
-// }
+const mapStateToProps = (state) => {
+  // return state
+  return {
+    // printers: state.activeNode.printers
+  }
+}
 
-// const mapDispatchToProps = (dispatch) => {
-//   return {
-//     listPrinters: () => dispatch(NodeAction.listPrinters()),
-//     addPrinter: (node, printer) => dispatch(NodeAction.addPrinter(node, printer)),
-//   }
-// }
+const mapDispatchToProps = (dispatch) => {
+  return {
+    addPrinter: (node, printer) => dispatch(NodeAction.addPrinter(node, printer)),
+  }
+}
 
 
-// export default connect(mapStateToProps, mapDispatchToProps)(PrinterNew)
+export default connect(mapStateToProps, mapDispatchToProps)(PrinterNew)
 
-export default PrinterNew
+// export default PrinterNew

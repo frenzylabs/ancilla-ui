@@ -64,6 +64,11 @@ export const NodeAction = {
     data: cameras
   }),
   
+  printerUpdated: (node, service) => ({
+    type: 'PRINTER_UPDATED',
+    node: node,
+    data: service
+  }),
 
   
   get_printers: () => {

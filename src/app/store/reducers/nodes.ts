@@ -27,6 +27,22 @@ function getServiceReducer(item) {
 
 export function nodeReducer(state = initialState.activeNode, action) {
   switch(action.type) {
+  case 'SERVICE_DELETED':
+      // console.log("INSIDE RECEIVE PRINTERS", action.data)
+      // console.log("CURRENT STATE = ", state)    
+      // var clone = Object.assign( Object.create( Object.getPrototypeOf(state)), state)
+      var services = state.services.filter((svc) => svc.id != action.data.id)
+      return {...state, services: services} 
+      // var printers = action.data.printers.reduce((acc, item) => {
+      //   acc = acc.concat(PrinterState(item))
+      //   return acc
+      // }, [])
+  
+      // var newstate = {
+      //   ...state, 
+      //   printers: printers
+      // }
+      // return newstate
   case 'RECEIVED_PRINTERS':
     // console.log("INSIDE RECEIVE PRINTERS", action.data)
     // console.log("CURRENT STATE = ", state)    
@@ -90,6 +106,18 @@ export function nodeReducer(state = initialState.activeNode, action) {
       ...state, 
       connected: action.data
     }  
+  case 'PRINTER_UPDATED': {
+    var services = state.services.map((item) => {
+      if (item.id == action.data.id) {
+        var st = PrinterState(action.data)
+        return {...item, ...st}
+        // return serviceReducer(item, action)
+      }
+      return item
+    })
+    return {...state, services: services}
+    // return {...state, services: [...state.services, PrinterState(action.data)]} 
+  }
   default: {
     if (action.type.startsWith("SERVICE")) {
       var services = state.services.map((item) => {

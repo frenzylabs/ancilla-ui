@@ -21,6 +21,11 @@ export const ServiceHandler = {
       return Request.get(`${node.apiUrl}/services`, options)
   },
 
+  delete: (node, service, options= {}) => {
+    console.log(service)
+    return Request.delete(`${node.apiUrl}/services/${service.id}`, options)
+  },
+
   state: (node, service, options= {}) => {
     return Request.get(`${node.apiUrl}/services/${service.kind}/${service.id}/state`, options)
   },

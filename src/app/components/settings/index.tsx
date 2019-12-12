@@ -51,7 +51,7 @@ export default class SettingsView extends React.Component {
 
   render() {    
     return (
-      <Pane margin={40} padding={20} background="white" elevation={1} border className="scrollable-content">
+      <Pane margin={40} padding={20} background="white" elevation={1} border className="">
         <Heading size={600}>Settings</Heading>
         
         <Pane display="flex" flexDirection="column" borderTop marginTop={10} paddingTop={10}>

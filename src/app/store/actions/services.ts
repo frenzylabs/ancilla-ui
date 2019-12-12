@@ -24,6 +24,21 @@ export const ServiceAction = {
       }
     }
   },
+
+  deleteService: (node, serviceState) => {
+    return (dispatch, getState) => {
+      console.log("DELETE SERVICE NODE ACTION state", getState())
+      // let activeNode = getState().activeNode
+      var cancelRequest    = Service.cancelSource();  
+      // dispatch(requestFeatures(username, cancelRequest))
+      if (serviceState.model) {
+        return Service.delete(node, serviceState.model, {cancelToken: cancelRequest.token})
+            .then((response) => {
+              dispatch(ServiceAction.removeService(node, serviceState))
+            })
+      }
+    }
+  },
   // lastPrint(printerState) {
   //   return (dispatch, getState) => {
   //     console.log("LAST PRINT NODE ACTION state", getState())
@@ -76,6 +91,12 @@ export const ServiceAction = {
     }
   },
 
+  removeService: (node, service) => ({
+    type: 'SERVICE_DELETED',
+    node: node,
+    data: service
+  }),
+  
   updateState: (service, service_state) => ({
     type: 'SERVICE_RECEIVED_STATE',
     service: service,

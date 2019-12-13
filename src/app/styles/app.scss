@@ -109,3 +109,17 @@ button:focus {
   overflow-x: none !important;
   overflow-y: auto !important;
 }
+
+.danger-zone {
+  background: #ffcdd2;
+  border: 1px solid #b71c1c;
+  border-radius: 5px;
+
+  p {
+    color: #b71c1c;
+  }
+
+  button {
+    border: none;
+  }
+}

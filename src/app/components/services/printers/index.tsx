@@ -16,24 +16,22 @@ import {
 
 import {
   Pane,
-  Dialog,
-  Heading,
   Button,
   toaster
 } from 'evergreen-ui'
 
 
 
-import Statusbar      from '../statusbar'
-import PrinterShow    from './show'
-import Settings       from '../../settings'
-import PrinterActions from '../../../store/actions/printers'
-import PrinterForm    from './form'
-import {Form as AuthForm } from '../layerkeep/form'
-import Modal          from '../../modal/index'
-import ErrorModal     from '../../modal/error'
-import NodeAction  from '../../../store/actions/node'
-import ServiceAction  from '../../../store/actions/services'
+import Statusbar            from '../statusbar'
+import PrinterShow          from './show'
+import Settings             from '../../settings'
+import PrinterActions       from '../../../store/actions/printers'
+import PrinterForm          from './form'
+import {Form as AuthForm }  from '../layerkeep/form'
+import Modal                from '../../modal/index'
+import ErrorModal           from '../../modal/error'
+import NodeAction           from '../../../store/actions/node'
+import ServiceAction        from '../../../store/actions/services'
 
 
 
@@ -183,9 +181,7 @@ export class PrinterIndex extends React.Component {
   }
 
   authenticated(res) {
-    console.log("Authenticated", res)
     this.setState({showing: false})
-    
   }
 
   deletePrinter() {
@@ -195,8 +191,20 @@ export class PrinterIndex extends React.Component {
 
   deleteComponent() {
     return (
-      <Pane border={true} paddingTop={0} marginBottom={20}>
-        <Button onClick={() => this.deletePrinter()}> Delete </Button>
+      <Pane display="flex" borderTop paddingTop={20}>
+        <Pane display="flex" flex={1} padding={20} marginBottom={20} className="danger-zone" alignItems="center" flexDirection="row">
+          <Pane display="flex" flex={1} marginRight={50}>
+            <p>
+              Delete the current printer and if "Sync On LayerKeep" is checked, 
+              this printer will also be deleted on Layerkeep.com; to prevent this
+              uncheck "Sync On LayerKeep" and save before deleting.
+            </p>
+          </Pane>
+
+          <Pane>
+            <Button appearance="primary" intent="danger" height={40} onClick={() => this.deletePrinter()}> Delete </Button>
+          </Pane>
+        </Pane>
       </Pane>
     )
   }
@@ -219,7 +227,10 @@ export class PrinterIndex extends React.Component {
                 <PrinterDetails  {...this.props} {...props} /> 
               }/> */}
               <Route path={`${this.props.match.path}/settings`} render={ props => 
-                <Settings {...this.props} {...props} forms={[<PrinterForm onSave={this.printerSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props}/>, this.deleteComponent()]} /> 
+                <Settings {...this.props} {...props} forms={[
+                  <PrinterForm onSave={this.printerSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props}/>, 
+                  this.deleteComponent()
+                ]} /> 
               }/>
 
               <Route path={`${this.props.match.path}`} render={ props => 

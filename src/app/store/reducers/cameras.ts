@@ -30,40 +30,25 @@ type CameraModel = {
 
 var defaultState = {}
 
-type PrinterServiceModel = ServiceModel & { model: PrinterModel}
 
-export type PrinterState = ServiceState & {
-  model: PrinterServiceModel,
-  currentRecordings?: [PrintState
+type CameraServiceModel = ServiceModel & { model: CameraModel}
+
+export type CameraState = ServiceState & {
+  model: CameraServiceModel,
+  currentRecording?: object
 }
 
+// export type PrinterState = ServiceState & {
+//   model: PrinterServiceModel,
+//   currentRecordings?: [PrintState
+// }
 
-export type CameraState = {
-  id: number,
-  name: string,
-  model: CameraModel,
-  state: object,
-  configuration: object,
-  settings: object,
-  logs: [],
-  currentRecording?: object,
-  attachments: []
-}
 
 export function CameraState(model: CameraModel, state: {} = {}, logs: [] = [], currentRecording = {}, config = {}, settings = {}) {
-  return {
-    id: model.id,
-    name: model.name,
-    model: model,
-    state: state,
-    logs: logs,
-    configuration: config,
-    settings: settings,
-    currentRecording: currentRecording
-  }
+  var res = ServiceState.call(this, ...arguments)  
+  res["currentRecording"] = currentRecording
+  return res
 }
-
-
 
 // const initialState = PrinterState({});
 

@@ -70,6 +70,12 @@ export const NodeAction = {
     data: service
   }),
 
+  cameraUpdated: (node, service) => ({
+    type: 'CAMERA_UPDATED',
+    node: node,
+    data: service
+  }),
+
   
   get_printers: () => {
     return {
@@ -82,6 +88,14 @@ export const NodeAction = {
       type: 'ADDED_PRINTER',
       node: node,
       data: printer_service
+    }
+  },
+
+  addCamera: (node, camera_service = {}) => {
+    return {
+      type: 'ADDED_CAMERA',
+      node: node,
+      data: camera_service
     }
   },
 

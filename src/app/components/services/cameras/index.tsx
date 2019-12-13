@@ -7,6 +7,7 @@
 //
 
 import React      from 'react'
+import {connect}  from 'react-redux'
 
 import {
   Switch,
@@ -15,7 +16,8 @@ import {
 
 import {
   Pane,
-  TextInput
+  TextInput,
+  toaster
 } from 'evergreen-ui'
 
 import PubSub from 'pubsub-js'
@@ -26,8 +28,11 @@ import CameraForm     from './form'
 import Settings       from '../../settings'
 import ServiceActions from '../../../store/actions/services'
 import CameraHandler  from '../../../network/camera'
+import ErrorModal     from '../../modal/error'
+import NodeAction  from '../../../store/actions/node'
+import ServiceAction  from '../../../store/actions/services'
 
-export default class CameraView extends React.Component<{node: object, service: object}> {
+export class CameraView extends React.Component<{node: object, service: object}> {
   constructor(props:any) {
     super(props)
 
@@ -135,17 +140,21 @@ export default class CameraView extends React.Component<{node: object, service: 
     }
   }
 
-  // componentDidUpdate(prevProps, prevState) {
-  //   if (prevProps.printer != this.props.printer) {
-  //     this.setupPrinter()
-  //   }
-  // }
   toggleRecording() {
     if (this.props.service.state.recording) {
       PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.stop_recording", this.state.recordSettings])
     } else {
       PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.start_recording", this.state.recordSettings])
     }
+  }
+
+  cameraSaved(resp) {
+    // console.log("printer saved", resp)
+    this.props.cameraUpdated(this.props.node, resp.data.service_model)
+  }
+
+  saveFailed(error) {
+    toaster.danger(<ErrorModal requestError={error} />)
   }
 
   renderDisplay() {
@@ -198,7 +207,7 @@ export default class CameraView extends React.Component<{node: object, service: 
         <div>
           <Switch>                  
               <Route path={`${this.props.match.path}/settings`} render={ props => 
-                <Settings {...this.props} {...props} forms={[<CameraForm/>]}/> 
+                <Settings {...this.props} {...props} forms={[<CameraForm onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />]}/> 
               }/>
 
               <Route path={`${this.props.match.path}`} render={ props => 
@@ -210,3 +219,23 @@ export default class CameraView extends React.Component<{node: object, service: 
     );
   }
 }
+
+
+
+
+const mapStateToProps = (state) => {
+  // return state
+  return {
+    // printers: state.activeNode.printers
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    deleteService: (node, service) => dispatch(ServiceAction.deleteService(node, service)),
+    cameraUpdated: (node, service) => dispatch(NodeAction.cameraUpdated(node, service)),
+  }
+}
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(CameraView)

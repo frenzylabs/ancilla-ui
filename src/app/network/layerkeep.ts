@@ -8,6 +8,8 @@
 
 import {Request, CancelToken} from './request'
 
+const QS = require('qs');
+
 export const Layerkeep = {
   cancelSource: () => {
     return CancelToken.source();
@@ -15,6 +17,13 @@ export const Layerkeep = {
 
   sign_in: (node, creds) => {
     return Request.post(`${node.apiUrl}/layerkeep/sign_in`, creds)
+  },
+  
+  listSlices: (node, options= {}) => {
+    var qs = options["qs"]
+    delete options["qs"]
+    var path = `${node.apiUrl}/layerkeep/sliced_files` + QS.stringify(qs, { addQueryPrefix: true }) 
+    return Request.get(path, options)
   }
 
   // list: (node, options= {}) => {

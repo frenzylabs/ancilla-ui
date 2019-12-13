@@ -27,6 +27,8 @@ import {
 import Form 				from './form'
 import FileRequest 	from '../../network/files'
 
+import Layerkeep from './layerkeep'
+
 export default class FilesView extends React.Component {
 
   state = {
@@ -330,9 +332,12 @@ export default class FilesView extends React.Component {
 
   render() {
     return (
-      <Pane>
+      <Pane >
         {this.renderTopBar()}
-        {this.renderSection()}
+        <div className="scrollable-content">
+          {this.renderSection()}
+          <Layerkeep {...this.props} />
+        </div>
       </Pane>
     )
   }	

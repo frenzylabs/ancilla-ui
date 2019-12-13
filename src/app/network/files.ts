@@ -29,5 +29,9 @@ export default {
 
   listLocal: (options= {}) => {
       return Request.get('/files', options)
+  },
+
+  syncFromLayerkeep: (node, lkslice, opts = {}) => {
+    return Request.post(`${node.apiUrl}/files/sync_layerkeep`, lkslice, opts)
   }
 }

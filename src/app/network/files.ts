@@ -9,12 +9,18 @@
 import Request from './request'
 
 export default {
-  create: (file) => {
+  create: (node, params = {}) => {
     // console.log(file)
     var data = new FormData();
-    data.append(`file`, file);
+    // data.append(`file`, file);
 
-    return Request.post('/files', data, {headers: {'Content-Type' : 'multipart/form-data'}})
+    for ( var key in params ) {
+      if (params[key]) {
+        data.append(`${key}`, params[key]);
+      }
+    }
+
+    return Request.post(`${node.apiUrl}/files`, data, {headers: {'Content-Type' : 'multipart/form-data'}})
   },
 
   delete: (id, options={}) => {

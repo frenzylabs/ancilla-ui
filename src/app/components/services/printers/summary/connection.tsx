@@ -23,10 +23,20 @@ import {
 import { PrinterHandler } from '../../../../network'
 // import { NodeAction } from '../../../../store/reducers/nodes'
 
+import ErrorModal           from '../../../modal/error'
 import PrintForm from './print_form'
+
+import { NodeState }  from '../../../../store/reducers/state'
+import { ServiceState }  from '../../../../store/reducers/service'
+
 import PubSub from 'pubsub-js'
 
-export default class Connection extends React.Component {
+type Props = {
+  node: NodeState, 
+  service: ServiceState
+}
+
+export default class Connection extends React.Component<Props> {
   form = null
   state = {
     showing: false,
@@ -46,7 +56,7 @@ export default class Connection extends React.Component {
     })
   }
 
-  startPrint() {
+  startPrint(closeDialog) {
     if (!(this.form.state.newPrint && this.form.state.newPrint.file_id)) {
       toaster.danger("Select a File")
       return
@@ -65,21 +75,24 @@ export default class Connection extends React.Component {
       // })
 
       toaster.success(`Print Started ${newPrint.name} has been successfully added`)
-      // closeDialog()
+      closeDialog()
     })
     .catch((error) => {
       console.log(error)
+      closeDialog()
+      toaster.danger(<ErrorModal requestError={error} />)
+
       this.setState({
         loading: false,
       })
-      let errors = Object.keys(error.response.data.errors).map((key, index) => {
-        return  `${key} : ${error.response.data.errors[key]}<br/>`
-      })
+      // let errors = Object.keys(error.response.data.errors).map((key, index) => {
+      //   return  `${key} : ${error.response.data.errors[key]}<br/>`
+      // })
 
-      toaster.danger(
-        `Unable to start print ${JSON.stringify(newPrint)}`, 
-        {description: errors}
-      )
+      // toaster.danger(
+      //   `Unable to start print ${JSON.stringify(newPrint)}`, 
+      //   {description: errors}
+      // )
     })
     // this.topic = `${this.props.node.name}.${this.props.printer.name}.request`
     // let cmd = [this.props.printer.name, "start_print", this.form.state.newPrint]
@@ -118,7 +131,7 @@ export default class Connection extends React.Component {
         </Dialog>
 
         <Pane display="flex" marginBottom={6}>
-          <Button onClick={() => this.toggleDialog(true)} minWidth={180} iconBefore="application" >Print</Button>          
+          <Button disabled={!this.props.service.state.connected} onClick={() => this.toggleDialog(true)} minWidth={180} iconBefore="application" >Print</Button>          
         </Pane>
         </React.Fragment>
       )

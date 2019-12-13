@@ -39,6 +39,12 @@ export const ServiceHandler = {
     // var data = Object.assign(options['params'] || {}, {attachment_id: attachment_id})
     console.log("ADD OPTIONS", options)
     return Request.post(`${node.apiUrl}/services/${service.kind}/${service.id}/attachments`, data, options)
+  },
+
+  deleteAttachment: (node, service, attachment, options = {}) => {
+    // var data = Object.assign(options['params'] || {}, {attachment_id: attachment_id})
+    console.log("del OPTIONS", options)
+    return Request.delete(`${node.apiUrl}/services/${service.kind}/${service.id}/attachments/${attachment.id}`, options)
   }
 }
 

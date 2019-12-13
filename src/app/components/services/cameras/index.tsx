@@ -17,6 +17,7 @@ import {
 import {
   Pane,
   TextInput,
+  Button,
   toaster
 } from 'evergreen-ui'
 
@@ -32,7 +33,17 @@ import ErrorModal     from '../../modal/error'
 import NodeAction  from '../../../store/actions/node'
 import ServiceAction  from '../../../store/actions/services'
 
-export class CameraView extends React.Component<{node: object, service: object}> {
+import { NodeState }  from '../../../store/reducers/state'
+import { ServiceState }  from '../../../store/reducers/service'
+
+type Props = {
+  node: NodeState, 
+  service: ServiceState,
+  deleteService: Function,
+  cameraUpdated: Function,
+  dispatch: Function
+}
+export class CameraView extends React.Component<Props> {
   constructor(props:any) {
     super(props)
 
@@ -157,6 +168,54 @@ export class CameraView extends React.Component<{node: object, service: object}>
     toaster.danger(<ErrorModal requestError={error} />)
   }
 
+  power(){
+    if (this.props.service.state.open) {
+      CameraHandler.disconnect(this.props.node, this.props.service)
+      .then((response) => {
+        console.log("disconnected", response)
+      }).catch((error) => {
+        console.log(error)
+        toaster.danger(<ErrorModal requestError={error} />)
+      })
+    } else {
+      CameraHandler.connect(this.props.node, this.props.service)
+      .then((response) => {
+        toaster.success(`Connected to ${this.props.service.name}`)
+      })
+      .catch((error) => {
+        console.log(error)
+        toaster.danger(<ErrorModal requestError={error} />)
+      })
+    }
+  }
+
+  getColorState() {
+    if (this.props.service.state.open) {
+      return 'success'
+    } else {
+      return 'danger'
+    }
+  }
+
+  deleteCamera() {
+    this.props.deleteService(this.props.node, this.props.service)
+    .catch((error) => {
+      toaster.danger(<ErrorModal requestError={error} />)
+    })
+  }
+
+  deleteComponent() {
+    return (
+      <Pane display="flex" borderTop paddingTop={20}>
+        <Pane display="flex" flex={1} padding={20} marginBottom={20} className="danger-zone" alignItems="center" flexDirection="row">
+          <Pane>
+            <Button appearance="primary" intent="danger" height={40} onClick={() => this.deleteCamera()}> Delete </Button>
+          </Pane>
+        </Pane>
+      </Pane>
+    )
+  }
+
   renderDisplay() {
       if (this.props.service.state.open) {
         let url = this.props.node.apiUrl
@@ -202,12 +261,15 @@ export class CameraView extends React.Component<{node: object, service: object}>
     var params = this.props.match.params;
     return (
       <div className="flex-wrapper">
-        <Statusbar {...this.props} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
+        <Statusbar {...this.props} status={this.getColorState()} powerAction={this.power.bind(this)} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
 
-        <div>
+        <div className="scrollable-content">
           <Switch>                  
               <Route path={`${this.props.match.path}/settings`} render={ props => 
-                <Settings {...this.props} {...props} forms={[<CameraForm onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />]}/> 
+                <Settings {...this.props} {...props} forms={[
+                <CameraForm onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />,
+                this.deleteComponent()
+                ]}/> 
               }/>
 
               <Route path={`${this.props.match.path}`} render={ props => 

@@ -26,8 +26,7 @@ import printer, {default as request} from '../../network/printer'
 
 import {
   Printers,
-  Cameras,
-  Files
+  Cameras
 } from './sections'
 
 export default class SubNav extends React.Component {
@@ -55,7 +54,7 @@ export default class SubNav extends React.Component {
           <Printers {...this.props} />
           <Cameras {...this.props} />
           {/*<Files {...this.props}/>*/}
-					<Tree.Node name="Files" selectItem={this.filesSelected}/>
+					<Tree.Node name="Sliced Files" selectItem={this.filesSelected}/>
         </Pane>
 
       </Pane>

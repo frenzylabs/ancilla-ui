@@ -25,6 +25,8 @@ import React  from 'react'
 //   Summary
 // } from '../../'
 
+import ErrorModal     from '../../modal/error'
+
 import { ServiceHandler } from '../../../network'
 import AttachmentForm from './form'
 
@@ -53,6 +55,7 @@ export default class ServiceAttachment extends React.Component<{node: object, se
     // this.receiveEvent    = this.receiveEvent.bind(this)
     this.getAttachments    = this.getAttachments.bind(this)
     this.saveAttachment    = this.saveAttachment.bind(this)
+    this.renderAttachments = this.renderAttachments.bind(this)
 
     window.at = this
     
@@ -105,11 +108,11 @@ export default class ServiceAttachment extends React.Component<{node: object, se
         attachments: attachments
       })
 
-      toaster.success(`Attachment ${f.name} has been successfully added`)
+      toaster.success(`Attachment ${attachment.name} has been successfully added`)
       closeDialog()
     })
     .catch((error) => {
-      console.log(error)
+      console.log(error)      
       this.setState({
         loading: false,
       })
@@ -130,74 +133,27 @@ export default class ServiceAttachment extends React.Component<{node: object, se
     //   })
   }
 
-  // receiveRequest(msg, data) {
-  //   // console.log("PV Received Data here1", msg)    
-  //   // console.log("PV Received Data here2", data)
-  //   // console.log(typeof(data))
-  //   if(!data)
-  //     return
-  //   if (data["action"] == "get_state") {
-  //     // console.log("get STATE", data)
-  //     this.setState({deviceState: data["resp"]})
-  //   }
-  //   if (data["action"] == "start_recording") {
-  //     // console.log("get STATE", data)
-  //     this.setState({...this.state, deviceState: {...this.state.deviceState, recording: true}})
-  //   } else if (data["action"] == "stop_recording") {
-  //     // console.log("get STATE", data)
-  //     this.setState({...this.state, deviceState: {...this.state.deviceState, recording: false}})
-  //   }
-  // }
-
-  // receiveEvent(msg, data) {
-  //   // console.log("PV Received Event here1", msg)    
-  //   // console.log("PV Received Event here2", data)
-  //   // console.log(typeof(data))
-  //   var [to, kind] = msg.split("events.")
-  //   // console.log("EVENT KIND", kind)
-  //   switch(kind) {
-  //     case 'camera_recording.state':
-  //         console.log("Camera Recording STate", data)
-  //         // this.setState({...this.state, deviceState: {...this.state.deviceState, open: false}})
-  //         break
-  //     case 'connection.closed':
-  //         this.setState({...this.state, deviceState: {...this.state.deviceState, open: false}})
-  //         break
-  //     case 'connection.opened':
-  //         this.setState({...this.state, deviceState: {...this.state.deviceState, open: true}})
-  //         break
-  //     case 'print.started':
-  //         this.setState({...this.state, deviceState: {...this.state.deviceState, printing: true}})
-  //         break
-  //     case 'print.cancelled':
-  //         this.setState({...this.state, deviceState: {...this.state.deviceState, printing: false}})
-  //         break
-  //     case 'print.failed':
-  //         this.setState({...this.state, deviceState: {...this.state.deviceState, printing: false, status: "print_failed"}})
-  //         break
-  //     default:
-  //       break
-  //   }    
-  // }
-
-    
-  // componentWillUnmount() {
-  //   if (this.pubsubToken)
-  //     PubSub.unsubscribe(this.pubsubToken)
-  //   if (this.pubsubRequestToken)
-  //     PubSub.unsubscribe(this.pubsubRequestToken)
-  // }
-
-  // componentDidUpdate(prevProps, prevState) {
-  //   if (prevProps.printer != this.props.printer) {
-  //     this.setupPrinter()
-  //   }
-  // }
-
   toggleDialog(show:boolean) {
     this.setState({
       ...this.state,
       showing: show
+    })
+  }
+
+  deleteAttachment(attachment) {
+    ServiceHandler.deleteAttachment(this.props.node, this.props.service, attachment)
+    .then((response) => {
+      var attachments = this.state.attachments.filter((item) => item.attachment.id != attachment.id) 
+      this.setState({
+        loading: false,
+        attachments: attachments
+      })
+
+      toaster.success(`Attachment ${attachment.name} has been deleted`)
+    })
+    .catch((error) => {
+      console.log(error)
+      toaster.danger(<ErrorModal requestError={error} />)
     })
   }
 
@@ -214,26 +170,24 @@ export default class ServiceAttachment extends React.Component<{node: object, se
 					{attachment.device_type}
 				</Pane>
 
-				<Pane>
-					<IconButton appearance="minimal" icon="download"/>
-				</Pane>
 
 				<Pane>
-					<IconButton appearance="minimal" icon="trash"/>
+					<IconButton appearance="minimal" icon="trash" onClick={() => this.deleteAttachment(attachment) }/>
 				</Pane>
 			</Pane>
 		)
   }
   
   renderAttachments() {
-    
-    return (
-      <Pane borderBottom borderLeft borderRight>
-        {this.state.attachments.map((da) => {
-          return this.renderRow(da.id, da.attachment)
-        })}
-      </Pane>
-    )
+    if (this.state.attachments) {
+      return (
+        <Pane borderBottom borderLeft borderRight>
+          {this.state.attachments.map((da) => {
+            return this.renderRow(da.id, da.attachment)
+          })}
+        </Pane>
+      )
+    }
 
   }
 

@@ -141,8 +141,8 @@ export default class PrinterShow extends React.Component {
     var [to, kind] = msg.split("events.")
     switch(kind) {
       case 'printer.state.changed':
-          console.log(data)
-          this.props.dispatch(ServiceActions.updateState(this.props.service, data))
+          // console.log(data)
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, ...data}))
           // this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, connected: false}))
           // this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
           break

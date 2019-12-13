@@ -32,13 +32,22 @@ import Modal                from '../../modal/index'
 import ErrorModal           from '../../modal/error'
 import NodeAction           from '../../../store/actions/node'
 import ServiceAction        from '../../../store/actions/services'
+import PrinterHandler       from '../../../network/printer'
 
-
-
+import { NodeState }  from '../../../store/reducers/state'
+import { ServiceState }  from '../../../store/reducers/service'
 
 import PubSub from 'pubsub-js'
 
-export class PrinterIndex extends React.Component {
+type Props = {
+  node: NodeState, 
+  service: ServiceState,
+  deleteService: Function,
+  printerUpdated: Function,
+  dispatch: Function
+}
+
+export class PrinterIndex extends React.Component<Props> {
   constructor(props:any) {
     super(props)
 
@@ -164,6 +173,34 @@ export class PrinterIndex extends React.Component {
     }    
   }
 
+  power(){
+    if (this.props.service.state.connected) {
+      PrinterHandler.disconnect(this.props.node, this.props.service)
+      .then((response) => {
+        this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
+      })
+    } else {
+      PrinterHandler.connect(this.props.node, this.props.service)
+      .then((response) => {
+        console.log("CONNECT resp ", response)
+        this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: true}))
+        toaster.success(`Connected to ${this.props.service.name}`)
+      })
+      .catch((error) => {
+        console.log(error)
+        toaster.danger(<ErrorModal requestError={error} />)
+      })
+    }
+  }
+
+  getColorState() {
+    if (this.props.service.state.connected) {
+      return 'success'
+    } else {
+      return 'danger'
+    }
+  }
+
   printerSaved(resp) {
     // console.log("printer saved", resp)
     this.props.printerUpdated(this.props.node, resp.data.service_model)
@@ -187,6 +224,10 @@ export class PrinterIndex extends React.Component {
   deletePrinter() {
     console.log("DELETE PRINTER")
     this.props.deleteService(this.props.node, this.props.service)
+    .catch((error) => {
+      console.log(error)
+      toaster.danger(<ErrorModal requestError={error} />)
+    })
   }
 
   deleteComponent() {
@@ -213,7 +254,7 @@ export class PrinterIndex extends React.Component {
     var params = this.props.match.params;
     return (
       <div className="flex-wrapper">
-        <Statusbar {...this.props} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
+        <Statusbar {...this.props} status={this.getColorState()} powerAction={this.power.bind(this)} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
 
         <div className="scrollable-content">
           <Switch>

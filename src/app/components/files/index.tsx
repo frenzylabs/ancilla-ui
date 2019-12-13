@@ -20,7 +20,7 @@ import {
   toaster
 } from 'evergreen-ui'
 
-import Form 				from '../subnav/sections/files/form'
+import Form 				from './form'
 import FileRequest 	from '../../network/files'
 
 export default class FilesView extends React.Component {
@@ -107,7 +107,7 @@ export default class FilesView extends React.Component {
       isSaving: true
     })
 
-    FileRequest.create(this.form.state.file)
+    FileRequest.create(this.props.node, this.form.state.newFile)
     .then((res) => {
       this.setState({
         ...this.state,

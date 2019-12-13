@@ -127,8 +127,6 @@ export default class Form extends React.Component<Props> {
     }
 
     req.then((response) => {
-      console.log(response)
-
       this.setState({
         loading: false
       })

@@ -57,6 +57,13 @@ export default class Form extends React.Component<{Props}> {
     }
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.data && prevProps.data != this.props.data) {
+      var data = this.props.data.model || {}
+      this.setState({newCamera: {...this.state.newCamera, ...data}})
+    }
+  }
+
   saveCamera() {
 
     this.setState({

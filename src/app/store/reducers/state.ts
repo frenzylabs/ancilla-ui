@@ -5,7 +5,7 @@ import { PrinterState } from './printers'
 // const apiUrl = document.location.protocol+ "//" + document.location.hostname + ":5000"
 // var localnode = new Node("localhost", document.location.hostname, "5000")
 
-type NodeState = {  
+export type NodeState = {  
   name:string,
   apiUrl: string,
   webSocketUrl: string,

@@ -17,6 +17,10 @@ import {
   Button,
   Dialog,
   Text,
+  Position,
+  Table,
+  Menu,
+  Popover,
   toaster
 } from 'evergreen-ui'
 
@@ -211,6 +215,57 @@ export default class FilesView extends React.Component {
     )
   }
 
+  renderRowMenu = (row) => {
+    return (
+      <Menu>
+        <Menu.Group>
+          <Menu.Item>Sync to Layerkeep...</Menu.Item>
+          <Menu.Item secondaryText="⌘R">Rename...</Menu.Item>
+        </Menu.Group>
+        <Menu.Divider />
+        <Menu.Group>
+          <Menu.Item intent="danger"  data-id={row.id} data-name={row.name} onClick={this.deleteFile}>
+            Delete... 
+          </Menu.Item>
+        </Menu.Group>
+      </Menu>
+    )
+  }
+
+  renderTable(files) {
+    return (
+      <Table>
+        <Table.Head>
+          <Table.SearchHeaderCell />
+          <Table.TextHeaderCell>
+            Created At:
+          </Table.TextHeaderCell>
+          <Table.TextHeaderCell>
+            
+          </Table.TextHeaderCell>
+        </Table.Head>
+        <Table.VirtualBody height={240}>
+          {files.map((row, index) => (
+            <Table.Row key={row.id} isSelectable >
+              <Table.TextCell>{row.name}</Table.TextCell>
+              <Table.TextCell>{Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
+              <Table.TextCell isNumber>
+                
+              </Table.TextCell>
+              <Table.Cell width={48} flex="none">
+                <Popover
+                  content={() => this.renderRowMenu(row)}
+                  position={Position.BOTTOM_RIGHT}
+                >
+                  <IconButton icon="more" height={24} appearance="minimal" />
+                </Popover>
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.VirtualBody>
+      </Table>)
+  }
+
   renderGroup(name:string, index:number) {
     let key 	= Object.keys(this.state.sections)[index]
     let files = this.state.sections[name] || []
@@ -228,7 +283,8 @@ export default class FilesView extends React.Component {
           </Pane>
 
           <Pane borderBottom borderLeft borderRight>
-            {files.map((row, index) => this.renderRow(row.id, row.name, Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')))}
+            {this.renderTable(files)}
+            {/* {files.map((row, index) => this.renderRow(row.id, row.name, Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')))} */}
           </Pane>
         </Pane>
       </Pane>

@@ -70,6 +70,7 @@ export default class FilesView extends React.Component {
     this.listLocal      = this.listLocal.bind(this)
     this.selectSection	= this.selectSection.bind(this)
     this.deleteFile     = this.deleteFile.bind(this)
+    this.syncFile       = this.syncFile.bind(this)
     this.saveFile				= this.saveFile.bind(this)
     this.toggleDialog		= this.toggleDialog.bind(this)
     this.renderRow 			= this.renderRow.bind(this)
@@ -166,6 +167,19 @@ export default class FilesView extends React.Component {
     .catch((_err) => {})
   }
 
+  syncFile(row) {
+    console.log(row)
+    FileRequest.syncToLayerkeep(this.props.node, row)
+    .then((res) => {
+      // this.listLocal()
+      console.log("Sync Success", res)
+      toaster.success(`${row.name} has been successfully added to Layerkeep.`)
+    })
+    .catch((error) => {
+      console.log("Sync Error", error)
+    })
+  }
+
   toggleDialog(show:boolean, section:string) {
     var _dialog = this.state.dialog
     _dialog[section] = show
@@ -221,12 +235,12 @@ export default class FilesView extends React.Component {
     return (
       <Menu>
         <Menu.Group>
-          <Menu.Item>Sync to Layerkeep...</Menu.Item>
-          <Menu.Item secondaryText="⌘R">Rename...</Menu.Item>
+          <Menu.Item onSelect={() => this.syncFile(row)}>Sync to Layerkeep...</Menu.Item>
+          <Menu.Item secondaryText="">Rename...</Menu.Item>
         </Menu.Group>
         <Menu.Divider />
         <Menu.Group>
-          <Menu.Item intent="danger"  data-id={row.id} data-name={row.name} onClick={this.deleteFile}>
+          <Menu.Item intent="danger"  data-id={row.id} data-name={row.name} onSelect={this.deleteFile}>
             Delete... 
           </Menu.Item>
         </Menu.Group>

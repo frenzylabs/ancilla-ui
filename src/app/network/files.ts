@@ -33,5 +33,9 @@ export default {
 
   syncFromLayerkeep: (node, lkslice, opts = {}) => {
     return Request.post(`${node.apiUrl}/files/sync_layerkeep`, lkslice, opts)
+  },
+
+  syncToLayerkeep: (node, localslice, opts = {}) => {
+    return Request.post(`${node.apiUrl}/files/${localslice.id}/sync_layerkeep`, localslice, opts)
   }
 }

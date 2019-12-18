@@ -71,6 +71,8 @@ export default class FilesView extends React.Component {
     this.selectSection	= this.selectSection.bind(this)
     this.deleteFile     = this.deleteFile.bind(this)
     this.syncFile       = this.syncFile.bind(this)
+    this.unsyncFile     = this.unsyncFile.bind(this)
+    this.downloadFile   = this.downloadFile.bind(this)
     this.saveFile				= this.saveFile.bind(this)
     this.toggleDialog		= this.toggleDialog.bind(this)
     this.renderRow 			= this.renderRow.bind(this)
@@ -180,6 +182,23 @@ export default class FilesView extends React.Component {
     })
   }
 
+  unsyncFile(row) {
+    console.log(row)
+    FileRequest.unsyncFromLayerkeep(this.props.node, row)
+    .then((res) => {
+      // this.listLocal()
+      console.log("UnSync Success", res)
+      toaster.success(`${row.name} has been successfully unsynced.`)
+    })
+    .catch((error) => {
+      console.log("UnSync Error", error)
+    })
+  }
+
+  downloadFile(fileId) {
+    document.location.href = `${this.props.node.apiUrl}/files/${fileId}?download=true`
+  }
+
   toggleDialog(show:boolean, section:string) {
     var _dialog = this.state.dialog
     _dialog[section] = show
@@ -231,12 +250,19 @@ export default class FilesView extends React.Component {
     )
   }
 
+  renderLayerkeepSync = (row) => {
+    if (row.layerkeep_id) {
+      return (<Menu.Item onSelect={() => this.unsyncFile(row)}>UnSync from Layerkeep...</Menu.Item>)
+    } else {
+      return (<Menu.Item onSelect={() => this.syncFile(row)}>Sync to Layerkeep...</Menu.Item>)
+    }
+  }
   renderRowMenu = (row) => {
     return (
       <Menu>
         <Menu.Group>
-          <Menu.Item onSelect={() => this.syncFile(row)}>Sync to Layerkeep...</Menu.Item>
-          <Menu.Item secondaryText="">Rename...</Menu.Item>
+          {this.renderLayerkeepSync(row)}
+          <Menu.Item secondaryText="" onSelect={() => this.downloadFile(row.id)}>Download</Menu.Item>
         </Menu.Group>
         <Menu.Divider />
         <Menu.Group>

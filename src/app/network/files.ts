@@ -37,5 +37,10 @@ export default {
 
   syncToLayerkeep: (node, localslice, opts = {}) => {
     return Request.post(`${node.apiUrl}/files/${localslice.id}/sync_layerkeep`, localslice, opts)
+  },
+
+  unsyncFromLayerkeep: (node, localslice, opts = {}) => {
+    return Request.patch(`${node.apiUrl}/files/${localslice.id}/unsync`, localslice, opts)
   }
+
 }

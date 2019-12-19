@@ -120,10 +120,10 @@ export class PaginatedList extends React.Component<{onChangePage?, currentPage, 
     var pager = this.state.pager;
     console.log("INSIDE PAGINATION render")
 
-    // if (!pager.pages || pager.pages.length <= 1) {
-    //     // don't display pager if there is only 1 page
-    //     return null;
-    // }
+    if (!pager.pages || pager.pages.length <= 1) {
+        // don't display pager if there is only 1 page
+        return null;
+    }
 
     return (
       <Pane>

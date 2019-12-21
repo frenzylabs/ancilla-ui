@@ -11,9 +11,16 @@ import React from 'react'
 import {
   Pane,
   TextInput,
-  Combobox,
+  Tooltip,
+  Icon,
+  Paragraph,
   toaster
 } from 'evergreen-ui'
+
+import fuzzaldrin from 'fuzzaldrin-plus'
+
+import Combobox from '../../../utils/combobox'
+import AutocompleteItem from '../../../utils/autocompleteItem'
 
 import request from '../../../../network/files'
 
@@ -24,16 +31,9 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
       file_id:     '',
       baud_rate: ''
     },
+    selectedFile: null,
     files: Array<{}>(),
   }
-
-  // get values():{name?:string, port:string, baudrate:string} {
-  //   return {
-  //     name:     this.state.name.length > 0 ? this.state.name : this.state.port,
-  //     port:     this.state.port,
-  //     baudrate: this.state.baudrate
-  //   }
-  // }
 
   getFiles() {
     request.listLocal()
@@ -41,7 +41,7 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
       if (response.data && response.data.files) {
         this.setState({
           files: response.data.files.map((fp) => {
-            return {name: fp.name, id: fp.id}
+            return {key: fp.id, name: fp.name, id: fp.id, description: fp.description}
           })
         })
         // this.setState({files: response.data.files})
@@ -58,6 +58,28 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
   save() {
     // this.props.save(this.values)
   }
+
+  
+  renderItem(props) {
+    var item = props.item
+    return <AutocompleteItem {...props} children={
+    <Pane display="flex" flex={1}>
+      <Pane display="flex" flex={1}>
+      {item.name} 
+      </Pane>
+      <Pane>
+        <Tooltip align="right"
+          content={
+            <Paragraph margin={10}>{item.description}</Paragraph>
+          }
+          appearance="card"
+        >
+          <Icon size={12} marginLeft={4} icon="help" />
+        </Tooltip>
+      </Pane>
+   </Pane>} />
+  }
+
 
   render() {
     return (
@@ -81,8 +103,12 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
         <Combobox 
           openOnFocus 
           items={this.state.files} 
-          itemToString={item => item ? item.name : ''}
+          itemToString={item => item ? `${item.name}` : ''}
+          selectedItem={this.state.selectedFile}
           placeholder={this.state.files.length > 0? "File" : "No Files Found"} 
+          autocompleteProps={{
+            renderItem: this.renderItem.bind(this)
+          }}
           marginTop={4} 
           marginBottom={4}  
           width="100%" 
@@ -91,6 +117,7 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
           disabled={this.state.files.length < 1}
           onChange={selected => {
             this.setState({
+              selectedFile: selected,
               newPrint: {
                 ...this.state.newPrint,
                 file_id: (selected && selected.id)

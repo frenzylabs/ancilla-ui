@@ -19,7 +19,9 @@ export default class ErrorModal extends React.Component<{requestError: any, capt
     if(!caption && this.props.requestError) {
        caption = this.props.requestError.message
        if (!subtext) {
-        const data = this.props.requestError.response.data;
+        console.log(this.props.requestError)        
+        var resp = this.props.requestError.response
+        const data = resp ? resp.data : null
         if (!data) {
           subtext = "Uknown Error"
         } else {

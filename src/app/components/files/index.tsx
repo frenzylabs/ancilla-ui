@@ -28,6 +28,8 @@ import Form 				from './form'
 import FileRequest 	from '../../network/files'
 
 import Layerkeep from './layerkeep'
+import Modal from '../modal/index'
+import AuthForm from '../services/layerkeep/form'
 
 export default class FilesView extends React.Component {
 
@@ -38,6 +40,7 @@ export default class FilesView extends React.Component {
       sd: 				false
     },
     isSaving: false,
+    printSlice: null,
     sections: {
       'all': [],
       // 'LayerKeep': [
@@ -63,6 +66,7 @@ export default class FilesView extends React.Component {
   }
 
   form:Form = {}
+  cancelRequest = null
   
   constructor(props:any) {
     super(props)
@@ -80,14 +84,22 @@ export default class FilesView extends React.Component {
     this.renderGroups		= this.renderGroups.bind(this)
     this.renderTopBar		= this.renderTopBar.bind(this)
     this.renderSection	= this.renderSection.bind(this)
+
+    this.cancelRequest = FileRequest.cancelSource();
   }
 
   componentDidMount() {
     this.listLocal()
   }
 
+  componentWillUnmount() {
+    if (this.cancelRequest)
+      this.cancelRequest.cancel("FileView Unmounted")
+  }
+
   listLocal() {
-    FileRequest.listLocal()
+    
+    FileRequest.listLocal({cancelToken: this.cancelRequest.token})
     .then((res) => {
       let files = res.data['files'] || []
 
@@ -116,8 +128,25 @@ export default class FilesView extends React.Component {
       isSaving: true
     })
 
-    FileRequest.create(this.props.node, this.form.state.newFile)
-    .then((res) => {
+    var request = null
+    if (this.form.state.newFile.id){
+      request = FileRequest.update(this.props.node, this.form.state.newFile.id, this.form.state.newFile, {cancelToken: this.cancelRequest.token})
+    } else {
+     request = FileRequest.create(this.props.node, this.form.state.newFile, {cancelToken: this.cancelRequest.token})
+    }
+
+    request.then((res) => {
+      var files = (this.state.sections.Local || [])
+      if (this.form.state.newFile.id) {
+        files = files.map((f) => {
+          if (f.id == res.data.file.id) {
+            return res.data.file
+          } 
+          return f
+        })
+      } else {
+        files.unshift(res.data.file)
+      }
       this.setState({
         ...this.state,
         isSaving: false,
@@ -128,31 +157,45 @@ export default class FilesView extends React.Component {
         },		
         sections: {
           ...this.state.sections,
-          Local: (this.state.sections.Local || []).concat(res.data.file)
+          Local: files
         }
       })
 
       toaster.success(`File ${res.data.file.name} has been successfully added`)
     })
     .catch((err) => {
-      this.setState({
-        ...this.state,
-        isSaving: false,
-        dialog: {
-          layerkeep: 	false,
-          local: 			false,
-          sd: 				false
-        }
-      })
+      if (err.response && err.response.status == 401) {
+        console.log("Unauthorized")
+        this.setState({
+          showAuth: true, 
+          isSaving: false
+          // dialog: {
+          //   layerkeep: 	false,
+          //   local: 			false,
+          //   sd: 				false
+          // }
+        })
+      } else {
 
-      let errors = Object.keys(err.response.data.errors).map((key, index) => {
-        return  `${key} : ${err.response.data.errors[key]}<br/>`
-      })
+        this.setState({
+          ...this.state,
+          isSaving: false,
+          dialog: {
+            layerkeep: 	false,
+            local: 			false,
+            sd: 				false
+          }
+        })
 
-      toaster.danger(
-        `Unable to save file ${this.form.state.file.name}`, 
-        {description: errors}
-      )
+        let errors = Object.keys(err.response.data.errors).map((key, index) => {
+          return  `${key} : ${err.response.data.errors[key]}<br/>`
+        })
+
+        toaster.danger(
+          `Unable to save file ${this.form.state.file.name}`, 
+          {description: errors}
+        )
+      }
     })
   }
 
@@ -169,6 +212,7 @@ export default class FilesView extends React.Component {
     .catch((_err) => {})
   }
 
+  
   syncFile(row) {
     console.log(row)
     FileRequest.syncToLayerkeep(this.props.node, row)
@@ -199,13 +243,21 @@ export default class FilesView extends React.Component {
     document.location.href = `${this.props.node.apiUrl}/files/${fileId}?download=true`
   }
 
+  authenticated(res) {
+    console.log("Authenticated", res)
+    console.log(this.form)
+    console.log(this.form.state.newFile)
+    this.setState({showAuth: false})
+  }
+
   toggleDialog(show:boolean, section:string) {
     var _dialog = this.state.dialog
     _dialog[section] = show
 
     this.setState({
       ...this.state,
-      dialog: _dialog
+      dialog: _dialog,
+      printSlice: (show ? this.state.printSlice : null)
     })
   }
 
@@ -217,17 +269,20 @@ export default class FilesView extends React.Component {
         <Dialog
           isShown={this.state.dialog[section] || false}
           title="Add File"
-          confirmLabel="Save"
+          confirmLabel={this.state.isSaving ? 'Saving...' : 'Save'}
           onCloseComplete={() => this.toggleDialog(false, section)}
           onConfirm={this.saveFile}
+          
         >
-          <Form ref={frm => this.form = frm} save={this.saveFile} loading={this.state.isSaving}/>
+          <Form ref={frm => this.form = frm} node={this.props.node} save={this.saveFile} loading={this.state.isSaving} printSlice={this.state.printSlice} />
         </Dialog>
 
         <IconButton appearance='minimal' icon="add" onClick={() => this.toggleDialog(true, section)}/>
       </React.Fragment>
     )
   }
+
+
   renderRow(key:number, name:string, timestamp:string = "") {
     return (
       <Pane display="flex" flex={1} key={key} background={key % 2 ? "#f9f9f9" : "#fff"} padding={10} alignItems="center" borderTop>
@@ -257,11 +312,18 @@ export default class FilesView extends React.Component {
       return (<Menu.Item onSelect={() => this.syncFile(row)}>Sync to Layerkeep...</Menu.Item>)
     }
   }
-  renderRowMenu = (row) => {
+
+  renderEdit(section, row) {
+    this.state.dialog[section] = true
+    this.setState({printSlice: row})
+  }
+
+  renderRowMenu = (section, row) => {
     return (
       <Menu>
         <Menu.Group>
           {this.renderLayerkeepSync(row)}
+          <Menu.Item onSelect={() => this.renderEdit(section, row)}>Edit</Menu.Item>
           <Menu.Item secondaryText="" onSelect={() => this.downloadFile(row.id)}>Download</Menu.Item>
         </Menu.Group>
         <Menu.Divider />
@@ -274,29 +336,32 @@ export default class FilesView extends React.Component {
     )
   }
 
-  renderTable(files) {
+  renderTable(section, files) {
     return (
       <Table>
         <Table.Head>
           <Table.SearchHeaderCell />
+          <Table.TextHeaderCell >
+            Description:
+          </Table.TextHeaderCell>
           <Table.TextHeaderCell>
             Created At:
           </Table.TextHeaderCell>
-          <Table.TextHeaderCell>
-            
+          <Table.TextHeaderCell width={48} flex="none">
           </Table.TextHeaderCell>
         </Table.Head>
         <Table.VirtualBody height={240}>
           {files.map((row, index) => (
             <Table.Row key={row.id} isSelectable >
               <Table.TextCell>{row.name}</Table.TextCell>
-              <Table.TextCell>{Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
-              <Table.TextCell isNumber>
-                
+              <Table.TextCell >
+                {row.description}
               </Table.TextCell>
+              <Table.TextCell>{Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
+              
               <Table.Cell width={48} flex="none">
                 <Popover
-                  content={() => this.renderRowMenu(row)}
+                  content={() => this.renderRowMenu(section, row)}
                   position={Position.BOTTOM_RIGHT}
                 >
                   <IconButton icon="more" height={24} appearance="minimal" />
@@ -325,7 +390,7 @@ export default class FilesView extends React.Component {
           </Pane>
 
           <Pane borderBottom borderLeft borderRight>
-            {this.renderTable(files)}
+            {this.renderTable(name.toLowerCase(), files)}
             {/* {files.map((row, index) => this.renderRow(row.id, row.name, Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')))} */}
           </Pane>
         </Pane>
@@ -378,6 +443,14 @@ export default class FilesView extends React.Component {
           {this.renderSection()}
           <Layerkeep {...this.props} />
         </div>
+        <Modal
+          component={AuthForm}
+          node={this.props.node}
+          // requestError={this.state.requestError}
+          isActive={this.state.showAuth}
+          dismissAction={() => this.setState({showAuth: false})}
+          onAuthenticated={this.authenticated.bind(this)}
+        />
       </Pane>
     )
   }	

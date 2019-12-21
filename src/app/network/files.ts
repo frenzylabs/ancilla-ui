@@ -6,10 +6,14 @@
 //  Copyright 2019 Wess Cope
 //
 
-import Request from './request'
+import { Request, CancelToken } from './request'
 
 export default {
-  create: (node, params = {}) => {
+  cancelSource: () => {
+    return CancelToken.source();
+  },
+
+  create: (node, params = {}, options = {}) => {
     // console.log(file)
     var data = new FormData();
     // data.append(`file`, file);
@@ -21,6 +25,20 @@ export default {
     }
 
     return Request.post(`${node.apiUrl}/files`, data, {headers: {'Content-Type' : 'multipart/form-data'}})
+  },
+
+  update: (node, id, params = {}, options = {}) => {
+    // console.log(file)
+    var data = new FormData();
+    // data.append(`file`, file);
+
+    for ( var key in params ) {
+      if (params[key]) {
+        data.append(`${key}`, params[key]);
+      }
+    }
+
+    return Request.patch(`${node.apiUrl}/files/${id}`, data, {headers: {'Content-Type' : 'multipart/form-data'}})
   },
 
   delete: (id, options={}) => {

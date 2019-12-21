@@ -95,7 +95,6 @@ export class LKSlicedFilesView extends React.Component {
     // this.renderSection	= this.renderSection.bind(this)
 
     this.cancelRequest = Layerkeep.cancelSource();
-    window.lk = this
   }
 
   componentDidMount() {
@@ -103,7 +102,8 @@ export class LKSlicedFilesView extends React.Component {
   }
 
   componentWillUnmount() {
-    this.cancelRequest.cancel("Left Page");
+    if (this.cancelRequest)
+      this.cancelRequest.cancel("Left Page");
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -127,7 +127,8 @@ export class LKSlicedFilesView extends React.Component {
       console.log(error)
       if (error.response && error.response.status == 401) {
         console.log("Unauthorized")
-        this.setState({showAuth: true, loading: false})
+        // this.setState({showAuth: true, loading: false})
+        this.setState({loading: false})
       } else {
         // this.setState({requestError: error})
         // toaster.danger(<ErrorModal requestError={error} />)
@@ -187,7 +188,6 @@ export class LKSlicedFilesView extends React.Component {
       <Menu>
         <Menu.Group>
           <Menu.Item onSelect={() => this.syncLocally(row)}>Sync to Local Node...</Menu.Item>
-          <Menu.Item>Rename...</Menu.Item>
         </Menu.Group>
         <Menu.Divider />
         <Menu.Group>
@@ -203,10 +203,9 @@ export class LKSlicedFilesView extends React.Component {
     return files.map((row, index) => (
       <Table.Row key={row.id} isSelectable >
         <Table.TextCell>{row.attributes.name}</Table.TextCell>
+        <Table.TextCell>{row.attributes.description}</Table.TextCell>
         <Table.TextCell>{Dayjs(row.attributes.updated_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
-        <Table.TextCell isNumber>
-          
-        </Table.TextCell>
+        
         <Table.Cell width={48} flex="none">
           <Popover
             content={() => this.renderRowMenu(row)}
@@ -227,11 +226,13 @@ export class LKSlicedFilesView extends React.Component {
             onChange={this.handleFilterChange}
             value={this.state.filter.name}
           />
+          <Table.TextHeaderCell >
+            Description:
+          </Table.TextHeaderCell>
           <Table.TextHeaderCell>
             Created At:
           </Table.TextHeaderCell>
-          <Table.TextHeaderCell>
-            
+          <Table.TextHeaderCell  width={48} flex="none">
           </Table.TextHeaderCell>
         </Table.Head>
         <Table.VirtualBody height={240}>

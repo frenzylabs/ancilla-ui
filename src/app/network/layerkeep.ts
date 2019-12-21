@@ -18,13 +18,36 @@ export const Layerkeep = {
   sign_in: (node, creds) => {
     return Request.post(`${node.apiUrl}/layerkeep/sign_in`, creds)
   },
+
+  get: (node, lkpath, options= {}) => {
+    var qs = options["qs"]
+    delete options["qs"]
+    var path = `${node.apiUrl}/layerkeep/${lkpath}` + QS.stringify(qs, { addQueryPrefix: true }) 
+    return Request.get(path, options)
+  },
+
   
   listSlices: (node, options= {}) => {
     var qs = options["qs"]
     delete options["qs"]
     var path = `${node.apiUrl}/layerkeep/sliced_files` + QS.stringify(qs, { addQueryPrefix: true }) 
     return Request.get(path, options)
-  }
+  },
+
+  listProjects: (node, options= {}) => {
+    var qs = options["qs"]
+    delete options["qs"]
+    var path = `${node.apiUrl}/layerkeep/projects` + QS.stringify(qs, { addQueryPrefix: true }) 
+    return Request.get(path, options)
+  },
+
+  listProfiles: (node, options= {}) => {
+    var qs = options["qs"]
+    delete options["qs"]
+    var path = `${node.apiUrl}/layerkeep/profiles` + QS.stringify(qs, { addQueryPrefix: true }) 
+    return Request.get(path, options)
+  },
+
 
   // list: (node, options= {}) => {
   //     return Request.get(`${node.apiUrl}/services/printer`, options)

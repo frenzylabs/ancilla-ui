@@ -159,15 +159,13 @@ export class PrintList extends React.Component {
     })
   }
 
-  syncToLayerkeep(lkslice) {
+  syncToLayerkeep(row) {
     // let lkslice  = e.currentTarget.getAttribute('data-row')
-    
-
-    PrinterRequest.syncToLayerkeep(this.props.node, lkslice)
+    PrinterRequest.syncPrintToLayerkeep(this.props.node, this.props.service, row.id)
     .then((res) => {
       // this.listLocal()
 
-      toaster.success(`${name} has been successfully deleted.`)
+      toaster.success(`${row.name} has been successfully synced.`)
     })
     .catch((_err) => {})
   }
@@ -187,13 +185,6 @@ export class PrintList extends React.Component {
     }
     this.timer = setTimeout(this.filterList.bind(this), 500);
     this.setState({ filter: {...this.state.filter, name: val}})
-    // if (this.state.loading && this.cancelRequest) {
-    //   this.cancelRequest.cancel()
-    // }
-    // var search = this.state.search
-    // this.setState({ search: {...search, page: 1, q: {...search.q, name: val} }})
-    // this.filterchange = 
-    // this.setState({ search: {...search, page: 1, q: {...search.q, project_id: item["id"]} }})
   }
 
   onChangePage(page) {
@@ -208,13 +199,27 @@ export class PrintList extends React.Component {
     // this.props.history.push(`${url}`);
   }
 
+  unsyncFromLayerkeep(row) {
+    console.log("UnSync")
+  }
 
+  renderLKMenu(row) {
+    if (row.layerkeep_id) {
+      return (
+        <Menu.Item onSelect={() => this.unsyncFromLayerkeep(row)}>UnSync from Layerkeep...</Menu.Item>
+      )
+    } else {
+      return (
+          <Menu.Item onSelect={() => this.syncToLayerkeep(row)}>Sync to Layerkeep...</Menu.Item>
+      )
+    }
+  }
 
   renderRowMenu = (row) => {
     return (
       <Menu>
         <Menu.Group>
-          <Menu.Item onSelect={() => this.syncToLayerkeep(row)}>Sync to Layerkeep...</Menu.Item>
+          {this.renderLKMenu(row)}
         </Menu.Group>
         <Menu.Divider />
         <Menu.Group>
@@ -285,7 +290,6 @@ export class PrintList extends React.Component {
   renderPagination() {
     if (this.state.list.data.length > 0) {
       var {current_page, last_page, total} = this.state.list.meta;
-      console.log("render Pagination ", current_page, last_page, total)
       return (
         <PaginatedList currentPage={current_page} pageSize={this.state.search.per_page} totalPages={last_page} totalItems={total} onChangePage={this.onChangePage} /> 
       )

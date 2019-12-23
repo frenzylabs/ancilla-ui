@@ -7,6 +7,7 @@
 //
 
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 import {
   Pane,
@@ -150,7 +151,9 @@ export default class State extends React.Component {
       <Pane display="flex" flex={1} padding={20} margin={10} background="white" border="default" flexDirection="column">
         {this.renderLastPrint()}
         {this.renderCurrentPrint()}
-        
+        <Pane>
+          <Link to={`/printers/${this.props.service.id}/prints`}>All Prints</Link>
+        </Pane>
       </Pane>
     )
   }

@@ -350,7 +350,7 @@ export default class FilesView extends React.Component {
           <Table.TextHeaderCell width={48} flex="none">
           </Table.TextHeaderCell>
         </Table.Head>
-        <Table.VirtualBody height={240}>
+        <Table.VirtualBody minHeight={340}>
           {files.map((row, index) => (
             <Table.Row key={row.id} isSelectable >
               <Table.TextCell>{row.name}</Table.TextCell>

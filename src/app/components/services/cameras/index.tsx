@@ -43,7 +43,7 @@ type Props = {
   cameraUpdated: Function,
   dispatch: Function
 }
-export class CameraView extends React.Component<Props> {
+export class CameraIndex extends React.Component<Props> {
   constructor(props:any) {
     super(props)
 
@@ -72,7 +72,7 @@ export class CameraView extends React.Component<Props> {
     if (this.props.service) {
       this.props.dispatch(ServiceActions.getState(this.props.service))
       PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.connection"])
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.recording"])
+      // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.recording"])
 
       // PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.get_state"])
       // console.log("Has printer")
@@ -216,46 +216,7 @@ export class CameraView extends React.Component<Props> {
     )
   }
 
-  renderDisplay() {
-      if (this.props.service.state.open) {
-        let url = this.props.node.apiUrl
-        return (
-          <Pane display="flex">
-            <Pane display="flex" width="100%">              
-              <img src={`${url}/webcam/${this.props.service.name}`} />
-            </Pane>
-            <Pane display="flex" width="100%">
-              <button onClick={this.toggleRecording}>{this.props.service.state.recording ? "Stop Recording" : "Record"}</button>
-              <TextInput 
-                name="timelapse" 
-                placeholder="Timelapse in seconds" 
-                marginBottom={4}
-                width="100%" 
-                height={48}
-                onChange={e => 
-                  this.setState({
-                    recordSettings: {...this.state.recordSettings, timelapse: e.target.value}
-                  })
-                }
-              />
-              <TextInput 
-                name="fps" 
-                placeholder="Frames Per Second" 
-                marginBottom={4}
-                width="100%" 
-                height={48}
-                onChange={e => 
-                  this.setState({recordSettings: {...this.state.recordSettings, 
-                    videoSettings: {...this.state.recordSettings.videoSettings, fps: e.target.value}
-                  }})
-                }
-              />
-            </Pane>
-          </Pane>
-        )
-      }
-
-  }
+  
 
   render() {
     var params = this.props.match.params;
@@ -300,4 +261,4 @@ const mapDispatchToProps = (dispatch) => {
 }
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(CameraView)
+export default connect(mapStateToProps, mapDispatchToProps)(CameraIndex)

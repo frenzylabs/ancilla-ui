@@ -68,6 +68,21 @@ export class CameraView extends React.Component<Props> {
     
   }
 
+  componentWillUnmount() {
+    if (this.pubsubToken)
+      PubSub.unsubscribe(this.pubsubToken)
+    if (this.pubsubRequestToken)
+      PubSub.unsubscribe(this.pubsubRequestToken)
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.service.model != this.props.service.model) {
+      // console.log("PRINTER MODEL HAS BEEN UPDATED")
+      // this.setupCamera()      
+    }
+  }
+
+
   setupCamera() {
     if (this.props.service) {
       this.props.dispatch(ServiceActions.getState(this.props.service))
@@ -137,19 +152,6 @@ export class CameraView extends React.Component<Props> {
   }
 
     
-  componentWillUnmount() {
-    if (this.pubsubToken)
-      PubSub.unsubscribe(this.pubsubToken)
-    if (this.pubsubRequestToken)
-      PubSub.unsubscribe(this.pubsubRequestToken)
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevProps.service.model != this.props.service.model) {
-      // console.log("PRINTER MODEL HAS BEEN UPDATED")
-      this.setupCamera()      
-    }
-  }
 
   toggleRecording() {
     if (this.props.service.state.recording) {
@@ -216,7 +218,7 @@ export class CameraView extends React.Component<Props> {
     )
   }
 
-  renderDisplay() {
+  render() {
       if (this.props.service.state.open) {
         let url = this.props.node.apiUrl
         return (
@@ -254,32 +256,33 @@ export class CameraView extends React.Component<Props> {
           </Pane>
         )
       }
+      return null
 
   }
 
-  render() {
-    var params = this.props.match.params;
-    return (
-      <div className="flex-wrapper">
-        <Statusbar {...this.props} status={this.getColorState()} powerAction={this.power.bind(this)} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
+  // render() {
+  //   var params = this.props.match.params;
+  //   return (
+  //     <div className="flex-wrapper">
+  //       <Statusbar {...this.props} status={this.getColorState()} powerAction={this.power.bind(this)} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
 
-        <div className="scrollable-content">
-          <Switch>                  
-              <Route path={`${this.props.match.path}/settings`} render={ props => 
-                <Settings {...this.props} {...props} forms={[
-                <CameraForm onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />,
-                this.deleteComponent()
-                ]}/> 
-              }/>
+  //       <div className="scrollable-content">
+  //         <Switch>                  
+  //             <Route path={`${this.props.match.path}/settings`} render={ props => 
+  //               <Settings {...this.props} {...props} forms={[
+  //               <CameraForm onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />,
+  //               this.deleteComponent()
+  //               ]}/> 
+  //             }/>
 
-              <Route path={`${this.props.match.path}`} render={ props => 
-                <ShowView {...this.props}  {...props} />  
-              }/>
-            </Switch>
-        </div>
-      </div>
-    );
-  }
+  //             <Route path={`${this.props.match.path}`} render={ props => 
+  //               <ShowView {...this.props}  {...props} />  
+  //             }/>
+  //           </Switch>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 }
 
 

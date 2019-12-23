@@ -32,6 +32,7 @@ import Modal from '../modal/index'
 import AuthForm from '../services/layerkeep/form'
 import { PaginatedList } from '../utils/pagination'
 
+import ErrorModal from '../modal/error'
 // const qs = require('qs');
 
 export class PrintList extends React.Component {
@@ -143,8 +144,19 @@ export class PrintList extends React.Component {
     })
   }
 
-  deletePrint() {
-
+  deletePrint(row) {
+    console.log("delete print", row)
+    PrinterRequest.deletePrint(this.props.node, this.props.service, row.id)
+    .then((res) => {
+      // this.listLocal()
+      
+      // this.setState({redirectTo: `/printers/${this.props.service.id}/prints`})
+      toaster.success(`${row.name} has been successfully deleted.`)
+    })
+    .catch((error) => {
+      toaster.danger(<ErrorModal requestError={error} />)
+      // toaster.danger(`${this.state.printer_print.name} could not be deleted.`)
+    })
   }
 
   syncToLayerkeep(lkslice) {
@@ -206,7 +218,7 @@ export class PrintList extends React.Component {
         </Menu.Group>
         <Menu.Divider />
         <Menu.Group>
-          <Menu.Item intent="danger"  data-id={row.id} data-name={row.name} onSelect={this.deletePrint}>
+          <Menu.Item intent="danger"  data-id={row.id} data-name={row.name} onSelect={() => this.deletePrint(row)}>
             Delete... 
           </Menu.Item>
         </Menu.Group>
@@ -216,11 +228,20 @@ export class PrintList extends React.Component {
 
   renderFiles(files) {
     return files.map((row, index) => (
-      <Table.Row key={row.id} isSelectable onSelect={() => this.selectPrint(row)}>
-        <Table.TextCell>{row.name}</Table.TextCell>
+      <Table.Row key={row.id} >
+        <Table.TextCell>
+          <Link to={{pathname: this.props.match.url + "/" + row.id, state: {printerPrint: row}}} >
+          {row.name}
+          </Link>
+        </Table.TextCell>
         <Table.TextCell>{row.status}</Table.TextCell>
         <Table.TextCell>{Dayjs.unix(row.created_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
         <Table.TextCell>{(row.updated_at - row.created_at)}</Table.TextCell>
+        <Table.TextCell>
+          <Link to={{pathname: this.props.match.url + "/" + row.id, state: {printerPrint: row}}} >
+            View
+          </Link>
+        </Table.TextCell>
         
         <Table.Cell width={48} flex="none">
           <Popover
@@ -251,6 +272,7 @@ export class PrintList extends React.Component {
           <Table.TextHeaderCell>
             Duration:
           </Table.TextHeaderCell>
+          <Table.TextHeaderCell></Table.TextHeaderCell>
           <Table.TextHeaderCell  width={48} flex="none">
           </Table.TextHeaderCell>
         </Table.Head>
@@ -271,9 +293,6 @@ export class PrintList extends React.Component {
   }
 
   render() {
-    if (this.state.redirectTo) {
-      return <Redirect to={this.state.redirectTo} />
-    }
     return (
       <div>
       <Pane display="flex" key={"prints"}>

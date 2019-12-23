@@ -19,6 +19,7 @@ import {
   Dialog,
   Text,
   Heading,
+  Paragraph,
   Position,
   Table,
   Menu,
@@ -33,13 +34,16 @@ import Modal from '../modal/index'
 import AuthForm from '../services/layerkeep/form'
 import { PaginatedList } from '../utils/pagination'
 
+import ErrorModal from '../modal/error'
 // const qs = require('qs');
 
 export class PrintShow extends React.Component {
 
   state = {    
     isLoading: true,
-    printer_print: null,
+    printerPrint: null,
+    printCommands: [],
+    redirectTo: null,
     showAuth: false,
     projects: [],
     profiles: [],
@@ -68,7 +72,9 @@ export class PrintShow extends React.Component {
 
     this.state = {    
       isLoading: true,
-      printer_print: null
+      printerPrint: null,
+      printCommands: [],
+      redirectTo: null,
       projects: [],
       profiles: [],
       filter: {
@@ -99,14 +105,19 @@ export class PrintShow extends React.Component {
     // this.renderSection	= this.renderSection.bind(this)
 
     this.cancelRequest = PrinterRequest.cancelSource();
+
+    window.ps = this
   }
 
   componentDidMount() {
-    if (this.props.printer_print) {
-      this.setState({printer_print: this.props.printer_print})
-    } else {
-      this.getPrint()
-    }
+    if (this.props.location.state && this.props.location.state.printerPrint) {
+      this.setState({printerPrint: this.props.location.state.printerPrint})
+    } 
+    // else {
+    this.getPrint()
+    this.getPrintCommands()
+
+    // }
   }
 
   componentWillUnmount() {
@@ -127,7 +138,35 @@ export class PrintShow extends React.Component {
     .then((res) => {
       this.setState({
         ...this.state,
-        printer_print: res.data.data,
+        printerPrint: res.data.data,
+        loading: false
+      })
+    })
+    .catch((error) => {
+      console.log(error)
+      if (error.response && error.response.status == 401) {
+        console.log("Unauthorized")
+        // this.setState({showAuth: true, loading: false})
+        this.setState({loading: false})
+      } else {
+        // this.setState({requestError: error})
+        // toaster.danger(<ErrorModal requestError={error} />)
+        this.setState({loading: false})
+      }
+      this.cancelRequest = PrinterRequest.cancelSource();
+
+      
+    })
+  }
+
+  getPrintCommands() {
+    this.setState({loading: true})
+    var params = {print_id: this.props.match.params.printId}
+    PrinterRequest.getPrinterCommands(this.props.node, this.props.service, {params: params, cancelToken: this.cancelRequest.token})
+    .then((res) => {
+      this.setState({
+        ...this.state,
+        printCommands: res.data.data,
         loading: false
       })
     })
@@ -167,6 +206,18 @@ export class PrintShow extends React.Component {
     }
     var search = this.state.search
     this.setState({ search: {...search, page: 1, q: {...search.q, ...this.state.filter} }})
+  }
+
+  deletePrint() {
+    PrinterRequest.deletePrint(this.props.node, this.props.service, this.state.printerPrint.id)
+    .then((res) => {
+
+      this.setState({redirectTo: `/printers/${this.props.service.id}/prints`})
+    })
+    .catch((error) => {
+      toaster.danger(<ErrorModal requestError={error} />)
+      // toaster.danger(`${this.state.printer_print.name} could not be deleted.`)
+    })
   }
 
   handleFilterChange(val) {
@@ -226,7 +277,7 @@ export class PrintShow extends React.Component {
       </Table.Row>
     ))
   }
-  renderTable() {
+  renderCommandsTable() {
 
     return (
       <Table>
@@ -263,46 +314,106 @@ export class PrintShow extends React.Component {
     }
   }
 
-  renderPrintDetails() {
-    if (!this.state.printer_print) 
-      return "";
-    console.log("print details", this.state.printer_print)
+  renderPrinterDetails() {
+    
+    console.log("PRINTERPRINT", this.state.printerPrint)
+    if (!this.state.printerPrint || !this.state.printerPrint.printer) 
+      return null;
+    
+      
     return (
         <Pane
               is="section"
-              innerRef={(ref) => console.log(ref)}
               background="tint2"
-              border="muted"
+              border="default"
               marginLeft={12}
               marginY={24}
-              paddingTop={12}
-              paddingX={40}
-              width={120}
-              height={120}
-              cursor="help"
-              onClick={() => alert('Works just like expected')}
+              // paddingTop={12}
+              
+              // width={120}
+              // height={120}
+              // cursor="help"
+              // onClick={() => alert('Works just like expected')}
             >
-              <Heading>{this.state.printer_print.name}</Heading>
-              <Text>{this.state.printer_print.status}</Text>
+              <Pane display="flex" flexDirection="column" width="100%" background="#fff" paddingY={10} paddingX={15} margin={0} borderBottom="default">
+                <Heading>Printer</Heading>
+              </Pane>
+              <Pane padding={20}>
+                <Paragraph>Name: {this.state.printerPrint.printer.name}</Paragraph>
+                <Paragraph>Model: {this.state.printerPrint.printer.model}</Paragraph>
+                <Paragraph>Description: {this.state.printerPrint.printer.description}</Paragraph>
+              </Pane>
           </Pane>
     )
   }
 
+  renderPrintDetails() {
+    if (!this.state.printerPrint) 
+      return null;
+    return (
+        <Pane
+              is="section"
+              innerRef={(ref) => {}}
+              background="tint2"
+              border="default"
+              marginLeft={12}
+              marginY={24}
+              // paddingTop={12}
+              // paddingX={40}
+              // width={120}
+              // height={120}
+              // cursor="help"
+              // onClick={() => alert('Works just like expected')}
+            >
+              <Pane display="flex" flexDirection="column" width="100%" background="#fff" paddingY={10} paddingX={15} margin={0} borderBottom="default">
+                <Heading>Print Details</Heading>
+              </Pane>
+              <Pane padding={20}>
+                <Paragraph>{this.state.printerPrint.name}</Paragraph>
+                <Paragraph>Status: {this.state.printerPrint.status}</Paragraph>
+                <Paragraph>
+                  Printer Slice: &nbsp;
+                  <Link to={`/files/${this.state.printerPrint.print_slice.id}`}>{this.state.printerPrint.print_slice.name}</Link>
+                </Paragraph>
+                <Paragraph>Description: {this.state.printerPrint.print_slice.description}</Paragraph>
+              </Pane>
+          </Pane>
+    )
+  }
+
+  renderDelete() {
+    return (
+      <Pane display="flex" borderTop paddingTop={20}>
+        <Pane display="flex" flex={1} padding={20} marginBottom={20} className="danger-zone" alignItems="center" flexDirection="row">
+          <Pane>
+            <Button appearance="primary" intent="danger" height={40} onClick={() => this.deletePrint()}> Delete </Button>
+          </Pane>
+        </Pane>
+      </Pane>
+    )
+  }
+
   render() {
+    if (this.state.redirectTo) {
+      return (<Redirect to={this.state.redirectTo} />)
+    }
     return (
       <div>
       <Pane display="flex" key={"prints"}>
         <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={20} border="default">
           <Pane display="flex" marginBottom={20}>
-            <Pane display="flex" >
+            <Pane display="flex" flex={1}>
               <Link to={"/printers/" + this.props.service.id}>{this.props.service.name}</Link>&nbsp; / &nbsp;
               <Link to={"/printers/" + this.props.service.id + "/prints"}>Prints</Link>&nbsp; / &nbsp;
-              {(this.state.printer_print && this.state.printer_print.name) || ""}
+              {(this.state.printerPrint && this.state.printerPrint.name) || ""}
               
             </Pane>
+            {this.renderDelete()}
 
           </Pane>
+          
           {this.renderPrintDetails()}
+          {this.renderPrinterDetails()}
 
           <Pane borderBottom borderLeft borderRight>
             

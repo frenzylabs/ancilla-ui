@@ -8,6 +8,8 @@
 
 import {Request, CancelToken} from './request'
 
+const QS = require('qs');
+
 export const Printer = {
   cancelSource: () => {
     return CancelToken.source();
@@ -39,6 +41,15 @@ export const Printer = {
 
   getPrint: (node, printerService, printId, options = {}) => { 
     return Request.get(`${node.apiUrl}/services/printer/${printerService.id}/prints/${printId}`, options)
+  },
+
+  deletePrint: (node, printerService, printId, options = {}) => { 
+    return Request.delete(`${node.apiUrl}/services/printer/${printerService.id}/prints/${printId}`, options)
+  },
+
+  getPrinterCommands: (node, printerService, options = {}) => {
+    // options["params"] = {print_id: x, per_page, page}
+    return Request.get(`${node.apiUrl}/services/printer/${printerService.id}/commands`, options)
   },
 
   lastPrint: (node, printerService, options = {}) => {

@@ -193,7 +193,6 @@ export default class Connection extends React.Component<Props> {
           </Pane>
       )
     } else if (this.props.service.currentPrint) {
-      console.log(this.props.service.currentPrint)
       return (
         <Pane display="flex" marginBottom={6}>
           <Button onClick={() => this.resumePrint()} minWidth={180} iconBefore="application" >Resume Print</Button>

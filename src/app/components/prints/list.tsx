@@ -179,7 +179,7 @@ export class PrintList extends React.Component {
   }
 
   handleFilterChange(val) {
-    console.log("filter change", val)
+    // console.log("filter change", val)
     if (this.timer) {
       clearTimeout(this.timer)
     }

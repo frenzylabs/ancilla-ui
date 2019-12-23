@@ -220,8 +220,7 @@ export class PrintShow extends React.Component {
     })
   }
 
-  handleFilterChange(val) {
-    console.log("filter change", val)
+  handleFilterChange(val) {    
     if (this.timer) {
       clearTimeout(this.timer)
     }

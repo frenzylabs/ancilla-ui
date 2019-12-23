@@ -114,14 +114,15 @@ export class PaginatedList extends React.Component<{onChangePage?, currentPage, 
         {pager.startPage > 1 && (
           <Button marginLeft={4} marginRight={4} onClick={() => this.setPage(1)}>First</Button>
         )}
+
+        {pager.currentPage > 1  && (
+          <IconButton icon="arrow-left" marginRight={8} onClick={() => this.setPage(previousPage)}/>
+        )}
+
         {(pager.startPage > 1) && (
           <Pane display="flex" marginLeft={8} marginRight={8} alignItems="center" justifyContent="center">
             <Text>...</Text>
           </Pane>
-        )}
-
-        {pager.currentPage > 1  && (
-          <IconButton icon="arrow-left" marginRight={8} onClick={() => this.setPage(previousPage)}/>
         )}
       </React.Fragment>
     )

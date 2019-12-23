@@ -236,7 +236,7 @@ export class LKSlicedFilesView extends React.Component {
           <Table.TextHeaderCell  width={48} flex="none">
           </Table.TextHeaderCell>
         </Table.Head>
-        <Table.VirtualBody height={240}>
+        <Table.VirtualBody minHeight={this.state.search.per_page * 30}>
           {this.renderFiles(this.state.list.data)}
         </Table.VirtualBody>
       </Table>)
@@ -244,8 +244,8 @@ export class LKSlicedFilesView extends React.Component {
 
   renderPagination() {
     if (this.state.list.data.length > 0) {
-      var {current_page, last_page, total} = this.state.list.meta;
-      // console.log("render Pagination ", current_page, last_page, total)
+      let {current_page, last_page, total} = this.state.list.meta
+
       return (
         <PaginatedList currentPage={current_page} pageSize={this.state.search.per_page} totalPages={last_page} totalItems={total} onChangePage={this.onChangePage} /> 
       )
@@ -258,7 +258,7 @@ export class LKSlicedFilesView extends React.Component {
       <Pane display="flex" key={"layerkeep"}>
         <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={10} border="default">
           <Pane display="flex">
-            <Pane display="flex" flex={1}>
+            <Pane display="flex" flex={1} marginBottom={20}>
                 LayerKeep
             </Pane>
             <Pane>

@@ -18,7 +18,7 @@ export const PrinterAction = {
       if (printerState.model) {
         return Printer.prints(activeNode, printerState.model, {cancelToken: cancelRequest.token})
             .then((response) => {
-              dispatch(PrinterAction.updateLastPrint(printerState, response.data.prints || []))
+              dispatch(PrinterAction.updatePrints(printerState, response.data.data || []))
             })
       }
     }
@@ -32,7 +32,7 @@ export const PrinterAction = {
       if (printerState.model) {
         return Printer.lastPrint(activeNode, printerState.model, {cancelToken: cancelRequest.token})
               .then((response) => {
-                dispatch(PrinterAction.updateLastPrint(printerState, response.data.prints[0] || {}))
+                dispatch(PrinterAction.updateLastPrint(printerState, response.data.data[0] || {}))
               })
       }
     }

@@ -65,17 +65,21 @@ export default class State extends React.Component {
 
   receiveEvent(msg, data) {
     var [to, kind] = msg.split("events.")
+    console.log("REceive event ", to, kind)
+    
     switch(kind) {
       case 'printer.print.state.changed':              
           this.props.dispatch(PrinterAction.updatePrint(this.props.service, data))
           // this.setState({...this.state, printState: data})
           break
       case 'printer.print.started':
+          console.log("Print started ", data)
           this.props.dispatch(PrinterAction.updatePrint(this.props.service, data))
           // this.props.dispatch(PrinterAction.updatePrint(this.props.service, {...this.props.service.currentPrint, status: "running"}))
           // this.setState({...this.state, printState: data})
           break
       case 'printer.print.cancelled':
+          console.log("Print cancelled ", data)
           this.props.dispatch(PrinterAction.updatePrint(this.props.service, data))
           // this.props.dispatch(PrinterAction.updatePrint(this.props.service, {...this.props.service.currentPrint, status: "cancelled"}))
           // this.setState({...this.state, printState: data})
@@ -114,9 +118,9 @@ export default class State extends React.Component {
         <div>
           {this.renderRow("Last Print", curprnt.name)}
           {this.renderRow("Status", curprnt.status)}
-          {this.renderRow("Started On", curprnt.created_at)}
+          {this.renderRow("Started On", curprnt.created_at)}          
+          {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice.name) || "")}
           {this.renderRow("Duration", String(curprnt.updated_at - curprnt.created_at))}
-          {this.renderRow("Slice File", curprnt.slice_file.name)}
         </div>
       )
     }
@@ -128,12 +132,13 @@ export default class State extends React.Component {
       return (
         <div>
           {this.renderRow("Current Print", curprnt.name)}
-          {this.renderRow("Slice File", (curprnt.slice_file && curprnt.slice_file.name) || "")}
-          {this.renderRow("State", curprnt.status)}
+          {this.renderRow("Status", curprnt.status)}
           {this.renderRow("Started On", curprnt.created_at)}
           {/* {this.renderRow("Filament", "14.41m")}
           {this.renderRow("Est Time", "12.4 hours")}
           {this.renderRow("Time left", "00:00:00")} */}
+          {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice.name) || "")}
+          {this.renderRow("Duration", String(curprnt.updated_at - curprnt.created_at))}
           {this.renderRow("Progress", this.getProgress())}
         </div>
       )

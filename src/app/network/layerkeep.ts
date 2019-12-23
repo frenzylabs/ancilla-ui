@@ -6,7 +6,9 @@
 //  Copyright 2019 Wess Cope
 //
 
-import {Request, CancelToken} from './request'
+import {Request, CancelToken, isCancel} from './request'
+
+
 
 const QS = require('qs');
 

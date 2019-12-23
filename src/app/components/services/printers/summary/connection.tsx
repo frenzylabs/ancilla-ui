@@ -43,6 +43,12 @@ export default class Connection extends React.Component<Props> {
     loading: false
   }
 
+  constructor(props:any) {
+    super(props)
+    this.startPrint = this.startPrint.bind(this)
+    window.pc = this
+  }
+
   componentDidUpdate(prevProps) {
     if (prevProps.service.state.printing != this.props.service.state.printing) {
       this.setState({showing: false})
@@ -56,14 +62,24 @@ export default class Connection extends React.Component<Props> {
     })
   }
 
-  startPrint(closeDialog) {
+  onNewPrint(closeDialog) {
     if (!(this.form.state.newPrint && this.form.state.newPrint.file_id)) {
       toaster.danger("Select a File")
       return
     }
 
     var newPrint = this.form.state.newPrint
-    PrinterHandler.start_print(this.props.node, this.props.service, newPrint)
+    this.startPrint(newPrint, closeDialog)
+  }
+
+  startPrint(printParams, closeDialog = null) {
+    // if (!(this.form.state.newPrint && this.form.state.newPrint.file_id)) {
+    //   toaster.danger("Select a File")
+    //   return
+    // }
+
+    // var newPrint = this.form.state.newPrint
+    return PrinterHandler.start_print(this.props.node, this.props.service, printParams)
     .then((response) => {
       // var attachments = this.state.attachments
       console.log("START PRINT", response.data)
@@ -74,35 +90,43 @@ export default class Connection extends React.Component<Props> {
       //   attachments: attachments
       // })
 
-      toaster.success(`Print Started ${newPrint.name} has been successfully added`)
-      closeDialog()
+      toaster.success(`Print Started ${printParams.name} has been successfully added`)
+      if (closeDialog)
+        closeDialog()
     })
     .catch((error) => {
       console.log(error)
-      closeDialog()
+      if (closeDialog)
+        closeDialog()
       toaster.danger(<ErrorModal requestError={error} />)
 
       this.setState({
         loading: false,
       })
-      // let errors = Object.keys(error.response.data.errors).map((key, index) => {
-      //   return  `${key} : ${error.response.data.errors[key]}<br/>`
-      // })
-
-      // toaster.danger(
-      //   `Unable to start print ${JSON.stringify(newPrint)}`, 
-      //   {description: errors}
-      // )
     })
-    // this.topic = `${this.props.node.name}.${this.props.printer.name}.request`
-    // let cmd = [this.props.printer.name, "start_print", this.form.state.newPrint]
-    // PubSub.publish(this.props.node.name + ".request", cmd)
   }
 
   cancelPrint() {
     let cmd = [this.props.service.name, "cancel_print"]
     PubSub.publish(this.props.node.name + ".request", cmd)
 
+    // this.pubsubToken = PubSub.publish(this.topic, );
+  }
+
+  pausePrint() {
+    let cmd = [this.props.service.name, "pause_print"]
+    PubSub.publish(this.props.node.name + ".request", cmd)
+    // this.pubsubToken = PubSub.publish(this.topic, );
+  }
+
+  resumePrint() {
+    // let cmd = [this.props.service.name, "start_print"]
+    // PubSub.publish(this.props.node.name + ".request", cmd)
+    if (this.props.service.currentPrint && this.props.service.currentPrint.model) {
+      var printParams = { print_id: this.props.service.currentPrint.id, name: this.props.service.currentPrint.model.name}
+      this.startPrint(printParams)
+    }
+    
     // this.pubsubToken = PubSub.publish(this.topic, );
   }
 
@@ -125,7 +149,7 @@ export default class Connection extends React.Component<Props> {
           title="Start Print"
           confirmLabel="Save"
           onCloseComplete={() => this.toggleDialog(false)}
-          onConfirm={this.startPrint.bind(this)}
+          onConfirm={this.onNewPrint.bind(this)}
         >
           <PrintForm ref={frm => this.form = frm} save={this.startPrint} loading={this.state.loading}/>
         </Dialog>
@@ -161,12 +185,30 @@ export default class Connection extends React.Component<Props> {
     }
     return null
   }
+  renderPausePrint() {
+    if (this.props.service.state.printing) {
+      return (
+          <Pane display="flex" marginBottom={6}>
+            <Button onClick={() => this.pausePrint()} minWidth={180} iconBefore="application" >Pause Print</Button>
+          </Pane>
+      )
+    } else if (this.props.service.currentPrint) {
+      console.log(this.props.service.currentPrint)
+      return (
+        <Pane display="flex" marginBottom={6}>
+          <Button onClick={() => this.resumePrint()} minWidth={180} iconBefore="application" >Resume Print</Button>
+        </Pane>
+    )
+    }
+    return null
+  }
 
   renderPrintAction() {
     return (
       <div>
         {this.renderStartPrint()}
         {this.renderCancelPrint()}
+        {this.renderPausePrint()}
       </div>
     )
   }

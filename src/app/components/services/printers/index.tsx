@@ -37,6 +37,8 @@ import PrinterHandler       from '../../../network/printer'
 import { NodeState }  from '../../../store/reducers/state'
 import { ServiceState }  from '../../../store/reducers/service'
 
+import Prints from '../../prints'
+
 import PubSub from 'pubsub-js'
 
 type Props = {
@@ -267,6 +269,9 @@ export class PrinterIndex extends React.Component<Props> {
               <Route path={`${this.props.match.path}/:printerId`} render={ props =>
                 <PrinterDetails  {...this.props} {...props} /> 
               }/> */}
+              <Route path={`${this.props.match.path}/prints`} render={ props => 
+                <Prints {...this.props} {...props}  /> 
+              }/>
               <Route path={`${this.props.match.path}/settings`} render={ props => 
                 <Settings {...this.props} {...props} forms={[
                   <PrinterForm onSave={this.printerSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props}/>, 

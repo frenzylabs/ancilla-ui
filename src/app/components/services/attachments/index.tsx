@@ -35,6 +35,7 @@ import { ServiceState } from '../../../store/reducers/service'
 
 export default class ServiceAttachment extends React.Component<{node: object, service: ServiceState}> {
   form: AttachmentForm = null
+  cancelRequest = null
   constructor(props:any) {
     super(props)
 
@@ -58,17 +59,23 @@ export default class ServiceAttachment extends React.Component<{node: object, se
     this.renderAttachments = this.renderAttachments.bind(this)
 
     window.at = this
+    this.cancelRequest = ServiceHandler.cancelSource()
     
   }
 
   componentDidMount() {
     this.getAttachments()
   }
+
+  componentWillUnmount() {
+    if (this.cancelRequest)
+      this.cancelRequest.cancel("Left Attachments View")
+  }
   
   getAttachments() {
     if (this.props.service) {
       this.setState({isLoading: true})
-      ServiceHandler.attachments(this.props.node, this.props.service)
+      ServiceHandler.attachments(this.props.node, this.props.service, {cancelToken: this.cancelRequest.token})
       .then((response) => {
         this.setState({isLoading: false, attachments: response.data.attachments})
       }).catch((err) => {

@@ -37,6 +37,10 @@ export const Printer = {
     return Request.get(`${node.apiUrl}/services/printer/${printerService.id}/prints`, options)
   },
 
+  getPrint: (node, printerService, printId, options = {}) => { 
+    return Request.get(`${node.apiUrl}/services/printer/${printerService.id}/prints/${printId}`, options)
+  },
+
   lastPrint: (node, printerService, options = {}) => {
     options['params'] = {limit: 1}
     return Request.get(`${node.apiUrl}/services/printer/${printerService.id}/prints`, options)

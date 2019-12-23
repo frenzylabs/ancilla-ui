@@ -29,7 +29,7 @@ type PrintModel = {
   status: string,
   state: object,
   printer_snapshot: object,
-  slice_file: object,
+  print_slice: object,
   layerkeep_id?: number
 }
 

@@ -7,6 +7,7 @@
 //
 
 import React from 'react'
+import { Link, Redirect }       from 'react-router-dom';
 import Dayjs from 'dayjs'
 
 import {
@@ -24,19 +25,19 @@ import {
   toaster
 } from 'evergreen-ui'
 
-import Form 				from './form'
-import FileRequest 	from '../../network/files'
+// import Form 				from './form'
+import PrinterRequest 	from '../../network/printer'
 import Layerkeep 	from '../../network/layerkeep'
 import Modal from '../modal/index'
 import AuthForm from '../services/layerkeep/form'
 import { PaginatedList } from '../utils/pagination'
-import { isCancel } from '../../network/request'
 
 // const qs = require('qs');
 
-export class LKSlicedFilesView extends React.Component {
+export class PrintList extends React.Component {
 
   state = {    
+    redirectTo: null,
     isLoading: true,
     showAuth: false,
     projects: [],
@@ -65,6 +66,7 @@ export class LKSlicedFilesView extends React.Component {
     // var qparams = qs.parse(this.props.location.search, { ignoreQueryPrefix: true })
 
     this.state = {    
+      redirectTo: null,
       isLoading: true,
       projects: [],
       profiles: [],
@@ -81,11 +83,11 @@ export class LKSlicedFilesView extends React.Component {
         meta: {}
       }
     }
-    this.listSlices      = this.listSlices.bind(this)
-    this.onChangePage    = this.onChangePage.bind(this)
-    this.renderPagination  = this.renderPagination.bind(this)
+    this.listPrints         = this.listPrints.bind(this)
+    this.onChangePage       = this.onChangePage.bind(this)
+    this.renderPagination   = this.renderPagination.bind(this)
     this.handleFilterChange = this.handleFilterChange.bind(this)
-    this.syncLocally        = this.syncLocally.bind(this)
+    this.syncToLayerkeep    = this.syncToLayerkeep.bind(this)
     // this.deleteFile     = this.deleteFile.bind(this)
     // this.saveFile				= this.saveFile.bind(this)
     // this.toggleDialog		= this.toggleDialog.bind(this)
@@ -95,28 +97,28 @@ export class LKSlicedFilesView extends React.Component {
     // this.renderTopBar		= this.renderTopBar.bind(this)
     // this.renderSection	= this.renderSection.bind(this)
 
-    this.cancelRequest = Layerkeep.cancelSource();
+    this.cancelRequest = PrinterRequest.cancelSource();
   }
 
   componentDidMount() {
-    this.listSlices()
+    this.listPrints()
   }
 
   componentWillUnmount() {
     if (this.cancelRequest)
-      this.cancelRequest.cancel("Left Layerkeep Page");
+      this.cancelRequest.cancel("Left Prints Page");
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (JSON.stringify(this.state.search) != JSON.stringify(prevState.search)) {
       // var url = qs.stringify(this.state.search, { addQueryPrefix: true });      
-      this.listSlices();
+      this.listPrints();
     }
   }
 
-  listSlices() {
+  listPrints() {
     this.setState({loading: true})
-    Layerkeep.listSlices(this.props.node, {qs: this.state.search, cancelToken: this.cancelRequest.token})
+    PrinterRequest.prints(this.props.node, this.props.service, {qs: this.state.search, cancelToken: this.cancelRequest.token})
     .then((res) => {
       this.setState({
         ...this.state,
@@ -125,8 +127,7 @@ export class LKSlicedFilesView extends React.Component {
       })
     })
     .catch((error) => {
-      console.log("ListSlices Error", error)
-      if (isCancel(error)) return
+      console.log(error)
       if (error.response && error.response.status == 401) {
         console.log("Unauthorized")
         // this.setState({showAuth: true, loading: false})
@@ -136,17 +137,21 @@ export class LKSlicedFilesView extends React.Component {
         // toaster.danger(<ErrorModal requestError={error} />)
         this.setState({loading: false})
       }
-      this.cancelRequest = Layerkeep.cancelSource();
+      this.cancelRequest = PrinterRequest.cancelSource();
 
       
     })
   }
 
-  syncLocally(lkslice) {
+  deletePrint() {
+
+  }
+
+  syncToLayerkeep(lkslice) {
     // let lkslice  = e.currentTarget.getAttribute('data-row')
     
 
-    FileRequest.syncFromLayerkeep(this.props.node, lkslice)
+    PrinterRequest.syncToLayerkeep(this.props.node, lkslice)
     .then((res) => {
       // this.listLocal()
 
@@ -184,16 +189,24 @@ export class LKSlicedFilesView extends React.Component {
     this.setState({ search: {...this.state.search, page: page }});    
   }
 
+  selectPrint(row) {
+    // var url = qs.stringify(this.state.search, { addQueryPrefix: true });      
+    var url = this.props.match.url + "/" + row.id
+    this.setState({redirectTo: {pathname: url, state: {printerPrint: row}}})
+    // this.props.history.push(`${url}`);
+  }
+
+
 
   renderRowMenu = (row) => {
     return (
       <Menu>
         <Menu.Group>
-          <Menu.Item onSelect={() => this.syncLocally(row)}>Sync to Local Node...</Menu.Item>
+          <Menu.Item onSelect={() => this.syncToLayerkeep(row)}>Sync to Layerkeep...</Menu.Item>
         </Menu.Group>
         <Menu.Divider />
         <Menu.Group>
-          <Menu.Item intent="danger"  data-id={row.id} data-name={row.attributes.name} onSelect={this.deleteFile}>
+          <Menu.Item intent="danger"  data-id={row.id} data-name={row.name} onSelect={this.deletePrint}>
             Delete... 
           </Menu.Item>
         </Menu.Group>
@@ -203,10 +216,11 @@ export class LKSlicedFilesView extends React.Component {
 
   renderFiles(files) {
     return files.map((row, index) => (
-      <Table.Row key={row.id} isSelectable >
-        <Table.TextCell>{row.attributes.name}</Table.TextCell>
-        <Table.TextCell>{row.attributes.description}</Table.TextCell>
-        <Table.TextCell>{Dayjs(row.attributes.updated_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
+      <Table.Row key={row.id} isSelectable onSelect={() => this.selectPrint(row)}>
+        <Table.TextCell>{row.name}</Table.TextCell>
+        <Table.TextCell>{row.status}</Table.TextCell>
+        <Table.TextCell>{Dayjs.unix(row.created_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
+        <Table.TextCell>{(row.updated_at - row.created_at)}</Table.TextCell>
         
         <Table.Cell width={48} flex="none">
           <Popover
@@ -229,10 +243,13 @@ export class LKSlicedFilesView extends React.Component {
             value={this.state.filter.name}
           />
           <Table.TextHeaderCell >
-            Description:
+            Status:
           </Table.TextHeaderCell>
           <Table.TextHeaderCell>
             Created At:
+          </Table.TextHeaderCell>
+          <Table.TextHeaderCell>
+            Duration:
           </Table.TextHeaderCell>
           <Table.TextHeaderCell  width={48} flex="none">
           </Table.TextHeaderCell>
@@ -254,17 +271,18 @@ export class LKSlicedFilesView extends React.Component {
   }
 
   render() {
+    if (this.state.redirectTo) {
+      return <Redirect to={this.state.redirectTo} />
+    }
     return (
       <div>
-      <Pane display="flex" key={"layerkeep"}>
-        <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={10} border="default">
-          <Pane display="flex">
-            <Pane display="flex" flex={1}>
-                LayerKeep
+      <Pane display="flex" key={"prints"}>
+        <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={20} border="default">
+          <Pane display="flex" marginBottom={20}>
+            <Pane display="flex" >
+              <Link to={"/printers/" + this.props.service.id}>{this.props.service.name}</Link>&nbsp; / Prints
             </Pane>
-            <Pane>
-              
-            </Pane>
+
           </Pane>
 
           <Pane borderBottom borderLeft borderRight>
@@ -287,4 +305,4 @@ export class LKSlicedFilesView extends React.Component {
   }	
 }
 
-export default LKSlicedFilesView
+export default PrintList

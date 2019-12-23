@@ -10,6 +10,7 @@ import React, {useRef} from 'react'
 
 import {
   Pane,
+  Checkbox,
   TextInput,
   Button
 } from 'evergreen-ui'
@@ -22,7 +23,9 @@ export default class Input extends React.Component {
 
   state = {
     history:  Array<string>(),
-    entry:    ''
+    entry:    '',
+    nowait: false,
+    skipQueue: false
   }
 
   constructor(props:any) {
@@ -47,7 +50,7 @@ export default class Input extends React.Component {
 
   sendAction() {
     (this.state.entry.includes('&&') ? this.state.entry.split('&&') : [this.state.entry]).map((item) => {
-      let cmd = [this.props.service.name, "command", item.trim()]
+      let cmd = [this.props.service.name, "send_command", { cmd: item.trim(), nowait: this.state.nowait, skipQueue: this.state.skipQueue}]
       PubSub.publish(this.props.node.name + ".request", cmd)
       return cmd
     }).forEach((cmd) => { console.log("send: ", cmd)})
@@ -143,17 +146,41 @@ export default class Input extends React.Component {
 
   render() {
     return (
-      <Pane display="flex" flex={1} width="100%" padding={8} border>
-        <Pane display="flex" width="100%" flex={1} marginRight={8}>
-          <input 
-            type="text" 
-            disabled={!this.props.service.state.connected}
-            placeholder="Enter command..." 
-            name="cmd"
-            id="terminal-input-field" 
-            onChange={this.inputAction}
-          />
+      <Pane display="flex" flex={1} flexDirection="column">
+        <Pane display="flex" flex={1} width="100%" padding={8} border>
+          <Pane display="flex" width="100%" flex={1} marginRight={8}>
+            <input 
+              type="text"
+              disabled={!this.props.service.state.connected}
+              placeholder="Enter command..." 
+              // name="cmd"
+              id="terminal-input-field" 
+              onChange={this.inputAction}
+            />
+          </Pane>
         </Pane>
+          <Pane display="flex" width="100%" flex={1} marginRight={8}>
+            <Checkbox
+              label="Don't Wait for Response"
+              checked={this.state.nowait}
+              onChange={e => 
+                this.setState({
+                  nowait:  e.target.checked
+                })
+              }
+            />
+          </Pane>
+          <Pane display="flex" width="100%" flex={1} marginRight={8}>
+            <Checkbox
+              label="Skip Command Queue"
+              checked={this.state.skipQueue}
+              onChange={e => 
+                this.setState({
+                  skipQueue:  e.target.checked
+                })
+              }
+            />
+          </Pane>
       </Pane>
     )
   }

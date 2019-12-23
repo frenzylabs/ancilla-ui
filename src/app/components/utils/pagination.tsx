@@ -105,40 +105,47 @@ export class PaginatedList extends React.Component<{onChangePage?, currentPage, 
 
 
   renderPrevious() {
-    let currentPage   = this.props.currentPage
-    let previousPage  = currentPage > 1 ? currentPage - 2 : null
+    let pager = this.state.pager
+    let currentPage   = pager.currentPage
+    let previousPage  = currentPage > 1 ? currentPage - 1 : null
 
     return (
       <React.Fragment>
-        {(previousPage && previousPage > 0) && (
+        {pager.startPage > 1 && (
+          <Button marginLeft={4} marginRight={4} onClick={() => this.setPage(1)}>First</Button>
+        )}
+        {(pager.startPage > 1) && (
           <Pane display="flex" marginLeft={8} marginRight={8} alignItems="center" justifyContent="center">
             <Text>...</Text>
           </Pane>
         )}
 
-        {currentPage > 1  && (
-          <IconButton icon="arrow-left" marginRight={8}/>
+        {pager.currentPage > 1  && (
+          <IconButton icon="arrow-left" marginRight={8} onClick={() => this.setPage(previousPage)}/>
         )}
       </React.Fragment>
     )
   }
 
   renderNext() {
-    let currentPage = this.props.currentPage
-    let nextPage    = currentPage < this.props.totalPages ? currentPage + 1 : null
+    let pager = this.state.pager
+    let currentPage = pager.currentPage
+    let nextPage    = currentPage < pager.totalPages ? currentPage + 1 : null
 
     return (
       <React.Fragment>
-        {this.props.totalPages > (nextPage + 1) &&
+        {pager.endPage < pager.totalPages &&
           <Pane display="flex" marginLeft={8} marginRight={8} alignItems="center" justifyContent="center">
             <Text>...</Text>
           </Pane>
         }
 
-        
+        {pager.currentPage < pager.endPage && (
+          <IconButton icon="arrow-right" marginLeft={8} onClick={() => this.setPage(nextPage)}/>
+        )}
 
-        {nextPage < this.props.totalPages && (
-          <IconButton icon="arrow-right" marginLeft={8}/>
+        {pager.endPage < pager.totalPages && (
+          <Button marginLeft={4} marginRight={4} onClick={() => this.setPage(this.props.totalPages)}>Last({this.props.totalPages})</Button>
         )}
       </React.Fragment>
     )
@@ -146,21 +153,12 @@ export class PaginatedList extends React.Component<{onChangePage?, currentPage, 
 
   renderList() {
     let pager         = this.state.pager;
-    let currentPage   = this.props.currentPage
-    let previousPage  = currentPage > 1 ? currentPage - 1 : null
-    let nextPage      = currentPage < this.props.totalPages ? currentPage + 1 : null
-    var pages         = [previousPage, currentPage, nextPage].filter((item, index) => item != null)
-
-    if(!previousPage && (nextPage + 1) < this.props.totalPages) {
-      pages = pages.concat([
-        (nextPage + 1)
-      ])
-    }
+    let currentPage   = pager.currentPage; 
 
     return (
       <React.Fragment>
-        {pages.map((page, index) =>
-          <Button key={index} marginLeft={4} marginRight={4} isActive={index == (currentPage)} onClick={() => this.setPage(page)}>
+        {pager.pages.map((page, index) =>
+          <Button key={index} marginLeft={4} marginRight={4} isActive={page == (currentPage)} onClick={() => this.setPage(page)}>
             {page}
           </Button>
         )}
@@ -170,8 +168,6 @@ export class PaginatedList extends React.Component<{onChangePage?, currentPage, 
 
   render() {
     var pager = this.state.pager;
-    console.log("INSIDE PAGINATION render")
-
     if (!pager.pages || pager.pages.length <= 1) {
         // don't display pager if there is only 1 page
         return null;
@@ -179,17 +175,9 @@ export class PaginatedList extends React.Component<{onChangePage?, currentPage, 
 
     return (
       <Pane display="flex" marginTop={10} justifyContent="center">
-        {this.props.currentPage > 1 && (
-          <Button marginLeft={4} marginRight={4}>1</Button>
-        )}
-
         {this.renderPrevious()}
         {this.renderList()}
         {this.renderNext()}
-
-        {this.props.currentPage < this.props.totalPages && (
-          <Button marginLeft={4} marginRight={4} onClick={() => this.setPage(this.props.totalPages)}>{this.props.totalPages}</Button>
-        )}
       </Pane>
     )
   }

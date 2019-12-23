@@ -180,7 +180,6 @@ export class LKSlicedFilesView extends React.Component {
   }
 
   onChangePage(page) {
-    console.log("page change", page)
     this.setState({ search: {...this.state.search, page: page }});    
   }
 
@@ -246,7 +245,7 @@ export class LKSlicedFilesView extends React.Component {
   renderPagination() {
     if (this.state.list.data.length > 0) {
       var {current_page, last_page, total} = this.state.list.meta;
-      console.log("render Pagination ", current_page, last_page, total)
+      // console.log("render Pagination ", current_page, last_page, total)
       return (
         <PaginatedList currentPage={current_page} pageSize={this.state.search.per_page} totalPages={last_page} totalItems={total} onChangePage={this.onChangePage} /> 
       )

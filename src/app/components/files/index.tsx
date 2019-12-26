@@ -26,14 +26,18 @@ import {
 
 import Form 				from './form'
 import FileRequest 	from '../../network/files'
-
-import Layerkeep from './layerkeep'
-import Modal from '../modal/index'
-import AuthForm from '../services/layerkeep/form'
+import Layerkeep    from './layerkeep'
+import Modal        from '../modal/index'
+import AuthForm     from '../services/layerkeep/form'
+import Loader       from '../loader'
 
 export default class FilesView extends React.Component {
 
   state = {
+    loading: {
+      local:      true,
+      layerkeep:  true
+    },
     dialog: {
       layerkeep: 	false,
       local: 			false,
@@ -43,23 +47,7 @@ export default class FilesView extends React.Component {
     printSlice: null,
     sections: {
       'all': [],
-      // 'LayerKeep': [
-      // 	'layerkeep-file-1',
-      // 	'layerkeep-file-2',
-      // 	'layerkeep-file-3',
-      // 	'layerkeep-file-4',
-      // 	'layerkeep-file-5',
-      // ],
-      'Local': [
-        /* {name:, id:, updated_at} */
-      ],
-      // 'SD Card': [
-      // 	'sd-card-file-1',
-      // 	'sd-card-file-2',
-      // 	'sd-card-file-3',
-      // 	'sd-card-file-4',
-      // 	'sd-card-file-5',
-      // ]
+      'Local': [],
     },
 
     currentSection: 0
@@ -79,11 +67,6 @@ export default class FilesView extends React.Component {
     this.downloadFile   = this.downloadFile.bind(this)
     this.saveFile				= this.saveFile.bind(this)
     this.toggleDialog		= this.toggleDialog.bind(this)
-    this.renderRow 			= this.renderRow.bind(this)
-    this.renderGroup 		= this.renderGroup.bind(this)
-    this.renderGroups		= this.renderGroups.bind(this)
-    this.renderTopBar		= this.renderTopBar.bind(this)
-    this.renderSection	= this.renderSection.bind(this)
 
     this.cancelRequest = FileRequest.cancelSource();
   }
@@ -98,7 +81,13 @@ export default class FilesView extends React.Component {
   }
 
   listLocal() {
-    
+    this.setState({
+      loading: {
+        ...this.state.loading,
+        local: true
+      }
+    })
+
     FileRequest.listLocal({cancelToken: this.cancelRequest.token})
     .then((res) => {
       let files = res.data['files'] || []
@@ -107,6 +96,10 @@ export default class FilesView extends React.Component {
         ...this.state,
         sections: {
           Local: files
+        },
+        loading: {
+          ...this.state.loading,
+          local: false
         }
       })
     })
@@ -169,11 +162,6 @@ export default class FilesView extends React.Component {
         this.setState({
           showAuth: true, 
           isSaving: false
-          // dialog: {
-          //   layerkeep: 	false,
-          //   local: 			false,
-          //   sd: 				false
-          // }
         })
       } else {
 
@@ -282,29 +270,6 @@ export default class FilesView extends React.Component {
     )
   }
 
-
-  renderRow(key:number, name:string, timestamp:string = "") {
-    return (
-      <Pane display="flex" flex={1} key={key} background={key % 2 ? "#f9f9f9" : "#fff"} padding={10} alignItems="center" borderTop>
-        <Pane display="flex" flex={1}>
-          {name}
-        </Pane>
-
-        <Pane marginRight={50}>
-          <Text size={300}>Updated:</Text> <Text size={400} color="dark">{timestamp}</Text>
-        </Pane>
-
-        <Pane>
-          <IconButton appearance="minimal" icon="download"/>
-        </Pane>
-
-        <Pane>
-          <IconButton data-id={key} data-name={name} appearance="minimal" icon="trash" onClick={this.deleteFile}/>
-        </Pane>
-      </Pane>
-    )
-  }
-
   renderLayerkeepSync = (row) => {
     if (row.layerkeep_id) {
       return (<Menu.Item onSelect={() => this.unsyncFile(row)}>UnSync from Layerkeep...</Menu.Item>)
@@ -372,77 +337,51 @@ export default class FilesView extends React.Component {
         </Table.VirtualBody>
       </Table>)
   }
-
-  renderGroup(name:string, index:number) {
-    let key 	= Object.keys(this.state.sections)[index]
-    let files = this.state.sections[name] || []
-
+  
+  renderLoader() {
     return (
-      <Pane display="flex" key={key}>
+      <Pane borderTop padding={20} display="flex" alignItems="center" justifyContent="center" minHeight={340}>
+        <Loader/>
+      </Pane>
+    )
+  }
+  
+  renderLocal() {
+    return (
+      <Pane display="flex">
         <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={10} border="default">
           <Pane display="flex">
             <Pane display="flex" flex={1}>
-              <Button data-index={index} appearance="minimal" size={600} color="black" marginLeft={0} marginBottom={8} paddingLeft={0} onClick={() => this.selectSection(index) }>{name}</Button>
+              Local
             </Pane>
+          
             <Pane>
-              {this.renderAddFile(name.toLowerCase())}
+              {this.renderAddFile('local')}
             </Pane>
           </Pane>
 
           <Pane borderBottom borderLeft borderRight>
-            {this.renderTable(name.toLowerCase(), files)}
-            {/* {files.map((row, index) => this.renderRow(row.id, row.name, Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')))} */}
+            {this.state.loading.local ? this.renderLoader() : this.renderTable('local', this.state.sections.Local)}
           </Pane>
         </Pane>
       </Pane>
     )
   }
-
-  renderGroups() {
+  
+  renderLayerKeep() {
     return (
-      <React.Fragment>
-        {Object.keys(this.state.sections)
-               .filter((section) => section.toLowerCase() != 'all')
-               .map((section, index) => this.renderGroup(section, index))}
-      </React.Fragment>
-    )
-  }
-
-  renderTopBar() {
-    return (
-      <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={6} border="default">
-        <TabNavigation>
-          {
-            Object.keys(this.state.sections).map((tab, index) => (
-              <Tab key={tab} data-index={index} onSelect={() => this.selectSection(index)}  isSelected={index === this.state.currentSection}>
-                {tab}
-              </Tab>
-            ))
-          }
-        </TabNavigation>
-        </Pane>
-    )
-  }
-
-  renderSection() {
-    return (
-      <Pane>
-        {this.state.currentSection == 0 && this.renderGroups()}
-        {/* {this.state.currentSection == 1 && this.renderGroup("LayerKeep", 1)} */}
-        {this.state.currentSection == 1 && this.renderGroup("Local", 1)}
-        {/* {this.state.currentSection == 3 && this.renderGroup("SD Card", 3)} */}
-      </Pane>
+      <Layerkeep {...this.props} />
     )
   }
 
   render() {
     return (
-      <Pane >
-        {this.renderTopBar()}
-        <div className="scrollable-content">
-          {this.renderSection()}
-          <Layerkeep {...this.props} />
+      <Pane>
+        <div className="scrollable-content" style={{height: '100%'}}>
+          {this.renderLocal()}
+          {this.renderLayerKeep()}
         </div>
+        
         <Modal
           component={AuthForm}
           node={this.props.node}

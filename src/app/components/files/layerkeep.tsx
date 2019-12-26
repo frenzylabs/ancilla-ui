@@ -31,6 +31,7 @@ import Modal from '../modal/index'
 import AuthForm from '../services/layerkeep/form'
 import { PaginatedList } from '../utils/pagination'
 import { isCancel } from '../../network/request'
+import Loader from '../loader'
 
 // const qs = require('qs');
 
@@ -39,6 +40,7 @@ export class LKSlicedFilesView extends React.Component {
   state = {    
     isLoading: true,
     showAuth: false,
+    authorized: false,
     projects: [],
     profiles: [],
     filter: {
@@ -86,14 +88,6 @@ export class LKSlicedFilesView extends React.Component {
     this.renderPagination  = this.renderPagination.bind(this)
     this.handleFilterChange = this.handleFilterChange.bind(this)
     this.syncLocally        = this.syncLocally.bind(this)
-    // this.deleteFile     = this.deleteFile.bind(this)
-    // this.saveFile				= this.saveFile.bind(this)
-    // this.toggleDialog		= this.toggleDialog.bind(this)
-    // this.renderRow 			= this.renderRow.bind(this)
-    // this.renderGroup 		= this.renderGroup.bind(this)
-    // this.renderGroups		= this.renderGroups.bind(this)
-    // this.renderTopBar		= this.renderTopBar.bind(this)
-    // this.renderSection	= this.renderSection.bind(this)
 
     this.cancelRequest = Layerkeep.cancelSource();
   }
@@ -115,13 +109,14 @@ export class LKSlicedFilesView extends React.Component {
   }
 
   listSlices() {
-    this.setState({loading: true})
+    // this.setState({loading: true})
+
     Layerkeep.listSlices(this.props.node, {qs: this.state.search, cancelToken: this.cancelRequest.token})
     .then((res) => {
       this.setState({
         ...this.state,
         list: res.data,
-        loading: false
+        isLoading: false
       })
     })
     .catch((error) => {
@@ -129,12 +124,11 @@ export class LKSlicedFilesView extends React.Component {
       if (isCancel(error)) return
       if (error.response && error.response.status == 401) {
         console.log("Unauthorized")
-        // this.setState({showAuth: true, loading: false})
-        this.setState({loading: false})
+        this.setState({authorized: false, isLoading: false})
       } else {
         // this.setState({requestError: error})
         // toaster.danger(<ErrorModal requestError={error} />)
-        this.setState({loading: false})
+        this.setState({isLoading: false})
       }
       this.cancelRequest = Layerkeep.cancelSource();
 
@@ -219,6 +213,13 @@ export class LKSlicedFilesView extends React.Component {
     ))
   }
   renderTable() {
+    if(this.state.isLoading) {
+      return this.renderLoader()
+    }
+
+    if(!this.state.authorized) {
+      return this.renderLogin()
+    }
 
     return (
       <Table>
@@ -252,6 +253,28 @@ export class LKSlicedFilesView extends React.Component {
     }
   }
 
+  renderLoader() {
+    return (
+      <Pane borderTop padding={20} display="flex" alignItems="center" justifyContent="center" minHeight={340}>
+        <Loader/>
+      </Pane>
+    )
+  }
+
+
+  renderLogin() {
+    return (
+      <Pane borderTop padding={20} display="flex" alignItems="center" justifyContent="center" minHeight={340}>
+        <Button onClick={() => {
+          this.setState({
+            ...this.state,
+            showAuth: true
+          })
+        }}>Sign in to LayerKeep.com</Button>
+      </Pane>
+    )
+  }
+
   render() {
     return (
       <div>
@@ -262,13 +285,11 @@ export class LKSlicedFilesView extends React.Component {
                 LayerKeep
             </Pane>
             <Pane>
-              
             </Pane>
           </Pane>
 
           <Pane borderBottom borderLeft borderRight>
             {this.renderTable()}
-            {/* {files.map((row, index) => this.renderRow(row.id, row.name, Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')))} */}
           </Pane>
           {this.renderPagination()}
         </Pane>

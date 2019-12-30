@@ -308,7 +308,10 @@ export class LKSlicedFilesView extends React.Component {
           node={this.props.node}
           // requestError={this.state.requestError}
           isActive={this.state.showAuth}
-          // dismissAction={this.authenticated.bind(this)}
+          dismissAction={() => this.setState({
+            ...this.state,
+            showAuth: false
+          })}
           // onAuthenticated={this.authenticated.bind(this)}
         />
       </div>

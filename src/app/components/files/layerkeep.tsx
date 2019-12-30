@@ -312,7 +312,14 @@ export class LKSlicedFilesView extends React.Component {
             ...this.state,
             showAuth: false
           })}
-          // onAuthenticated={this.authenticated.bind(this)}
+          onAuthenticated={() => {
+            this.setState({
+              ...this.state,
+              showAuth: false
+            })
+
+            toaster.success('Succssfully signed in to LayerKeep.com')
+          }}
         />
       </div>
     )

@@ -69,6 +69,7 @@ export class LKSlicedFilesView extends React.Component {
       isLoading: true,
       projects: [],
       profiles: [],
+      authorized: false,
       filter: {
         name: ""
       },
@@ -111,8 +112,6 @@ export class LKSlicedFilesView extends React.Component {
 
     Layerkeep.listSlices(this.props.node, {qs: this.state.search, cancelToken: this.cancelRequest.token})
     .then((res) => {
-      console.log(res)
-
       this.setState({
         ...this.state,
         list:       {
@@ -226,7 +225,7 @@ export class LKSlicedFilesView extends React.Component {
       return this.renderLoader()
     }
 
-    if(!this.state.authorized) {
+    if(!this.state.authorized == false) {
       return this.renderLogin()
     }
 
@@ -312,10 +311,11 @@ export class LKSlicedFilesView extends React.Component {
             ...this.state,
             showAuth: false
           })}
-          onAuthenticated={() => {
+          onAuthenticated={(res) => {
             this.setState({
               ...this.state,
-              showAuth: false
+              showAuth: false,
+              authorized: true
             })
 
             toaster.success('Succssfully signed in to LayerKeep.com')

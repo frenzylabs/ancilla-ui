@@ -140,6 +140,7 @@ export default class FilesView extends React.Component {
       } else {
         files.unshift(res.data.file)
       }
+
       this.setState({
         ...this.state,
         isSaving: false,
@@ -232,9 +233,6 @@ export default class FilesView extends React.Component {
   }
 
   authenticated(res) {
-    console.log("Authenticated", res)
-    console.log(this.form)
-    console.log(this.form.state.newFile)
     this.setState({showAuth: false})
   }
 
@@ -345,7 +343,7 @@ export default class FilesView extends React.Component {
       </Pane>
     )
   }
-  
+
   renderLocal() {
     return (
       <Pane display="flex">

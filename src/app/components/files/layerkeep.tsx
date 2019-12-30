@@ -24,14 +24,14 @@ import {
   toaster
 } from 'evergreen-ui'
 
-import Form 				from './form'
-import FileRequest 	from '../../network/files'
-import Layerkeep 	from '../../network/layerkeep'
-import Modal from '../modal/index'
-import AuthForm from '../services/layerkeep/form'
-import { PaginatedList } from '../utils/pagination'
-import { isCancel } from '../../network/request'
-import Loader from '../loader'
+import Form 				      from './form'
+import FileRequest 	      from '../../network/files'
+import Layerkeep 	        from '../../network/layerkeep'
+import Modal              from '../modal/index'
+import AuthForm           from '../services/layerkeep/form'
+import { PaginatedList }  from '../utils/pagination'
+import { isCancel }       from '../../network/request'
+import Loader             from '../loader'
 
 // const qs = require('qs');
 
@@ -57,9 +57,8 @@ export class LKSlicedFilesView extends React.Component {
     }
   }
 
-  timer:number = null
-
-  form:Form = {}
+  timer:number  = null
+  form:Form     = {}
   cancelRequest = null
   
   constructor(props:any) {
@@ -83,13 +82,12 @@ export class LKSlicedFilesView extends React.Component {
         meta: {}
       }
     }
-    this.listSlices      = this.listSlices.bind(this)
-    this.onChangePage    = this.onChangePage.bind(this)
-    this.renderPagination  = this.renderPagination.bind(this)
+    this.listSlices         = this.listSlices.bind(this)
+    this.onChangePage       = this.onChangePage.bind(this)
+    this.renderPagination   = this.renderPagination.bind(this)
     this.handleFilterChange = this.handleFilterChange.bind(this)
     this.syncLocally        = this.syncLocally.bind(this)
-
-    this.cancelRequest = Layerkeep.cancelSource();
+    this.cancelRequest      = Layerkeep.cancelSource();
   }
 
   componentDidMount() {
@@ -109,26 +107,37 @@ export class LKSlicedFilesView extends React.Component {
   }
 
   listSlices() {
-    // this.setState({loading: true})
+    this.setState({loading: true})
 
     Layerkeep.listSlices(this.props.node, {qs: this.state.search, cancelToken: this.cancelRequest.token})
     .then((res) => {
+      console.log(res)
+
       this.setState({
         ...this.state,
-        list: res.data,
-        isLoading: false
+        list:       {
+          ...this.state.list,
+          data: res.data || []
+        },
+        isLoading:  false,
+        authorized: true
       })
     })
     .catch((error) => {
-      console.log("ListSlices Error", error)
       if (isCancel(error)) return
       if (error.response && error.response.status == 401) {
-        console.log("Unauthorized")
-        this.setState({authorized: false, isLoading: false})
+        this.setState({
+          ...this.state,
+          authorized: false, 
+          isLoading: false
+        })
       } else {
         // this.setState({requestError: error})
         // toaster.danger(<ErrorModal requestError={error} />)
-        this.setState({isLoading: false})
+        this.setState({
+          ...this.state,
+          isLoading: false
+        })
       }
       this.cancelRequest = Layerkeep.cancelSource();
 
@@ -142,7 +151,7 @@ export class LKSlicedFilesView extends React.Component {
 
     FileRequest.syncFromLayerkeep(this.props.node, lkslice)
     .then((res) => {
-      // this.listLocal()
+      this.listLocal()
 
       toaster.success(`${name} has been successfully deleted.`)
     })

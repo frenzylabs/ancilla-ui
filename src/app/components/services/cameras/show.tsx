@@ -8,6 +8,7 @@
 
 import React      from 'react'
 import {connect}  from 'react-redux'
+import { Link } from 'react-router-dom'
 
 import {
   Switch,
@@ -17,7 +18,9 @@ import {
 import {
   Pane,
   TextInput,
+  Label,
   Button,
+  Paragraph,
   toaster
 } from 'evergreen-ui'
 
@@ -43,6 +46,7 @@ type Props = {
   cameraUpdated: Function,
   dispatch: Function
 }
+
 export class CameraView extends React.Component<Props> {
   constructor(props:any) {
     super(props)
@@ -78,7 +82,7 @@ export class CameraView extends React.Component<Props> {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.service.model != this.props.service.model) {
       // console.log("PRINTER MODEL HAS BEEN UPDATED")
-      // this.setupCamera()      
+      this.setupCamera()      
     }
   }
 
@@ -130,6 +134,11 @@ export class CameraView extends React.Component<Props> {
     var [to, kind] = msg.split("events.")
     // console.log("EVENT KIND", kind)
     switch(kind) {
+      case 'camera.recording.state.changed':
+          // console.log("Camera Recording state changed", data)
+          // if (data.status != "recording")
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: data.status == "recording"}))
+          break
       case 'camera.recording.started':
           console.log("Camera Recording started", data)
           this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
@@ -170,27 +179,6 @@ export class CameraView extends React.Component<Props> {
     toaster.danger(<ErrorModal requestError={error} />)
   }
 
-  power(){
-    if (this.props.service.state.open) {
-      CameraHandler.disconnect(this.props.node, this.props.service)
-      .then((response) => {
-        console.log("disconnected", response)
-      }).catch((error) => {
-        console.log(error)
-        toaster.danger(<ErrorModal requestError={error} />)
-      })
-    } else {
-      CameraHandler.connect(this.props.node, this.props.service)
-      .then((response) => {
-        toaster.success(`Connected to ${this.props.service.name}`)
-      })
-      .catch((error) => {
-        console.log(error)
-        toaster.danger(<ErrorModal requestError={error} />)
-      })
-    }
-  }
-
   getColorState() {
     if (this.props.service.state.open) {
       return 'success'
@@ -218,19 +206,81 @@ export class CameraView extends React.Component<Props> {
     )
   }
 
+  power(){
+    if (this.props.service.state.open) {
+      CameraHandler.disconnect(this.props.node, this.props.service)
+      .then((response) => {
+        console.log("disconnected", response)
+      }).catch((error) => {
+        console.log(error)
+        toaster.danger(<ErrorModal requestError={error} />)
+      })
+    } else {
+      CameraHandler.connect(this.props.node, this.props.service)
+      .then((response) => {
+        toaster.success(`Connected to ${this.props.service.name}`)
+      })
+      .catch((error) => {
+        console.log(error)
+        toaster.danger(<ErrorModal requestError={error} />)
+      })
+    }
+  }
+
+  renderState() {
+    return (
+      <Pane className={`card package`}>
+        <div className="card-header">
+          <p className="card-header-title">
+            State
+          </p>
+        </div>
+
+        <div className="card-content">
+          <Button onClick={() => { this.power() }}>{this.props.service.state.open ?  'Disconnect' : 'Connect Camera'}</Button>
+          <br/>
+          <Paragraph>{JSON.stringify(this.props.service.state)}</Paragraph>
+        </div>
+      </Pane>
+    )
+  }
+
+  renderVideo() {
+    if (this.props.service.state.open) {
+      let url = this.props.node.apiUrl
+      return (
+        <img width={640} src={`${url}/webcam/${this.props.service.name}`} />
+      )
+    }
+    return ( 
+        <Pane display="flex" width={640}  padding={20}> 
+            <Button onClick={() => { this.power() }}>Turn On Camera</Button>              
+        </Pane>
+    )
+  }
+
   render() {
-      if (this.props.service.state.open) {
-        let url = this.props.node.apiUrl
+    
+      // if (this.props.service.state.open) {
+        
         return (
-          <Pane display="flex">
-            <Pane display="flex" width="100%">              
-              <img src={`${url}/webcam/${this.props.service.name}`} />
+          <Pane display="flex" flex={1} width="100%" padding={10}>
+            <Pane display="flex" >   
+              {this.renderVideo()}                         
             </Pane>
-            <Pane display="flex" width="100%">
-              <button onClick={this.toggleRecording}>{this.props.service.state.recording ? "Stop Recording" : "Record"}</button>
+            <Pane display="flex" flex={1} padding={10} flexDirection="column" width="100%">
+              {this.renderState()}
+              <Label
+                htmlFor="timelapse"
+                marginBottom={4}
+                display="block"
+              >
+                Timelapse
+              </Label>
               <TextInput 
                 name="timelapse" 
                 placeholder="Timelapse in seconds" 
+
                 marginBottom={4}
                 width="100%" 
                 height={48}
@@ -240,6 +290,13 @@ export class CameraView extends React.Component<Props> {
                   })
                 }
               />
+              <Label
+                htmlFor="fps"
+                marginBottom={4}
+                display="block"
+              >
+                Frames Per Second
+              </Label>
               <TextInput 
                 name="fps" 
                 placeholder="Frames Per Second" 
@@ -252,37 +309,18 @@ export class CameraView extends React.Component<Props> {
                   }})
                 }
               />
+              <Button onClick={this.toggleRecording}>{this.props.service.state.recording ? "Stop Recording" : "Record"}</Button>
+              <Pane>
+                <Link to={`/cameras/${this.props.service.id}/recordings`}>List Recordings</Link>
+              </Pane>
             </Pane>
           </Pane>
         )
-      }
-      return null
+      
+      // return null
 
   }
 
-  // render() {
-  //   var params = this.props.match.params;
-  //   return (
-  //     <div className="flex-wrapper">
-  //       <Statusbar {...this.props} status={this.getColorState()} powerAction={this.power.bind(this)} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
-
-  //       <div className="scrollable-content">
-  //         <Switch>                  
-  //             <Route path={`${this.props.match.path}/settings`} render={ props => 
-  //               <Settings {...this.props} {...props} forms={[
-  //               <CameraForm onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />,
-  //               this.deleteComponent()
-  //               ]}/> 
-  //             }/>
-
-  //             <Route path={`${this.props.match.path}`} render={ props => 
-  //               <ShowView {...this.props}  {...props} />  
-  //             }/>
-  //           </Switch>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 }
 
 

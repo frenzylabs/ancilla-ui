@@ -16,14 +16,21 @@ import {
 } from 'evergreen-ui'
 
 import { ServiceHandler } from '../../../network/'
+import { string } from 'prop-types'
 
 export default class AttachmentForm extends React.Component {
   state = {
     newAttachment: {
       parent_id:     '',
-      attachment_id:     ''
+      service_id:     ''
     },
-    files: Array<{}>(),
+    services: Array<{}>(),
+    kind: string
+  }
+
+  constructor(props:any) {
+    super(props)
+    this.setServices = this.setServices.bind(this)
   }
 
   // get values():{name?:string, port:string, baudrate:string} {
@@ -51,8 +58,42 @@ export default class AttachmentForm extends React.Component {
   // }
 
   componentDidMount() {
-    // this.getFiles()
+    this.setServices()
     // console.log(this.props)
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    // if (prevProps.attachmentKind != this.props.attachmentKind) 
+    // prevProps.node.services.filter
+    // var oldservices = prevProps.node.services.map((k) => k.id)
+    // if (prevProps.attachmentKind) {
+    //   if (k.kind) 
+    // }
+    // var services = this.props.node.services
+    // if (this.props.attachmentKind) {
+    if (prevProps.attachmentKind != this.props.attachmentKind) {
+      
+    }
+    if (prevProps.attachments != this.props.attachments ||
+        prevProps.attachmentKind != this.props.attachmentKind ||
+        prevProps.node.services.length != this.props.node.services.length)  {
+      this.setServices()
+    }
+  }
+
+  setServices() {
+    var services = this.props.node.services.filter(s => {
+      if (this.props.attachments) {
+        var serviceIds = this.props.attachments.map(a => a.attachment.id)
+        if (serviceIds.includes(s.id))
+          return false
+      }
+      if (this.props.attachmentKind) {
+        return s.kind == this.props.attachmentKind.toLowerCase()
+      }
+      return true
+    })
+    this.setState({services: services, kind: this.props.attachmentKind || "Service"})
   }
 
   save() {
@@ -62,7 +103,7 @@ export default class AttachmentForm extends React.Component {
   render() {
     return (
       <Pane>
-        <TextInput 
+        {/* <TextInput 
           name="name" 
           placeholder="Service Name" 
           marginBottom={4}  
@@ -76,24 +117,24 @@ export default class AttachmentForm extends React.Component {
               }
             })
           }
-        />
+        /> */}
 
         <Combobox 
           openOnFocus 
-          items={this.props.node.services} 
+          items={this.state.services} 
           itemToString={item => item ? item.name : ''}
-          placeholder={this.state.files.length > 0? "Select Service" : "No Services Found"} 
+          placeholder={this.state.services.length > 0? `Select ${this.state.kind}` : `No ${this.state.kind} Found`} 
           marginTop={4} 
           marginBottom={4}  
           width="100%" 
           height={48}
           isLoading={this.props.loading}
-          disabled={this.props.node.services.length < 1}
+          disabled={this.state.services.length < 1}
           onChange={selected => {
             this.setState({
               newAttachment: {
                 ...this.state.newAttachment,
-                attachment_id: (selected && selected.id)
+                service_id: (selected && selected.id)
               }
             })
           }

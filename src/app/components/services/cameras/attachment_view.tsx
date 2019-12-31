@@ -17,7 +17,9 @@ import {
 import {
   Pane,
   TextInput,
+  Label,
   Button,
+  Paragraph,
   toaster
 } from 'evergreen-ui'
 
@@ -33,8 +35,6 @@ import ErrorModal     from '../../modal/error'
 import NodeAction  from '../../../store/actions/node'
 import ServiceAction  from '../../../store/actions/services'
 
-import Recordings from '../../recordings/index'
-
 import { NodeState }  from '../../../store/reducers/state'
 import { ServiceState }  from '../../../store/reducers/service'
 
@@ -45,7 +45,8 @@ type Props = {
   cameraUpdated: Function,
   dispatch: Function
 }
-export class CameraIndex extends React.Component<Props> {
+
+export class CameraView extends React.Component<Props> {
   constructor(props:any) {
     super(props)
 
@@ -61,7 +62,7 @@ export class CameraIndex extends React.Component<Props> {
       }
     }
 
-    this.receiveRequest = this.receiveRequest.bind(this)
+    this.receiveRequest   = this.receiveRequest.bind(this)
     this.receiveEvent     = this.receiveEvent.bind(this)
     this.setupCamera      = this.setupCamera.bind(this)
     this.toggleRecording  = this.toggleRecording.bind(this)
@@ -70,11 +71,26 @@ export class CameraIndex extends React.Component<Props> {
     
   }
 
+  componentWillUnmount() {
+    if (this.pubsubToken)
+      PubSub.unsubscribe(this.pubsubToken)
+    if (this.pubsubRequestToken)
+      PubSub.unsubscribe(this.pubsubRequestToken)
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.service.model != this.props.service.model) {
+      // console.log("PRINTER MODEL HAS BEEN UPDATED")
+      this.setupCamera()      
+    }
+  }
+
+
   setupCamera() {
     if (this.props.service) {
       this.props.dispatch(ServiceActions.getState(this.props.service))
       PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.connection"])
-      // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.recording"])
+      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.recording"])
 
       // PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.get_state"])
       // console.log("Has printer")
@@ -117,6 +133,11 @@ export class CameraIndex extends React.Component<Props> {
     var [to, kind] = msg.split("events.")
     // console.log("EVENT KIND", kind)
     switch(kind) {
+      case 'camera.recording.state.changed':
+          // console.log("Camera Recording state changed", data)
+          // if (data.status != "recording")
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: data.status == "recording"}))
+          break
       case 'camera.recording.started':
           console.log("Camera Recording started", data)
           this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
@@ -139,19 +160,6 @@ export class CameraIndex extends React.Component<Props> {
   }
 
     
-  componentWillUnmount() {
-    if (this.pubsubToken)
-      PubSub.unsubscribe(this.pubsubToken)
-    if (this.pubsubRequestToken)
-      PubSub.unsubscribe(this.pubsubRequestToken)
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevProps.service.model != this.props.service.model) {
-      // console.log("PRINTER MODEL HAS BEEN UPDATED")
-      this.setupCamera()      
-    }
-  }
 
   toggleRecording() {
     if (this.props.service.state.recording) {
@@ -168,27 +176,6 @@ export class CameraIndex extends React.Component<Props> {
 
   saveFailed(error) {
     toaster.danger(<ErrorModal requestError={error} />)
-  }
-
-  power(){
-    if (this.props.service.state.open) {
-      CameraHandler.disconnect(this.props.node, this.props.service)
-      .then((response) => {
-        console.log("disconnected", response)
-      }).catch((error) => {
-        console.log(error)
-        toaster.danger(<ErrorModal requestError={error} />)
-      })
-    } else {
-      CameraHandler.connect(this.props.node, this.props.service)
-      .then((response) => {
-        toaster.success(`Connected to ${this.props.service.name}`)
-      })
-      .catch((error) => {
-        console.log(error)
-        toaster.danger(<ErrorModal requestError={error} />)
-      })
-    }
   }
 
   getColorState() {
@@ -218,34 +205,118 @@ export class CameraIndex extends React.Component<Props> {
     )
   }
 
-  
+  power(){
+    if (this.props.service.state.open) {
+      CameraHandler.disconnect(this.props.node, this.props.service)
+      .then((response) => {
+        console.log("disconnected", response)
+      }).catch((error) => {
+        console.log(error)
+        toaster.danger(<ErrorModal requestError={error} />)
+      })
+    } else {
+      CameraHandler.connect(this.props.node, this.props.service)
+      .then((response) => {
+        toaster.success(`Connected to ${this.props.service.name}`)
+      })
+      .catch((error) => {
+        console.log(error)
+        toaster.danger(<ErrorModal requestError={error} />)
+      })
+    }
+  }
+
+  renderState() {
+    return (
+      <Pane className={`card package`}>
+        <div className="card-header">
+          <p className="card-header-title">
+            State
+          </p>
+        </div>
+
+        <div className="card-content">
+          <Button onClick={() => { this.power() }}>{this.props.service.state.open ?  'Disconnect' : 'Connect Camera'}</Button>
+          <br/>
+          <Paragraph>{JSON.stringify(this.props.service.state)}</Paragraph>
+        </div>
+      </Pane>
+    )
+  }
+
+  renderVideo() {
+    if (this.props.service.state.open) {
+      let url = this.props.node.apiUrl
+      return (
+        <img width={640} src={`${url}/webcam/${this.props.service.name}`} />
+      )
+    }
+    return ( 
+        <Pane display="flex" width={640}  padding={20}> 
+            <Button onClick={() => { this.power() }}>Turn On Camera</Button>              
+        </Pane>
+    )
+  }
 
   render() {
-    var params = this.props.match.params;
-    return (
-      <div className="flex-wrapper">
-        <Statusbar {...this.props} status={this.getColorState()} powerAction={this.power.bind(this)} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
+    
+      // if (this.props.service.state.open) {
+        
+        return (
+          <Pane display="flex" flex={1} width="100%" padding={10}>
+            <Pane display="flex" >   
+              {this.renderVideo()}                         
+            </Pane>
+            <Pane display="flex" flex={1} padding={10} flexDirection="column" width="100%">
+              {this.renderState()}
+              <Label
+                htmlFor="timelapse"
+                marginBottom={4}
+                display="block"
+              >
+                Timelapse
+              </Label>
+              <TextInput 
+                name="timelapse" 
+                placeholder="Timelapse in seconds" 
 
-        <div className="scrollable-content">
-          <Switch>                 
-            <Route path={`${this.props.match.path}/recordings`} render={ props => 
-                <Recordings {...this.props} {...props}  /> 
-              }/> 
-              <Route path={`${this.props.match.path}/settings`} render={ props => 
-                <Settings {...this.props} {...props} forms={[
-                  <CameraForm onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />,
-                  this.deleteComponent()
-                ]}/> 
-              }/>
+                marginBottom={4}
+                width="100%" 
+                height={48}
+                onChange={e => 
+                  this.setState({
+                    recordSettings: {...this.state.recordSettings, timelapse: e.target.value}
+                  })
+                }
+              />
+              <Label
+                htmlFor="fps"
+                marginBottom={4}
+                display="block"
+              >
+                Frames Per Second
+              </Label>
+              <TextInput 
+                name="fps" 
+                placeholder="Frames Per Second" 
+                marginBottom={4}
+                width="100%" 
+                height={48}
+                onChange={e => 
+                  this.setState({recordSettings: {...this.state.recordSettings, 
+                    videoSettings: {...this.state.recordSettings.videoSettings, fps: e.target.value}
+                  }})
+                }
+              />
+              <Button onClick={this.toggleRecording}>{this.props.service.state.recording ? "Stop Recording" : "Record"}</Button>
+            </Pane>
+          </Pane>
+        )
+      
+      // return null
 
-              <Route path={`${this.props.match.path}`} render={ props => 
-                <ShowView {...this.props}  {...props} />  
-              }/>
-            </Switch>
-        </div>
-      </div>
-    );
   }
+
 }
 
 
@@ -266,4 +337,4 @@ const mapDispatchToProps = (dispatch) => {
 }
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(CameraIndex)
+export default connect(mapStateToProps, mapDispatchToProps)(CameraView)

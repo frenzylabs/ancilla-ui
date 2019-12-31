@@ -375,7 +375,7 @@ export default class FilesView extends React.Component {
   render() {
     return (
       <Pane>
-        <div className="scrollable-content" style={{height: '100%'}}>
+        <div className="scrollable-content" >
           {this.renderLocal()}
           {this.renderLayerKeep()}
         </div>

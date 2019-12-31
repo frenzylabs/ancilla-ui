@@ -38,6 +38,17 @@ export const Camera = {
     return Request.get(`${node.apiUrl}/services/camera/${cameraService.id}/recordings`, options)
   },
 
+  getRecording: (node, cameraService, recordingId, options= {}) => {
+    return Request.get(`${node.apiUrl}/services/camera/${cameraService.id}/recordings/${recordingId}`, options)
+  },
+
+  record: (node, cameraService, params = {}, options = {}) => {
+    return Request.post(`${node.apiUrl}/services/camera/${cameraService.id}/record`, params, options)
+  },
+
+  stopRecording: (node, cameraService, params = {}, options = {}) => {
+    return Request.post(`${node.apiUrl}/services/camera/${cameraService.id}/record`, params, options)
+  },
 
   // ports: () => {
   //   return Request.get('/ports')

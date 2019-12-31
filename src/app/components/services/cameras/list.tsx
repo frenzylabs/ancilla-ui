@@ -33,8 +33,6 @@ import ErrorModal     from '../../modal/error'
 import NodeAction  from '../../../store/actions/node'
 import ServiceAction  from '../../../store/actions/services'
 
-import Recordings from '../../recordings/index'
-
 import { NodeState }  from '../../../store/reducers/state'
 import { ServiceState }  from '../../../store/reducers/service'
 
@@ -45,7 +43,7 @@ type Props = {
   cameraUpdated: Function,
   dispatch: Function
 }
-export class CameraIndex extends React.Component<Props> {
+export class CameraView extends React.Component<Props> {
   constructor(props:any) {
     super(props)
 
@@ -149,7 +147,7 @@ export class CameraIndex extends React.Component<Props> {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.service.model != this.props.service.model) {
       // console.log("PRINTER MODEL HAS BEEN UPDATED")
-      this.setupCamera()      
+      // this.setupCamera()      
     }
   }
 
@@ -218,7 +216,46 @@ export class CameraIndex extends React.Component<Props> {
     )
   }
 
-  
+  renderDisplay() {
+      if (this.props.service.state.open) {
+        let url = this.props.node.apiUrl
+        return (
+          <Pane display="flex">
+            <Pane display="flex" width="100%">              
+              <img src={`${url}/webcam/${this.props.service.name}`} />
+            </Pane>
+            <Pane display="flex" width="100%">
+              <button onClick={this.toggleRecording}>{this.props.service.state.recording ? "Stop Recording" : "Record"}</button>
+              <TextInput 
+                name="timelapse" 
+                placeholder="Timelapse in seconds" 
+                marginBottom={4}
+                width="100%" 
+                height={48}
+                onChange={e => 
+                  this.setState({
+                    recordSettings: {...this.state.recordSettings, timelapse: e.target.value}
+                  })
+                }
+              />
+              <TextInput 
+                name="fps" 
+                placeholder="Frames Per Second" 
+                marginBottom={4}
+                width="100%" 
+                height={48}
+                onChange={e => 
+                  this.setState({recordSettings: {...this.state.recordSettings, 
+                    videoSettings: {...this.state.recordSettings.videoSettings, fps: e.target.value}
+                  }})
+                }
+              />
+            </Pane>
+          </Pane>
+        )
+      }
+
+  }
 
   render() {
     var params = this.props.match.params;
@@ -227,14 +264,11 @@ export class CameraIndex extends React.Component<Props> {
         <Statusbar {...this.props} status={this.getColorState()} powerAction={this.power.bind(this)} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
 
         <div className="scrollable-content">
-          <Switch>                 
-            <Route path={`${this.props.match.path}/recordings`} render={ props => 
-                <Recordings {...this.props} {...props}  /> 
-              }/> 
+          <Switch>                  
               <Route path={`${this.props.match.path}/settings`} render={ props => 
                 <Settings {...this.props} {...props} forms={[
-                  <CameraForm onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />,
-                  this.deleteComponent()
+                <CameraForm onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />,
+                this.deleteComponent()
                 ]}/> 
               }/>
 
@@ -266,4 +300,4 @@ const mapDispatchToProps = (dispatch) => {
 }
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(CameraIndex)
+export default connect(mapStateToProps, mapDispatchToProps)(CameraView)

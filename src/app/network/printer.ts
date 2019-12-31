@@ -65,9 +65,9 @@ export const Printer = {
     return Request.post(`${node.apiUrl}/services/printer/${printerService.id}/prints/${printId}/sync_layerkeep`, options)
   },
 
-  // unsyncFromLayerkeep: (node, localslice, opts = {}) => {
-  //   return Request.patch(`${node.apiUrl}/files/${localslice.id}/unsync`, localslice, opts)
-  // },
+  unsyncFromLayerkeep: (node, printerService, printId, options = {}) => {
+    return Request.post(`${node.apiUrl}/services/printer/${printerService.id}/prints/${printId}/unsync_layerkeep`, options)
+  },
 
   connect: (node, printer, options = {}) => {
     console.log(node)

@@ -164,11 +164,42 @@ export class PrintList extends React.Component {
     PrinterRequest.syncPrintToLayerkeep(this.props.node, this.props.service, row.id)
     .then((res) => {
       // this.listLocal()
+      var prints = this.state.list.data.map((v) => {
+        if (v.id == row.id) {
+          return res.data.data
+        }
+        return v
+      })
+      this.setState({
+        list: {...this.state.list, data: prints}
+      })
 
       toaster.success(`${row.name} has been successfully synced.`)
     })
     .catch((_err) => {})
   }
+
+
+  unsyncFromLayerkeep(row) {
+    console.log("UnSync")
+    PrinterRequest.unsyncFromLayerkeep(this.props.node, this.props.service, row.id)
+    .then((res) => {
+      // this.listLocal()
+      var prints = this.state.list.data.map((v) => {
+        if (v.id == row.id) {
+          return res.data.data
+        }
+        return v
+      })
+      this.setState({
+        list: {...this.state.list, data: prints}
+      })
+
+      toaster.success(`${row.name} has been successfully synced.`)
+    })
+    .catch((_err) => {})
+  }
+
 
   filterList() {
     if (this.state.loading && this.cancelRequest) {
@@ -197,10 +228,6 @@ export class PrintList extends React.Component {
     var url = this.props.match.url + "/" + row.id
     this.setState({redirectTo: {pathname: url, state: {printerPrint: row}}})
     // this.props.history.push(`${url}`);
-  }
-
-  unsyncFromLayerkeep(row) {
-    console.log("UnSync")
   }
 
   renderLKMenu(row) {

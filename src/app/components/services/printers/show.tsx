@@ -198,7 +198,7 @@ export default class PrinterShow extends React.Component {
     return (
       <div>
           <Summary {...this.props}  />
-          <ServiceAttachment {...this.props} device={this.props.service && this.props.service.model}/>
+          <ServiceAttachment {...this.props} attachmentKind="Camera" device={this.props.service && this.props.service.model}/>
           <Terminal {...this.props}  />
       </div>
     );

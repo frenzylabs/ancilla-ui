@@ -9,6 +9,8 @@
 import {Request, CancelToken} from './request'
 import Connection from '../components/services/printers/summary/connection';
 
+const QS = require('qs');
+
 export const Camera = {
   cancelSource: () => {
     return CancelToken.source();
@@ -35,7 +37,10 @@ export const Camera = {
   },
 
   recordings: (node, cameraService, options= {}) => {
-    return Request.get(`${node.apiUrl}/services/camera/${cameraService.id}/recordings`, options)
+    var qs = options["qs"]
+    delete options["qs"]
+    var path = `${node.apiUrl}/services/camera/${cameraService.id}/recordings` + QS.stringify(qs, { addQueryPrefix: true }) 
+    return Request.get(path, options)
   },
 
   getRecording: (node, cameraService, recordingId, options= {}) => {
@@ -48,6 +53,10 @@ export const Camera = {
 
   stopRecording: (node, cameraService, params = {}, options = {}) => {
     return Request.post(`${node.apiUrl}/services/camera/${cameraService.id}/record`, params, options)
+  },
+
+  deleteRecording: (node, cameraService, recordingId, options = {}) => {
+    return Request.delete(`${node.apiUrl}/services/camera/${cameraService.id}/recordings/${recordingId}`, options)
   },
 
   // ports: () => {

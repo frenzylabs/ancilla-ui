@@ -70,6 +70,21 @@ export class CameraIndex extends React.Component<Props> {
     
   }
 
+  componentWillUnmount() {
+    PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "UNSUB", "events.camera.connection"])
+    if (this.pubsubToken)
+      PubSub.unsubscribe(this.pubsubToken)
+    if (this.pubsubRequestToken)
+      PubSub.unsubscribe(this.pubsubRequestToken)
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.service.model != this.props.service.model) {
+      // console.log("PRINTER MODEL HAS BEEN UPDATED")
+      this.setupCamera()      
+    }
+  }
+
   setupCamera() {
     if (this.props.service) {
       this.props.dispatch(ServiceActions.getState(this.props.service))
@@ -126,11 +141,11 @@ export class CameraIndex extends React.Component<Props> {
           this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
           break
       case 'camera.connection.closed':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, open: false}))
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
           // this.setState({...this.state, serviceState: {...this.state.serviceState, open: false}})
           break
       case 'camera.connection.opened':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, open: true}))
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: true}))
           // this.setState({...this.state, serviceState: {...this.state.serviceState, open: true}})
           break      
       default:
@@ -139,19 +154,7 @@ export class CameraIndex extends React.Component<Props> {
   }
 
     
-  componentWillUnmount() {
-    if (this.pubsubToken)
-      PubSub.unsubscribe(this.pubsubToken)
-    if (this.pubsubRequestToken)
-      PubSub.unsubscribe(this.pubsubRequestToken)
-  }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevProps.service.model != this.props.service.model) {
-      // console.log("PRINTER MODEL HAS BEEN UPDATED")
-      this.setupCamera()      
-    }
-  }
 
   toggleRecording() {
     if (this.props.service.state.recording) {
@@ -171,7 +174,7 @@ export class CameraIndex extends React.Component<Props> {
   }
 
   power(){
-    if (this.props.service.state.open) {
+    if (this.props.service.state.connected) {
       CameraHandler.disconnect(this.props.node, this.props.service)
       .then((response) => {
         console.log("disconnected", response)
@@ -192,7 +195,7 @@ export class CameraIndex extends React.Component<Props> {
   }
 
   getColorState() {
-    if (this.props.service.state.open) {
+    if (this.props.service.state.connected) {
       return 'success'
     } else {
       return 'danger'

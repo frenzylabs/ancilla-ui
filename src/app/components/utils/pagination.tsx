@@ -32,7 +32,7 @@ export class PaginatedList extends React.Component<{onChangePage?, currentPage, 
     this.renderList     = this.renderList.bind(this)
   }
 
-  componentWillMount() {
+  componentDidMount() {
       // set page if items total isn't empty
       if (this.props.totalItems > 1) {
           this.setPage(this.props.currentPage);

@@ -36,7 +36,10 @@ export const Printer = {
   },
 
   prints: (node, printerService, options = {}) => { 
-    return Request.get(`${node.apiUrl}/services/printer/${printerService.id}/prints`, options)
+    var qs = options["qs"]
+    delete options["qs"]
+    var path = `${node.apiUrl}/services/printer/${printerService.id}/prints` + QS.stringify(qs, { addQueryPrefix: true }) 
+    return Request.get(path, options)
   },
 
   getPrint: (node, printerService, printId, options = {}) => { 

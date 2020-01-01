@@ -144,10 +144,9 @@ export class RecordingList extends React.Component {
     console.log("delete recording", row)
     CameraRequest.deleteRecording(this.props.node, this.props.service, row.id)
     .then((res) => {
-      // this.listLocal()
+      this.listRecordings()
       
-      // this.setState({redirectTo: `/printers/${this.props.service.id}/prints`})
-      toaster.success(`${row.name} has been successfully deleted.`)
+      toaster.success(`Recording has been successfully deleted.`)
     })
     .catch((error) => {
       toaster.danger(<ErrorModal requestError={error} />)

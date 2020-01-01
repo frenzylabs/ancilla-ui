@@ -207,7 +207,7 @@ export class RecordingShow extends React.Component {
     CameraRequest.deleteRecording(this.props.node, this.props.service, this.state.cameraRecording.id)
     .then((res) => {
 
-      this.setState({redirectTo: `/printers/${this.props.service.id}/prints`})
+      this.setState({redirectTo: `/cameras/${this.props.service.id}/recordings`})
     })
     .catch((error) => {
       toaster.danger(<ErrorModal requestError={error} />)

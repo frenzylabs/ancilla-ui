@@ -43,7 +43,7 @@ type Props = {
   cameraUpdated: Function,
   dispatch: Function
 }
-export class CameraView extends React.Component<Props> {
+export class CameraList extends React.Component<Props> {
   constructor(props:any) {
     super(props)
 
@@ -124,11 +124,11 @@ export class CameraView extends React.Component<Props> {
           this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
           break
       case 'camera.connection.closed':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, open: false}))
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
           // this.setState({...this.state, serviceState: {...this.state.serviceState, open: false}})
           break
       case 'camera.connection.opened':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, open: true}))
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: true}))
           // this.setState({...this.state, serviceState: {...this.state.serviceState, open: true}})
           break      
       default:
@@ -169,7 +169,7 @@ export class CameraView extends React.Component<Props> {
   }
 
   power(){
-    if (this.props.service.state.open) {
+    if (this.props.service.state.connected) {
       CameraHandler.disconnect(this.props.node, this.props.service)
       .then((response) => {
         console.log("disconnected", response)
@@ -190,7 +190,7 @@ export class CameraView extends React.Component<Props> {
   }
 
   getColorState() {
-    if (this.props.service.state.open) {
+    if (this.props.service.state.connected) {
       return 'success'
     } else {
       return 'danger'
@@ -217,7 +217,7 @@ export class CameraView extends React.Component<Props> {
   }
 
   renderDisplay() {
-      if (this.props.service.state.open) {
+      if (this.props.service.state.connected) {
         let url = this.props.node.apiUrl
         return (
           <Pane display="flex">

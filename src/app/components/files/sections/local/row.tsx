@@ -30,13 +30,14 @@ export default class Row extends React.Component {
     this.props['download'](id)
   }
 
-  delete(e) {
-    if(!this.props['delete']) { return }
+  delete(row) {
+    console.log("ON DELETE HERE", row)
+    if(!this.props.onDelete) { return }
 
-    let name  = e.currentTarget.getAttribute('data-name')
-    let id    = e.currentTarget.getAttribute('data-id')
+    // let name  = e.currentTarget.getAttribute('data-name')
+    // let id    = e.currentTarget.getAttribute('data-id')
 
-    this.props['delete'](name, id)
+    this.props.onDelete(row)
   }
 
   renderMenu(row) {
@@ -53,7 +54,7 @@ export default class Row extends React.Component {
           <Menu.Divider />
           
           <Menu.Group>
-            <Menu.Item intent="danger"  data-id={row.id} data-name={row.name} onSelect={this.delete}>
+            <Menu.Item intent="danger"  onSelect={() => this.delete(row)}>
               Delete... 
             </Menu.Item>
           </Menu.Group>

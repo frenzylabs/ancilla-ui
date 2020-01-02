@@ -31,13 +31,26 @@ import {
 import FileForm from './file_form'
 import Row      from './row'
 
+import List from '../../../table/list'
+
 export default class Local extends React.Component {
   
   state = {
     showingAddFile: false,
     loading:        false,
     saving:         false,
-    files:          [],
+    data:          {
+      data: [],
+      meta: {}
+    },
+    filter: {
+      name: ""
+    },
+    search: {
+      page: 1, 
+      per_page: 20, 
+      q: {name: undefined}
+    },
     printSlice:     null
   }
 
@@ -47,11 +60,30 @@ export default class Local extends React.Component {
   constructor(props:any) {
     super(props)
 
+
     this.load     = this.load.bind(this)
     this.download = this.download.bind(this)
     this.delete   = this.delete.bind(this)
     this.save     = this.save.bind(this)
   }
+
+  componentDidMount() {
+    this.load()
+  }
+
+  componentWillUnmount() {
+    if(this.cancelRequest) {
+      this.cancelRequest.cancel("Local Files unmounted")
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (JSON.stringify(this.state.search) != JSON.stringify(prevState.search)) {
+      this.load();
+    }
+  }
+
+
 
   get loading(): boolean {
     return this.state.loading
@@ -79,11 +111,11 @@ export default class Local extends React.Component {
   load() {
     this.loading = true
 
-    FileHandler.listLocal({cancelToken: this.cancelRequest.token})
+    FileHandler.listLocal(this.props.node, {qs: this.state.search, cancelToken: this.cancelRequest.token})
     .then((res) => {
       this.setState({
         ...this.state,
-        files: res.data['files'] || [],
+        data: res.data,
         loading: false
       })
     })
@@ -98,11 +130,11 @@ export default class Local extends React.Component {
     document.location.href = `${this.props.node.apiUrl}/files/${id}?download=true`
   }
 
-  delete(name, id) {
-    FileHandler.delete(id)
+  delete(row) {
+    FileHandler.delete(row.id)
     .then((res) => {
       this.load()
-      toaster.success(`${name} has been successfully deleted.`)
+      toaster.success(`${row.name} has been successfully deleted.`)
     })
     .catch((_err) => {}) 
   }
@@ -115,7 +147,7 @@ export default class Local extends React.Component {
     : FileHandler.create(this.props.node, this.addForm.data, {cancelToken: this.cancelRequest.token}) 
 
     request.then((res) => {
-      var files = this.state.files
+      var files = this.state.data.data
       
       if(this.addForm.data.id) {
         files = files.map((f) => {
@@ -123,13 +155,14 @@ export default class Local extends React.Component {
         })
       } else {
         files.unshift(res.data.file)
+        this.state.data.meta.total = (this.state.data.meta.total || 0) + 1
       }
 
       this.setState({
         ...this.state,
         saving:         false,
         showingAddFile: false,
-        files:          files
+        data: {...this.state.data, data: files, meta: this.state.data.meta}
       })
 
       toaster.success(`File ${res.data.file.name} has been successfully added`)
@@ -154,14 +187,10 @@ export default class Local extends React.Component {
     })
   }
 
-  componentDidMount() {
-    this.load()
-  }
 
-  componentWillUnmount() {
-    if(this.cancelRequest) {
-      this.cancelRequest.cancel("Local Files unmounted")
-    }
+
+  onChangePage(page) {
+    this.setState({ search: {...this.state.search, page: page }});    
   }
 
   renderAdd() {
@@ -187,15 +216,19 @@ export default class Local extends React.Component {
     )
   }
 
-  renderLoader() {
-    <Pane borderTop padding={20} display="flex" alignItems="center" justifyContent="center" minHeight={340}>
-      <Loader/>
-    </Pane>
-  }
 
-  renderTable() {
+  renderRow(row, index) {
     return (
-      <Table>
+          <Row 
+            key={row.id}
+            row={row}
+            download={this.download}
+            onDelete={this.delete}
+          />
+        )
+  }
+  renderTableHeader() {
+    return (
         <Table.Head>
           <Table.SearchHeaderCell />
           <Table.TextHeaderCell >
@@ -207,18 +240,19 @@ export default class Local extends React.Component {
           <Table.TextHeaderCell width={48} flex="none">
           </Table.TextHeaderCell>
         </Table.Head>
-        <Table.VirtualBody minHeight={340}>
-          {this.state.files.map((row, index) => (
-              <Row 
-                key={row.id}
-                row={row}
-                download={this.download}
-                onDelete={this.delete}
-              />
-            )
-          )}
-        </Table.VirtualBody>
-      </Table>)
+      )
+  }
+
+  renderData() {
+    return (
+      <List 
+        data={this.state.data}
+        loading={this.loading}
+        renderHeader={this.renderTableHeader.bind(this)}
+        renderRow={this.renderRow.bind(this)}
+        onChangePage={this.onChangePage.bind(this)}
+      />
+    )
   }
 
   render() {
@@ -231,7 +265,7 @@ export default class Local extends React.Component {
           </Pane>
 
           <Pane borderBottom borderLeft borderRight>
-            {this.loading ? this.renderLoader() : this.renderTable()}
+            {this.renderData()}
           </Pane>
         </Pane>
       </Pane>

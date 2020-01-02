@@ -7,6 +7,7 @@
 //
 
 import { Request, CancelToken } from './request'
+const QS = require('qs');
 
 export default {
   cancelSource: () => {
@@ -45,8 +46,11 @@ export default {
     return Request.delete(`/files/${id}`, options)
   },
 
-  listLocal: (options= {}) => {
-      return Request.get('/files', options)
+  listLocal: (node, options= {}) => {
+    var qs = options["qs"]
+    delete options["qs"]
+    var path = `${node.apiUrl}/files` + QS.stringify(qs, { addQueryPrefix: true }) 
+    return Request.get(path, options)
   },
 
   syncFromLayerkeep: (node, lkslice, opts = {}) => {

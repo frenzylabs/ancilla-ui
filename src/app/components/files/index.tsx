@@ -56,7 +56,7 @@ export default class Files extends React.Component {
     return (
       <Pane>
         <div className="scrollable-content" >
-          <Local/>
+          <Local {...this.props} />
         </div>
       </Pane>
     )

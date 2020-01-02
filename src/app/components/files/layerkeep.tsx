@@ -114,10 +114,7 @@ export class LKSlicedFilesView extends React.Component {
     .then((res) => {
       this.setState({
         ...this.state,
-        list:       {
-          ...this.state.list,
-          data: res.data || []
-        },
+        list: {...this.state.list, ...res.data},
         isLoading:  false,
         authorized: true
       })
@@ -225,7 +222,7 @@ export class LKSlicedFilesView extends React.Component {
       return this.renderLoader()
     }
 
-    if(!this.state.authorized == false) {
+    if(this.state.authorized == false) {
       return this.renderLogin()
     }
 

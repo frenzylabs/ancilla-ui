@@ -85,6 +85,13 @@ export const Printer = {
     return Request.post(`${node.apiUrl}/services/printer/${printerService.id}/print`, options)
   },
 
+  getPrintRecordings: (node, printerService, printId, options= {}) => {
+    var qs = options["qs"]
+    delete options["qs"]    
+    var path = `${node.apiUrl}/services/printer/${printerService.id}/prints/${printId}/recordings` + QS.stringify(qs, { addQueryPrefix: true }) 
+    return Request.get(path, options)
+  },
+
 }
 
 

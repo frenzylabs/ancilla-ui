@@ -1,10 +1,11 @@
 //
+//  list.tsx
 //  ancilla
-//  index.tsx
 // 
-//  Created by Wess Cope (me@wess.io) on 11/16/19
-//  Copyright 2019 Wess Cope
+//  Created by Kevin Musselman (kevin@frenzylabs.com) on 01/02/20
+//  Copyright 2019 FrenzyLabs, LLC.
 //
+
 
 import React from 'react'
 import { Link, Redirect }       from 'react-router-dom';
@@ -33,6 +34,7 @@ import AuthForm from '../services/layerkeep/form'
 import { PaginatedList } from '../utils/pagination'
 
 import ErrorModal from '../modal/error'
+import RecordingsController from './table_controller'
 // const qs = require('qs');
 
 export class RecordingList extends React.Component {
@@ -81,9 +83,9 @@ export class RecordingList extends React.Component {
       }
     }
     this.listRecordings         = this.listRecordings.bind(this)
-    this.onChangePage       = this.onChangePage.bind(this)
-    this.renderPagination   = this.renderPagination.bind(this)
-    this.handleFilterChange = this.handleFilterChange.bind(this)
+    
+    // this.renderPagination   = this.renderPagination.bind(this)
+    // this.handleFilterChange = this.handleFilterChange.bind(this)
     
     // this.deleteFile     = this.deleteFile.bind(this)
     // this.saveFile				= this.saveFile.bind(this)
@@ -107,44 +109,42 @@ export class RecordingList extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (JSON.stringify(this.state.search) != JSON.stringify(prevState.search)) {
-      // var url = qs.stringify(this.state.search, { addQueryPrefix: true });      
-      this.listRecordings();
-    }
+    // if (JSON.stringify(this.state.search) != JSON.stringify(prevState.search)) {
+    //   // var url = qs.stringify(this.state.search, { addQueryPrefix: true });      
+    //   this.listRecordings();
+    // }
   }
 
-  listRecordings() {
-    this.setState({loading: true})
-    CameraRequest.recordings(this.props.node, this.props.service, {qs: this.state.search, cancelToken: this.cancelRequest.token})
-    .then((res) => {
-      this.setState({
-        ...this.state,
-        list: res.data,
-        loading: false
-      })
-    })
-    .catch((error) => {
-      console.log(error)
-      if (error.response && error.response.status == 401) {
-        console.log("Unauthorized")
-        // this.setState({showAuth: true, loading: false})
-        this.setState({loading: false})
-      } else {
-        // this.setState({requestError: error})
-        // toaster.danger(<ErrorModal requestError={error} />)
-        this.setState({loading: false})
-      }
-      this.cancelRequest = CameraRequest.cancelSource();
-
-      
-    })
+  listRecordings(search = {}) {
+    this.setState({loading: true, search: search})
+    return CameraRequest.recordings(this.props.node, this.props.service, {qs: search, cancelToken: this.cancelRequest.token})
+    // .then((res) => {
+    //   this.setState({
+    //     ...this.state,
+    //     list: res.data,
+    //     loading: false
+    //   })
+    // })
+    // .catch((error) => {
+    //   console.log(error)
+    //   if (error.response && error.response.status == 401) {
+    //     console.log("Unauthorized")
+    //     // this.setState({showAuth: true, loading: false})
+    //     this.setState({loading: false})
+    //   } else {
+    //     // this.setState({requestError: error})
+    //     // toaster.danger(<ErrorModal requestError={error} />)
+    //     this.setState({loading: false})
+    //   }
+    //   this.cancelRequest = CameraRequest.cancelSource();
+    // })
   }
 
   deleteRecording(row) {
     console.log("delete recording", row)
     CameraRequest.deleteRecording(this.props.node, this.props.service, row.id)
     .then((res) => {
-      this.listRecordings()
+      this.listRecordings(this.state.search)
       
       toaster.success(`Recording has been successfully deleted.`)
     })
@@ -154,114 +154,14 @@ export class RecordingList extends React.Component {
     })
   }
 
-  filterList() {
-    if (this.state.loading && this.cancelRequest) {
-      this.cancelRequest.cancel()
-    }
-    var search = this.state.search
-    this.setState({ search: {...search, page: 1, q: {...search.q, ...this.state.filter} }})
-  }
-
-  handleFilterChange(val) {
-    // console.log("filter change", val)
-    if (this.timer) {
-      clearTimeout(this.timer)
-    }
-    this.timer = setTimeout(this.filterList.bind(this), 500);
-    this.setState({ filter: {...this.state.filter, name: val}})
-  }
-
-  onChangePage(page) {
-    console.log("page change", page)
-    this.setState({ search: {...this.state.search, page: page }});    
-  }
-
-  selectRecording(row) {
-    // var url = qs.stringify(this.state.search, { addQueryPrefix: true });      
-    var url = this.props.match.url + "/" + row.id
-    this.setState({redirectTo: {pathname: url, state: {cameraRecording: row}}})
-    // this.props.history.push(`${url}`);
-  }
-
-
-  renderRowMenu = (row) => {
+  renderHeader() {
     return (
-      <Menu>
-        <Menu.Group>
-        </Menu.Group>
-        <Menu.Divider />
-        <Menu.Group>
-          <Menu.Item intent="danger"  data-id={row.id} data-name={row.name} onSelect={() => this.deleteRecording(row)}>
-            Delete... 
-          </Menu.Item>
-        </Menu.Group>
-      </Menu>
+      <Pane display="flex" marginBottom={20}>
+        <Pane display="flex" >
+          <Link to={"/cameras/" + this.props.service.id}>{this.props.service.name}</Link>&nbsp; / Recordings
+        </Pane>
+      </Pane>
     )
-  }
-
-  renderFiles(files) {
-    return files.map((row, index) => (
-      <Table.Row key={row.id} >
-        <Table.TextCell>
-          <Link to={{pathname: this.props.match.url + "/" + row.id, state: {cameraRecording: row}}} >
-          {row.name}
-          </Link>
-        </Table.TextCell>
-        <Table.TextCell>{row.status}</Table.TextCell>
-        <Table.TextCell>{Dayjs.unix(row.created_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
-        <Table.TextCell>{(row.updated_at - row.created_at)}</Table.TextCell>
-        <Table.TextCell>
-          <Link to={{pathname: this.props.match.url + "/" + row.id, state: {cameraRecording: row}}} >
-            View
-          </Link>
-        </Table.TextCell>
-        
-        <Table.Cell width={48} flex="none">
-          <Popover
-            content={() => this.renderRowMenu(row)}
-            position={Position.BOTTOM_RIGHT}
-          >
-            <IconButton icon="more" height={24} appearance="minimal" />
-          </Popover>
-        </Table.Cell>
-      </Table.Row>
-    ))
-  }
-  renderTable() {
-
-    return (
-      <Table>
-        <Table.Head>
-          <Table.SearchHeaderCell 
-            onChange={this.handleFilterChange}
-            value={this.state.filter.name}
-          />
-          <Table.TextHeaderCell >
-            Status:
-          </Table.TextHeaderCell>
-          <Table.TextHeaderCell>
-            Created At:
-          </Table.TextHeaderCell>
-          <Table.TextHeaderCell>
-            Duration:
-          </Table.TextHeaderCell>
-          <Table.TextHeaderCell></Table.TextHeaderCell>
-          <Table.TextHeaderCell  width={48} flex="none">
-          </Table.TextHeaderCell>
-        </Table.Head>
-        <Table.VirtualBody height={240}>
-          {this.renderFiles(this.state.list.data)}
-        </Table.VirtualBody>
-      </Table>)
-  }
-
-  renderPagination() {
-    if (this.state.list.data.length > 0) {
-      var {current_page, last_page, total} = this.state.list.meta;
-      return (
-        <PaginatedList currentPage={current_page} pageSize={this.state.search.per_page} totalPages={last_page} totalItems={total} onChangePage={this.onChangePage} /> 
-      )
-    }
   }
 
   render() {
@@ -269,18 +169,13 @@ export class RecordingList extends React.Component {
       <div>
       <Pane display="flex" key={"prints"}>
         <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={20} border="default">
-          <Pane display="flex" marginBottom={20}>
-            <Pane display="flex" >
-              <Link to={"/cameras/" + this.props.service.id}>{this.props.service.name}</Link>&nbsp; / Recordings
-            </Pane>
+          {this.renderHeader()}
+          <RecordingsController 
+            {...this.props}
+            listData={this.listRecordings.bind(this)} 
+            height={395}
+          />
 
-          </Pane>
-
-          <Pane borderBottom borderLeft borderRight>
-            {this.renderTable()}
-            {/* {files.map((row, index) => this.renderRow(row.id, row.name, Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')))} */}
-          </Pane>
-          {this.renderPagination()}
         </Pane>
       </Pane>
       <Modal

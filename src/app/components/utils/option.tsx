@@ -1,3 +1,12 @@
+//
+//  option.tsx
+//  ancilla
+// 
+//  Created by Kevin Musselman (kevin@frenzylabs.com) on 12/21/19
+//  Copyright 2019 FrenzyLabs, LLC.
+//
+
+
 import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
 // import { Pane } from '../../layers'

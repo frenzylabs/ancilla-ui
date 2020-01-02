@@ -1,10 +1,11 @@
 //
+//  list.tsx
 //  ancilla
-//  index.tsx
 // 
-//  Created by Wess Cope (me@wess.io) on 11/16/19
-//  Copyright 2019 Wess Cope
+//  Created by Kevin Musselman (kevin@frenzylabs.com) on 12/22/19
+//  Copyright 2019 FrenzyLabs, LLC.
 //
+
 
 import React from 'react'
 import { Link, Redirect }       from 'react-router-dom';
@@ -33,13 +34,14 @@ import AuthForm from '../services/layerkeep/form'
 import { PaginatedList } from '../utils/pagination'
 
 import ErrorModal from '../modal/error'
+import List from '../table/list'
 // const qs = require('qs');
 
 export class PrintList extends React.Component {
 
   state = {    
     redirectTo: null,
-    isLoading: true,
+    loading: true,
     showAuth: false,
     projects: [],
     profiles: [],
@@ -59,7 +61,6 @@ export class PrintList extends React.Component {
 
   timer:number = null
 
-  form:Form = {}
   cancelRequest = null
   
   constructor(props:any) {
@@ -68,9 +69,7 @@ export class PrintList extends React.Component {
 
     this.state = {    
       redirectTo: null,
-      isLoading: true,
-      projects: [],
-      profiles: [],
+      loading: true,
       filter: {
         name: ""
       },
@@ -85,18 +84,14 @@ export class PrintList extends React.Component {
       }
     }
     this.listPrints         = this.listPrints.bind(this)
+    this.renderSectionHeader = this.renderSectionHeader.bind(this)
+    this.renderTableHeader   = this.renderTableHeader.bind(this)
+    this.renderRow           = this.renderRow.bind(this)    
     this.onChangePage       = this.onChangePage.bind(this)
-    this.renderPagination   = this.renderPagination.bind(this)
+
+    // this.renderPagination   = this.renderPagination.bind(this)
     this.handleFilterChange = this.handleFilterChange.bind(this)
     this.syncToLayerkeep    = this.syncToLayerkeep.bind(this)
-    // this.deleteFile     = this.deleteFile.bind(this)
-    // this.saveFile				= this.saveFile.bind(this)
-    // this.toggleDialog		= this.toggleDialog.bind(this)
-    // this.renderRow 			= this.renderRow.bind(this)
-    // this.renderGroup 		= this.renderGroup.bind(this)
-    // this.renderGroups		= this.renderGroups.bind(this)
-    // this.renderTopBar		= this.renderTopBar.bind(this)
-    // this.renderSection	= this.renderSection.bind(this)
 
     this.cancelRequest = PrinterRequest.cancelSource();
   }
@@ -219,7 +214,6 @@ export class PrintList extends React.Component {
   }
 
   onChangePage(page) {
-    console.log("page change", page)
     this.setState({ search: {...this.state.search, page: page }});    
   }
 
@@ -258,8 +252,8 @@ export class PrintList extends React.Component {
     )
   }
 
-  renderFiles(files) {
-    return files.map((row, index) => (
+  renderRow(row, index) {
+    return (
       <Table.Row key={row.id} >
         <Table.TextCell>
           <Link to={{pathname: this.props.match.url + "/" + row.id, state: {printerPrint: row}}} >
@@ -284,12 +278,11 @@ export class PrintList extends React.Component {
           </Popover>
         </Table.Cell>
       </Table.Row>
-    ))
+    )
   }
-  renderTable() {
 
+  renderTableHeader() {
     return (
-      <Table>
         <Table.Head>
           <Table.SearchHeaderCell 
             onChange={this.handleFilterChange}
@@ -308,41 +301,35 @@ export class PrintList extends React.Component {
           <Table.TextHeaderCell  width={48} flex="none">
           </Table.TextHeaderCell>
         </Table.Head>
-        <Table.VirtualBody height={240}>
-          {this.renderFiles(this.state.list.data)}
-        </Table.VirtualBody>
-      </Table>)
+        )
   }
 
-  renderPagination() {
-    if (this.state.list.data.length > 0) {
-      var {current_page, last_page, total} = this.state.list.meta;
-      return (
-        <PaginatedList currentPage={current_page} pageSize={this.state.search.per_page} totalPages={last_page} totalItems={total} onChangePage={this.onChangePage} /> 
-      )
-    }
-  }
-
-  render() {
+  renderSectionHeader() {
     return (
-      <div>
-      <Pane display="flex" key={"prints"}>
-        <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={20} border="default">
-          <Pane display="flex" marginBottom={20}>
-            <Pane display="flex" >
-              <Link to={"/printers/" + this.props.service.id}>{this.props.service.name}</Link>&nbsp; / Prints
-            </Pane>
-
-          </Pane>
-
-          <Pane borderBottom borderLeft borderRight>
-            {this.renderTable()}
-            {/* {files.map((row, index) => this.renderRow(row.id, row.name, Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')))} */}
-          </Pane>
-          {this.renderPagination()}
+      <Pane display="flex" marginBottom={20}>
+        <Pane display="flex" >
+          <Link to={"/printers/" + this.props.service.id}>{this.props.service.name}</Link>&nbsp; / Prints
         </Pane>
       </Pane>
-      <Modal
+    )
+  }
+  render() {
+    return (
+      <React.Fragment>
+        <Pane display="flex" key={"prints"}>
+          <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={20} >
+            {this.renderSectionHeader()}
+            <List 
+              renderHeader={this.renderTableHeader}              
+              renderRow={this.renderRow}
+              data={this.state.list}
+              loading={this.state.loading}
+              onChangePage={this.onChangePage}
+              height={395}
+            />
+          </Pane>
+        </Pane>
+        <Modal
           component={AuthForm}
           node={this.props.node}
           // requestError={this.state.requestError}
@@ -350,7 +337,7 @@ export class PrintList extends React.Component {
           // dismissAction={this.authenticated.bind(this)}
           // onAuthenticated={this.authenticated.bind(this)}
         />
-      </div>
+      </React.Fragment>
     )
   }	
 }

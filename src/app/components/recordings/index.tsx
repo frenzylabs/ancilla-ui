@@ -1,10 +1,11 @@
 //
-//  ancilla
 //  index.tsx
+//  ancilla
 // 
-//  Created by Wess Cope (me@wess.io) on 11/16/19
-//  Copyright 2019 Wess Cope
+//  Created by Kevin Musselman (kevin@frenzylabs.com) on 12/31/19
+//  Copyright 2019 FrenzyLabs, LLC.
 //
+
 
 import React from 'react'
 import { Switch, Route, Link, Redirect }       from 'react-router-dom';

@@ -1,10 +1,11 @@
 //
+//  show.tsx
 //  ancilla
-//  index.tsx
 // 
-//  Created by Wess Cope (me@wess.io) on 11/16/19
-//  Copyright 2019 Wess Cope
+//  Created by Kevin Musselman (kevin@frenzylabs.com) on 12/31/19
+//  Copyright 2019 FrenzyLabs, LLC.
 //
+
 
 import React from 'react'
 import { Link, Redirect }       from 'react-router-dom';
@@ -35,6 +36,8 @@ import AuthForm from '../services/layerkeep/form'
 import { PaginatedList } from '../utils/pagination'
 
 import ErrorModal from '../modal/error'
+
+
 // const qs = require('qs');
 
 export class RecordingShow extends React.Component {

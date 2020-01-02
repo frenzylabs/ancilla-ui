@@ -11,6 +11,7 @@ import React from 'react'
 import {
   Pane,
   TextInput,
+  Label,
   Button,
   toaster
 } from 'evergreen-ui'
@@ -132,6 +133,13 @@ export default class Form extends React.Component<{Props}> {
   render() {
     return (
       <Pane>
+        <Label
+            htmlFor="name"
+            marginBottom={4}
+            display="block"
+          >
+            Camera Name
+          </Label>
         <TextInput 
           name="name" 
           placeholder="Camera name" 
@@ -148,6 +156,13 @@ export default class Form extends React.Component<{Props}> {
             })
           }
         />
+        <Label
+            htmlFor="endpoint"
+            marginBottom={4}
+            display="block"
+          >
+            Camera Endpoint
+          </Label>
         <TextInput 
           name="url" 
           placeholder="Camera endpoint" 

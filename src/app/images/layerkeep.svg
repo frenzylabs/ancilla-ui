@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="161px" height="187px" viewBox="0 0 161 187" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.6 (67491) - http://www.bohemiancoding.com/sketch -->
+    <title>logo</title>
+    <g id="logo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="cube">
+            <polyline id="Fill-4" fill="#1976D2" points="160.082 140.206 80.05 186.413 0.018 140.206 0.018 47.794 80.05 1.587 160.082 47.794 160.082 140.206"></polyline>
+            <polyline id="Fill-5" fill="#3A3A39" points="41.471 71.726 41.471 71.727 41.471 71.726"></polyline>
+            <polyline id="Fill-6" fill="#00BCD4" points="80.05 91.69 116.629 70.572 80.05 49.453 43.47 70.572 80.05 91.69"></polyline>
+            <polyline id="Fill-8" fill="#80DEEA" points="82.05 95.155 82.05 137.392 118.629 116.274 118.629 74.036 82.05 95.155"></polyline>
+            <polyline id="Fill-9" fill="#80DEEA" points="78.05 95.155 41.471 74.036 41.471 116.274 78.05 137.393 78.05 95.155"></polyline>
+            <path d="M82.05,94.155 L78.05,94.155 L41.471,73.036 L0.018,46.794 L80.05,0.587 L160.082,46.794 L118.629,73.036 L82.05,94.155 M80.05,48.453 L43.47,69.572 L80.05,90.69 L116.629,69.572 L80.05,48.453" id="Fill-14" fill="#0D47A1"></path>
+        </g>
+    </g>
+</svg>

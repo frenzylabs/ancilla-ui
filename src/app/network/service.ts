@@ -45,7 +45,15 @@ export const ServiceHandler = {
     // var data = Object.assign(options['params'] || {}, {attachment_id: attachment_id})
     console.log("del OPTIONS", options)
     return Request.delete(`${node.apiUrl}/services/${service.kind}/${service.id}/attachments/${attachment.id}`, options)
+  },
+
+  updateAttachment: (node, attachment_id, data, options = {}) => {
+    // var data = Object.assign(options['params'] || {}, {attachment_id: attachment_id})
+    console.log("ADD OPTIONS", options)
+    return Request.patch(`${node.apiUrl}/attachments/${attachment_id}`, data, options)
   }
+
+
 }
 
 

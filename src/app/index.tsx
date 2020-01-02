@@ -7,6 +7,8 @@
 //
 
 import "./styles/app.scss"
+import "./extensions"
+
 import {connect}  from 'react-redux'
 
 import {

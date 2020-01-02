@@ -8,7 +8,6 @@
 
 import React      from 'react'
 import {connect}  from 'react-redux'
-import { Link } from 'react-router-dom'
 
 import {
   Switch,
@@ -48,14 +47,12 @@ type Props = {
 }
 
 export class CameraView extends React.Component<Props> {
-  videoRef = null
   constructor(props:any) {
     super(props)
 
     
     this.state = {
       connected: false,
-      videoUrl: null,
       serviceState: {},
       recordSettings: {
         videoSettings: {
@@ -69,35 +66,13 @@ export class CameraView extends React.Component<Props> {
     this.receiveEvent     = this.receiveEvent.bind(this)
     this.setupCamera      = this.setupCamera.bind(this)
     this.toggleRecording  = this.toggleRecording.bind(this)
-    this.setVideoUrl      = this.setVideoUrl.bind(this)
 
     this.setupCamera()
     
-    window.React = React
-    window.c = this
-  }
-
-  componentDidMount() {
-    // this.setupCamera()
-    // this.setVideoUrl()
   }
 
   componentWillUnmount() {
-    console.log("COMPONENT WILL UNMOUNT")
-    var vidsrc = this.videoRef
-    
-    console.log("video src before", vidsrc)
-    // setTimeout(function() {
-    //   console.log("video src", vidsrc.src)
-    //   vidsrc.src = ""
-    // }), 0);
-    // setTimeout(function() {
-    //       React.unmountAtNode(this.videoRef)
-    // }), 0);
-    // this.setState({videoUrl: ''})
-    // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "UNSUB", "events.camera.connection"])
-    PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "UNSUB", "events.camera.recording"])
-    if (this.pubsubToken) 
+    if (this.pubsubToken)
       PubSub.unsubscribe(this.pubsubToken)
     if (this.pubsubRequestToken)
       PubSub.unsubscribe(this.pubsubRequestToken)
@@ -105,28 +80,14 @@ export class CameraView extends React.Component<Props> {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.service.model != this.props.service.model) {
-      console.log("PRINTER MODEL HAS BEEN UPDATED")
+      // console.log("PRINTER MODEL HAS BEEN UPDATED")
       this.setupCamera()      
     }
-    // if (this.props.service && this.props.service.state)
-    // this.setVideoUrl()
-    
   }
 
-  setVideoUrl() {
-    var videoUrl = ''
-    if (this.props.service && this.props.service.state.connected) {
-      let url = this.props.node.apiUrl
-      videoUrl = `${url}/webcam/${this.props.service.name}`
-    }
-    console.log("Video URL", videoUrl)
-    // if (this.state.videoUrl != videoUrl)
-    //   this.setState({videoUrl: videoUrl})
-  }
 
   setupCamera() {
     if (this.props.service) {
-      console.log("SETUP CAMERA")
       this.props.dispatch(ServiceActions.getState(this.props.service))
       PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.connection"])
       PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.recording"])
@@ -186,11 +147,11 @@ export class CameraView extends React.Component<Props> {
           this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
           break
       case 'camera.connection.closed':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, open: false}))
           // this.setState({...this.state, serviceState: {...this.state.serviceState, open: false}})
           break
       case 'camera.connection.opened':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: true}))
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, open: true}))
           // this.setState({...this.state, serviceState: {...this.state.serviceState, open: true}})
           break      
       default:
@@ -202,9 +163,9 @@ export class CameraView extends React.Component<Props> {
 
   toggleRecording() {
     if (this.props.service.state.recording) {
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.stop_recording", {"settings": this.state.recordSettings}])
+      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.stop_recording", this.state.recordSettings])
     } else {
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.start_recording", {"settings": this.state.recordSettings}])
+      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.start_recording", this.state.recordSettings])
     }
   }
 
@@ -218,7 +179,7 @@ export class CameraView extends React.Component<Props> {
   }
 
   getColorState() {
-    if (this.props.service.state.connected) {
+    if (this.props.service.state.open) {
       return 'success'
     } else {
       return 'danger'
@@ -245,7 +206,7 @@ export class CameraView extends React.Component<Props> {
   }
 
   power(){
-    if (this.props.service.state.connected) {
+    if (this.props.service.state.open) {
       CameraHandler.disconnect(this.props.node, this.props.service)
       .then((response) => {
         console.log("disconnected", response)
@@ -275,7 +236,7 @@ export class CameraView extends React.Component<Props> {
         </div>
 
         <div className="card-content">
-          <Button onClick={() => { this.power() }}>{this.props.service.state.connected ?  'Disconnect' : 'Connect Camera'}</Button>
+          <Button onClick={() => { this.power() }}>{this.props.service.state.open ?  'Disconnect' : 'Connect Camera'}</Button>
           <br/>
           <Paragraph>{JSON.stringify(this.props.service.state)}</Paragraph>
         </div>
@@ -284,18 +245,11 @@ export class CameraView extends React.Component<Props> {
   }
 
   renderVideo() {
-    if (this.props.service.state.connected) {
-      // let url = this.props.node.apiUrl
+    if (this.props.service.state.open) {
       let url = this.props.node.apiUrl
-      var videoUrl = `${url}/webcam/${this.props.service.name}`
       return (
-        // <img width={640} ref={fp => this.videoRef = fp} src={`${this.state.videoUrl}`} />
-        <iframe id="image" width={640} style={{minHeight: "480px", border: 0, marginBottom: '20px'}} height={"100%"} ref={fp => this.videoRef = fp} src={`${videoUrl}`}  seamless={false} >
-          <p>Your browser does not support iframes.</p>          
-        </iframe>
-        
+        <img width={640} src={`${url}/webcam/${this.props.service.name}`} />
       )
-      // <img width={640} ref={fp => this.videoRef = fp} src={`${videoUrl}`} />
     }
     return ( 
         <Pane display="flex" width={640}  padding={20}> 
@@ -306,7 +260,7 @@ export class CameraView extends React.Component<Props> {
 
   render() {
     
-      // if (this.props.service.state.connected) {
+      // if (this.props.service.state.open) {
         
         return (
           <Pane display="flex" flex={1} width="100%" padding={10}>
@@ -355,9 +309,6 @@ export class CameraView extends React.Component<Props> {
                 }
               />
               <Button onClick={this.toggleRecording}>{this.props.service.state.recording ? "Stop Recording" : "Record"}</Button>
-              <Pane>
-                <Link to={`/cameras/${this.props.service.id}/recordings`}>List Recordings</Link>
-              </Pane>
             </Pane>
           </Pane>
         )

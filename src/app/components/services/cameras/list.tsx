@@ -1,33 +1,49 @@
+//
+//  index.tsx
+//  ancilla
+// 
+//  Created by Wess Cope (wess@frenzylabs.com) on 12/12/19
+//  Copyright 2019 FrenzyLabs, LLC.
+//
+
+import React      from 'react'
 import {connect}  from 'react-redux'
 
 import {
   Switch,
   Route,
-  withRouter,
-  matchPath
 } from 'react-router-dom'
-
-import SplitPane from 'react-split-pane'
 
 import {
   Pane,
-  TextInput
+  TextInput,
+  Button,
+  toaster
 } from 'evergreen-ui'
-
-import React  from 'react'
-// import {
-//   Nav,
-//   SubNav,
-//   Statusbar,
-//   Summary
-// } from '../../'
-import Statusbar from '../statusbar/index'
 
 import PubSub from 'pubsub-js'
 
-import ServiceActions from '../../../../store/actions/services'
+import Statusbar      from '../statusbar'
+import ShowView       from './show'
+import CameraForm     from './form'
+import Settings       from '../../settings'
+import ServiceActions from '../../../store/actions/services'
+import CameraHandler  from '../../../network/camera'
+import ErrorModal     from '../../modal/error'
+import NodeAction  from '../../../store/actions/node'
+import ServiceAction  from '../../../store/actions/services'
 
-export default class CameraRecording extends React.Component<{node: object, service: object}> {
+import { NodeState }  from '../../../store/reducers/state'
+import { ServiceState }  from '../../../store/reducers/service'
+
+type Props = {
+  node: NodeState, 
+  service: ServiceState,
+  deleteService: Function,
+  cameraUpdated: Function,
+  dispatch: Function
+}
+export class CameraList extends React.Component<Props> {
   constructor(props:any) {
     super(props)
 
@@ -43,10 +59,10 @@ export default class CameraRecording extends React.Component<{node: object, serv
       }
     }
 
-    this.receiveRequest  = this.receiveRequest.bind(this)
-    this.receiveEvent    = this.receiveEvent.bind(this)
-    this.setupCamera    = this.setupCamera.bind(this)
-    this.toggleRecording = this.toggleRecording.bind(this)
+    this.receiveRequest = this.receiveRequest.bind(this)
+    this.receiveEvent     = this.receiveEvent.bind(this)
+    this.setupCamera      = this.setupCamera.bind(this)
+    this.toggleRecording  = this.toggleRecording.bind(this)
 
     this.setupCamera()
     
@@ -56,7 +72,7 @@ export default class CameraRecording extends React.Component<{node: object, serv
     if (this.props.service) {
       this.props.dispatch(ServiceActions.getState(this.props.service))
       PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.connection"])
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.recording"])
+      // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.recording"])
 
       // PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.get_state"])
       // console.log("Has printer")
@@ -108,11 +124,11 @@ export default class CameraRecording extends React.Component<{node: object, serv
           this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
           break
       case 'camera.connection.closed':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, open: false}))
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
           // this.setState({...this.state, serviceState: {...this.state.serviceState, open: false}})
           break
       case 'camera.connection.opened':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, open: true}))
+          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: true}))
           // this.setState({...this.state, serviceState: {...this.state.serviceState, open: true}})
           break      
       default:
@@ -131,25 +147,77 @@ export default class CameraRecording extends React.Component<{node: object, serv
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.service.model != this.props.service.model) {
       // console.log("PRINTER MODEL HAS BEEN UPDATED")
-      this.setupCamera()      
+      // this.setupCamera()      
     }
   }
 
-  // componentDidUpdate(prevProps, prevState) {
-  //   if (prevProps.printer != this.props.printer) {
-  //     this.setupPrinter()
-  //   }
-  // }
   toggleRecording() {
-    if (this.props.service.recording) {
+    if (this.props.service.state.recording) {
       PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.stop_recording", this.state.recordSettings])
     } else {
       PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.start_recording", this.state.recordSettings])
     }
   }
 
+  cameraSaved(resp) {
+    // console.log("printer saved", resp)
+    this.props.cameraUpdated(this.props.node, resp.data.service_model)
+  }
+
+  saveFailed(error) {
+    toaster.danger(<ErrorModal requestError={error} />)
+  }
+
+  power(){
+    if (this.props.service.state.connected) {
+      CameraHandler.disconnect(this.props.node, this.props.service)
+      .then((response) => {
+        console.log("disconnected", response)
+      }).catch((error) => {
+        console.log(error)
+        toaster.danger(<ErrorModal requestError={error} />)
+      })
+    } else {
+      CameraHandler.connect(this.props.node, this.props.service)
+      .then((response) => {
+        toaster.success(`Connected to ${this.props.service.name}`)
+      })
+      .catch((error) => {
+        console.log(error)
+        toaster.danger(<ErrorModal requestError={error} />)
+      })
+    }
+  }
+
+  getColorState() {
+    if (this.props.service.state.connected) {
+      return 'success'
+    } else {
+      return 'danger'
+    }
+  }
+
+  deleteCamera() {
+    this.props.deleteService(this.props.node, this.props.service)
+    .catch((error) => {
+      toaster.danger(<ErrorModal requestError={error} />)
+    })
+  }
+
+  deleteComponent() {
+    return (
+      <Pane display="flex" borderTop paddingTop={20}>
+        <Pane display="flex" flex={1} padding={20} marginBottom={20} className="danger-zone" alignItems="center" flexDirection="row">
+          <Pane>
+            <Button appearance="primary" intent="danger" height={40} onClick={() => this.deleteCamera()}> Delete </Button>
+          </Pane>
+        </Pane>
+      </Pane>
+    )
+  }
+
   renderDisplay() {
-      if (this.props.service.state.open) {
+      if (this.props.service.state.connected) {
         let url = this.props.node.apiUrl
         return (
           <Pane display="flex">
@@ -157,7 +225,7 @@ export default class CameraRecording extends React.Component<{node: object, serv
               <img src={`${url}/webcam/${this.props.service.name}`} />
             </Pane>
             <Pane display="flex" width="100%">
-              <button onClick={this.toggleRecording}>{this.props.service.recording ? "Stop Recording" : "Record"}</button>
+              <button onClick={this.toggleRecording}>{this.props.service.state.recording ? "Stop Recording" : "Record"}</button>
               <TextInput 
                 name="timelapse" 
                 placeholder="Timelapse in seconds" 
@@ -190,12 +258,46 @@ export default class CameraRecording extends React.Component<{node: object, serv
   }
 
   render() {
-    // const Component = this.props.component;    
+    var params = this.props.match.params;
     return (
-      <div id="" className="has-navbar-fixed-top" style={{height: '100vh', flex: '1'}}>
-          <Statusbar {...this.props} serviceState={this.state.serviceState}/>
-          {this.renderDisplay()}
+      <div className="flex-wrapper">
+        <Statusbar {...this.props} status={this.getColorState()} powerAction={this.power.bind(this)} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
+
+        <div className="scrollable-content">
+          <Switch>                  
+              <Route path={`${this.props.match.path}/settings`} render={ props => 
+                <Settings {...this.props} {...props} forms={[
+                <CameraForm onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />,
+                this.deleteComponent()
+                ]}/> 
+              }/>
+
+              <Route path={`${this.props.match.path}`} render={ props => 
+                <ShowView {...this.props}  {...props} />  
+              }/>
+            </Switch>
+        </div>
       </div>
     );
- }
+  }
 }
+
+
+
+
+const mapStateToProps = (state) => {
+  // return state
+  return {
+    // printers: state.activeNode.printers
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    deleteService: (node, service) => dispatch(ServiceAction.deleteService(node, service)),
+    cameraUpdated: (node, service) => dispatch(NodeAction.cameraUpdated(node, service)),
+  }
+}
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(CameraView)

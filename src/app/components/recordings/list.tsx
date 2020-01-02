@@ -7,6 +7,7 @@
 //
 
 import React from 'react'
+import { Link, Redirect }       from 'react-router-dom';
 import Dayjs from 'dayjs'
 
 import {
@@ -24,25 +25,22 @@ import {
   toaster
 } from 'evergreen-ui'
 
-import Form 				      from './form'
-import FileRequest 	      from '../../network/files'
-import Layerkeep 	        from '../../network/layerkeep'
-import Modal              from '../modal/index'
-import AuthForm           from '../services/layerkeep/form'
-import { PaginatedList }  from '../utils/pagination'
-import { isCancel }       from '../../network/request'
-import Loader             from '../loader'
+// import Form 				from './form'
+import CameraRequest 	from '../../network/camera'
+import Layerkeep 	from '../../network/layerkeep'
+import Modal from '../modal/index'
+import AuthForm from '../services/layerkeep/form'
+import { PaginatedList } from '../utils/pagination'
 
+import ErrorModal from '../modal/error'
 // const qs = require('qs');
 
-export class LKSlicedFilesView extends React.Component {
+export class RecordingList extends React.Component {
 
   state = {    
+    redirectTo: null,
     isLoading: true,
     showAuth: false,
-    authorized: false,
-    projects: [],
-    profiles: [],
     filter: {
       name: ""
     },
@@ -57,8 +55,9 @@ export class LKSlicedFilesView extends React.Component {
     }
   }
 
-  timer:number  = null
-  form:Form     = {}
+  timer:number = null
+
+  form:Form = {}
   cancelRequest = null
   
   constructor(props:any) {
@@ -66,10 +65,8 @@ export class LKSlicedFilesView extends React.Component {
     // var qparams = qs.parse(this.props.location.search, { ignoreQueryPrefix: true })
 
     this.state = {    
+      redirectTo: null,
       isLoading: true,
-      projects: [],
-      profiles: [],
-      authorized: false,
       filter: {
         name: ""
       },
@@ -83,75 +80,78 @@ export class LKSlicedFilesView extends React.Component {
         meta: {}
       }
     }
-    this.listSlices         = this.listSlices.bind(this)
+    this.listRecordings         = this.listRecordings.bind(this)
     this.onChangePage       = this.onChangePage.bind(this)
     this.renderPagination   = this.renderPagination.bind(this)
     this.handleFilterChange = this.handleFilterChange.bind(this)
-    this.syncLocally        = this.syncLocally.bind(this)
-    this.cancelRequest      = Layerkeep.cancelSource();
+    
+    // this.deleteFile     = this.deleteFile.bind(this)
+    // this.saveFile				= this.saveFile.bind(this)
+    // this.toggleDialog		= this.toggleDialog.bind(this)
+    // this.renderRow 			= this.renderRow.bind(this)
+    // this.renderGroup 		= this.renderGroup.bind(this)
+    // this.renderGroups		= this.renderGroups.bind(this)
+    // this.renderTopBar		= this.renderTopBar.bind(this)
+    // this.renderSection	= this.renderSection.bind(this)
+
+    this.cancelRequest = CameraRequest.cancelSource();
   }
 
   componentDidMount() {
-    this.listSlices()
+    this.listRecordings()
   }
 
   componentWillUnmount() {
     if (this.cancelRequest)
-      this.cancelRequest.cancel("Left Layerkeep Page");
+      this.cancelRequest.cancel("Left Prints Page");
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (JSON.stringify(this.state.search) != JSON.stringify(prevState.search)) {
       // var url = qs.stringify(this.state.search, { addQueryPrefix: true });      
-      this.listSlices();
+      this.listRecordings();
     }
   }
 
-  listSlices() {
+  listRecordings() {
     this.setState({loading: true})
-
-    Layerkeep.listSlices(this.props.node, {qs: this.state.search, cancelToken: this.cancelRequest.token})
+    CameraRequest.recordings(this.props.node, this.props.service, {qs: this.state.search, cancelToken: this.cancelRequest.token})
     .then((res) => {
       this.setState({
         ...this.state,
-        list: {...this.state.list, ...res.data},
-        isLoading:  false,
-        authorized: true
+        list: res.data,
+        loading: false
       })
     })
     .catch((error) => {
-      if (isCancel(error)) return
+      console.log(error)
       if (error.response && error.response.status == 401) {
-        this.setState({
-          ...this.state,
-          authorized: false, 
-          isLoading: false
-        })
+        console.log("Unauthorized")
+        // this.setState({showAuth: true, loading: false})
+        this.setState({loading: false})
       } else {
         // this.setState({requestError: error})
         // toaster.danger(<ErrorModal requestError={error} />)
-        this.setState({
-          ...this.state,
-          isLoading: false
-        })
+        this.setState({loading: false})
       }
-      this.cancelRequest = Layerkeep.cancelSource();
+      this.cancelRequest = CameraRequest.cancelSource();
 
       
     })
   }
 
-  syncLocally(lkslice) {
-    // let lkslice  = e.currentTarget.getAttribute('data-row')
-    
-
-    FileRequest.syncFromLayerkeep(this.props.node, lkslice)
+  deleteRecording(row) {
+    console.log("delete recording", row)
+    CameraRequest.deleteRecording(this.props.node, this.props.service, row.id)
     .then((res) => {
-      this.listLocal()
-
-      toaster.success(`${name} has been successfully deleted.`)
+      this.listRecordings()
+      
+      toaster.success(`Recording has been successfully deleted.`)
     })
-    .catch((_err) => {})
+    .catch((error) => {
+      toaster.danger(<ErrorModal requestError={error} />)
+      // toaster.danger(`${this.state.printer_print.name} could not be deleted.`)
+    })
   }
 
   filterList() {
@@ -169,17 +169,18 @@ export class LKSlicedFilesView extends React.Component {
     }
     this.timer = setTimeout(this.filterList.bind(this), 500);
     this.setState({ filter: {...this.state.filter, name: val}})
-    // if (this.state.loading && this.cancelRequest) {
-    //   this.cancelRequest.cancel()
-    // }
-    // var search = this.state.search
-    // this.setState({ search: {...search, page: 1, q: {...search.q, name: val} }})
-    // this.filterchange = 
-    // this.setState({ search: {...search, page: 1, q: {...search.q, project_id: item["id"]} }})
   }
 
   onChangePage(page) {
+    console.log("page change", page)
     this.setState({ search: {...this.state.search, page: page }});    
+  }
+
+  selectRecording(row) {
+    // var url = qs.stringify(this.state.search, { addQueryPrefix: true });      
+    var url = this.props.match.url + "/" + row.id
+    this.setState({redirectTo: {pathname: url, state: {cameraRecording: row}}})
+    // this.props.history.push(`${url}`);
   }
 
 
@@ -187,11 +188,10 @@ export class LKSlicedFilesView extends React.Component {
     return (
       <Menu>
         <Menu.Group>
-          <Menu.Item onSelect={() => this.syncLocally(row)}>Sync to Local Node...</Menu.Item>
         </Menu.Group>
         <Menu.Divider />
         <Menu.Group>
-          <Menu.Item intent="danger"  data-id={row.id} data-name={row.attributes.name} onSelect={this.deleteFile}>
+          <Menu.Item intent="danger"  data-id={row.id} data-name={row.name} onSelect={() => this.deleteRecording(row)}>
             Delete... 
           </Menu.Item>
         </Menu.Group>
@@ -201,10 +201,20 @@ export class LKSlicedFilesView extends React.Component {
 
   renderFiles(files) {
     return files.map((row, index) => (
-      <Table.Row key={row.id} isSelectable >
-        <Table.TextCell>{row.attributes.name}</Table.TextCell>
-        <Table.TextCell>{row.attributes.description}</Table.TextCell>
-        <Table.TextCell>{Dayjs(row.attributes.updated_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
+      <Table.Row key={row.id} >
+        <Table.TextCell>
+          <Link to={{pathname: this.props.match.url + "/" + row.id, state: {cameraRecording: row}}} >
+          {row.name}
+          </Link>
+        </Table.TextCell>
+        <Table.TextCell>{row.status}</Table.TextCell>
+        <Table.TextCell>{Dayjs.unix(row.created_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
+        <Table.TextCell>{(row.updated_at - row.created_at)}</Table.TextCell>
+        <Table.TextCell>
+          <Link to={{pathname: this.props.match.url + "/" + row.id, state: {cameraRecording: row}}} >
+            View
+          </Link>
+        </Table.TextCell>
         
         <Table.Cell width={48} flex="none">
           <Popover
@@ -218,13 +228,6 @@ export class LKSlicedFilesView extends React.Component {
     ))
   }
   renderTable() {
-    if(this.state.isLoading) {
-      return this.renderLoader()
-    }
-
-    if(this.state.authorized == false) {
-      return this.renderLogin()
-    }
 
     return (
       <Table>
@@ -234,15 +237,19 @@ export class LKSlicedFilesView extends React.Component {
             value={this.state.filter.name}
           />
           <Table.TextHeaderCell >
-            Description:
+            Status:
           </Table.TextHeaderCell>
           <Table.TextHeaderCell>
             Created At:
           </Table.TextHeaderCell>
+          <Table.TextHeaderCell>
+            Duration:
+          </Table.TextHeaderCell>
+          <Table.TextHeaderCell></Table.TextHeaderCell>
           <Table.TextHeaderCell  width={48} flex="none">
           </Table.TextHeaderCell>
         </Table.Head>
-        <Table.VirtualBody minHeight={this.state.search.per_page * 30}>
+        <Table.VirtualBody height={240}>
           {this.renderFiles(this.state.list.data)}
         </Table.VirtualBody>
       </Table>)
@@ -250,51 +257,28 @@ export class LKSlicedFilesView extends React.Component {
 
   renderPagination() {
     if (this.state.list.data.length > 0) {
-      let {current_page, last_page, total} = this.state.list.meta
-
+      var {current_page, last_page, total} = this.state.list.meta;
       return (
         <PaginatedList currentPage={current_page} pageSize={this.state.search.per_page} totalPages={last_page} totalItems={total} onChangePage={this.onChangePage} /> 
       )
     }
   }
 
-  renderLoader() {
-    return (
-      <Pane borderTop padding={20} display="flex" alignItems="center" justifyContent="center" minHeight={340}>
-        <Loader/>
-      </Pane>
-    )
-  }
-
-
-  renderLogin() {
-    return (
-      <Pane borderTop padding={20} display="flex" alignItems="center" justifyContent="center" minHeight={340}>
-        <Button onClick={() => {
-          this.setState({
-            ...this.state,
-            showAuth: true
-          })
-        }}>Sign in to LayerKeep.com</Button>
-      </Pane>
-    )
-  }
-
   render() {
     return (
       <div>
-      <Pane display="flex" key={"layerkeep"}>
-        <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={10} border="default">
-          <Pane display="flex">
-            <Pane display="flex" flex={1} marginBottom={20}>
-                LayerKeep
+      <Pane display="flex" key={"prints"}>
+        <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={20} border="default">
+          <Pane display="flex" marginBottom={20}>
+            <Pane display="flex" >
+              <Link to={"/cameras/" + this.props.service.id}>{this.props.service.name}</Link>&nbsp; / Recordings
             </Pane>
-            <Pane>
-            </Pane>
+
           </Pane>
 
           <Pane borderBottom borderLeft borderRight>
             {this.renderTable()}
+            {/* {files.map((row, index) => this.renderRow(row.id, row.name, Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')))} */}
           </Pane>
           {this.renderPagination()}
         </Pane>
@@ -304,23 +288,12 @@ export class LKSlicedFilesView extends React.Component {
           node={this.props.node}
           // requestError={this.state.requestError}
           isActive={this.state.showAuth}
-          dismissAction={() => this.setState({
-            ...this.state,
-            showAuth: false
-          })}
-          onAuthenticated={(res) => {
-            this.setState({
-              ...this.state,
-              showAuth: false,
-              authorized: true
-            })
-
-            toaster.success('Succssfully signed in to LayerKeep.com')
-          }}
+          // dismissAction={this.authenticated.bind(this)}
+          // onAuthenticated={this.authenticated.bind(this)}
         />
       </div>
     )
   }	
 }
 
-export default LKSlicedFilesView
+export default RecordingList

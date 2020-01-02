@@ -46,8 +46,8 @@ namespace Tree {
 
     renderSingle() {
       return (
-        <Pane width={180} height={20}>
-          <Button onClick={this.onSelect} minWidth={180} iconBefore="application" appearance="minimal" color="#f0f0f0">{this.props.name}</Button>
+        <Pane width={180} height={25}>
+          <Button onClick={this.onSelect} height={25} minWidth={180} iconBefore="application" appearance="minimal" color="#f0f0f0">{this.props.name}</Button>
         </Pane>
       )
     }
@@ -55,7 +55,7 @@ namespace Tree {
     renderGroup() {
       return (
         <Pane marginBottom={12} padding={0}>
-           <Pane display="flex" height={22} width={180} alignItems="center">
+           <Pane display="flex" height={25} width={180} alignItems="center">
             <Button 
               display="flex" 
               flex={1} 

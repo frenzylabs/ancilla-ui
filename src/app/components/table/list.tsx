@@ -130,13 +130,19 @@ export class List extends React.Component<TableProps, TableStateProps> {
   }
 
   renderTable() {
-    
+  //   if (this.props.loading) {
+  //     return (
+  //       <Pane borderTop padding={20} display="flex" alignItems="center" justifyContent="center" minHeight={340}>
+  //         <Loader/>
+  //       </Pane>
+  //     )
+  // } 
     return (
       <Table>
         {this.renderTableHeader()}
 
         <Table.VirtualBody height={this.props.height || 240}>
-          {this.renderRows(this.props.data.data)}
+          {this.props.loading ? <Loader/> : this.renderRows(this.props.data.data)}
         </Table.VirtualBody>
       </Table>)
   }
@@ -158,13 +164,8 @@ export class List extends React.Component<TableProps, TableStateProps> {
   }
 
   renderData() {
-    if (this.props.loading) {
-        return (
-          <Pane borderTop padding={20} display="flex" alignItems="center" justifyContent="center" minHeight={340}>
-            <Loader/>
-          </Pane>
-        )
-    } else {
+    
+    // else {
       return (
         <React.Fragment>
           <Pane borderBottom borderLeft borderRight>
@@ -173,7 +174,7 @@ export class List extends React.Component<TableProps, TableStateProps> {
           {this.renderPagination()}
         </React.Fragment>
       )
-    }
+    // }
   }
 
   render() {

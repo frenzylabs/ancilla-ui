@@ -1,56 +1,48 @@
-import { PrintState, printState } from './prints'
+import { ServiceState } from '../state'
 
-// baud_rate: "115200"
-// created_at: 1573066173
-// device: {id: 1, created_at: 1573066173, updated_at: 1573066173, name: "ender3", device_type: "Printer"}
-// id: 1
-// name: "ender3"
-// port: "/dev/cu.usbserial-14140"
-// updated_at: 1573231193
-
-// type PrinterModel = {
-//   baud_rate: "115200",
-//   created_at: 0,
-//   device: {},
-//   id: 0,
-//   name: "",
-//   port: "",
-//   updated_at: 0
+// export type AttachmentModel = {
+//   id: number,
+//   settings: object,
+//   listeners: object,
+//   parent: ServiceModel,
+//   attachment: ServiceModel,
+//   created_at: number,
+//   updated_at: number
 // }
 
-export type ServiceModel = {
-  id: number,
-  name: string,
-  kind: string,
-  settings: object,
-  configuration: object,
-  created_at: number,
-  updated_at: number
-}
 
-var defaultState = {}
+// export type ServiceModel = {
+//   id: number,
+//   name: string,
+//   kind: string,
+//   settings: object,
+//   configuration: object,
+//   attachments: Array<AttachmentModel>,
+//   event_listeners: object
+//   created_at: number,
+//   updated_at: number
+// }
 
-export type ServiceState = {
-  id: number,
-  name: string,
-  kind: string,
-  model: ServiceModel,
-  state: object,
-  logs: [],
-  attachments: []
-}
 
-export function ServiceState(model: ServiceModel, state: {} = {}, logs: [] = [], attachments = {}) {
-  return {
-    id: model.id,
-    name: model.name,
-    kind: model.kind,
-    model: model,
-    state: state,
-    logs: logs,
-    attachments: attachments
-  }
-}
+// export type ServiceState = {
+//   id: number,
+//   name: string,
+//   kind: string,
+//   model: ServiceModel,
+//   state: object,
+//   logs: []  
+// }
+
+// export function ServiceState(model: ServiceModel, state: {} = {}, logs: [] = []) {
+//   return {
+//     id: model.id,
+//     name: model.name,
+//     kind: model.kind,
+//     model: model,
+//     state: state,
+//     logs: logs
+//   }
+// }
 
 
 
@@ -58,6 +50,35 @@ export function ServiceState(model: ServiceModel, state: {} = {}, logs: [] = [],
 
 export function serviceReducer(state: ServiceState, action) {
   switch(action.type) {
+    case 'SERVICE_RECEIVED_ATTACHMENTS':
+      return {
+        ...state,
+        model: {...state.model, attachments: action.data}
+      }
+    case 'SERVICE_RECEIVED_ATTACHMENT': {
+        var isNew = true
+        var attachments = state.model.attachments.map((item) => {
+          if (item.id == action.data.id) {
+            isNew = false
+            return action.data
+          }
+          return item
+        })
+        // let curAttachment = state.model.attachments.find((a) => a.id == action.data.id)
+        // if (curAttachment) {
+        //   var isUpdate = false
+          
+        //   state.model.attachments
+        //   return state
+        // } 
+        if (isNew)
+          attachments.push(action.data)
+        // var attachments = [...state.model.attachments, action.data]
+        return {
+          ...state,
+          model: {...state.model, attachments: attachments}
+        }  
+    }
     case 'SERVICE_RECEIVED_STATE':
         return {
           ...state,

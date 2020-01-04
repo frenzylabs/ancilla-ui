@@ -13,6 +13,8 @@ import {
   Pane,
   TextInput,
   Checkbox,
+  Button,
+  SelectMenu,
   Tooltip,
   Icon,
   Paragraph,
@@ -21,13 +23,58 @@ import {
 
 import fuzzaldrin from 'fuzzaldrin-plus'
 
-import Combobox from '../../../utils/combobox'
-import AutocompleteItem from '../../../utils/autocompleteItem'
+import Combobox from '../utils/combobox'
+import AutocompleteItem from '../utils/autocompleteItem'
 
-import request from '../../../../network/files'
-import CameraHandler from '../../../../network/camera'
+import FileHandler from '../../network/files'
+import CameraHandler from '../../network/camera'
+import PrinterHandler from '../../network/printer'
 
-export default class PrintForm extends React.Component<{save:Function, loading:boolean}> {
+
+
+import { NodeState, ServiceState }  from '../../store/state'
+
+import PropTypes from 'prop-types'
+import Loader from '../loader'
+
+const optionPropTypes = {    
+  // node: PropTypes.object,
+  service: PropTypes.object,
+  printer: PropTypes.object.isRequired,  
+  loading: PropTypes.bool,
+  match: PropTypes.shape({url: PropTypes.string})
+}
+
+const statePropTypes = {
+  
+  newPrint: PropTypes.shape({
+    name:     PropTypes.string,
+      file_id:     PropTypes.string,
+      baud_rate: PropTypes.string,
+      settings: PropTypes.shape({
+        record_print: PropTypes.bool,
+        cameras: PropTypes.object
+      }),      
+      layerkeep_sync: PropTypes.bool
+  }),
+  selectedFile: PropTypes.any,
+  // files: PropTypes.array,
+  // printers: PropTypes.shape(ServiceState),
+  // cameras: PropTypes.array,
+  filesLoading: PropTypes.bool
+}
+
+type PrintProps = PropTypes.InferProps<typeof optionPropTypes> & { 
+  node: NodeState,
+  printerService?: ServiceState 
+}
+type PrintStateProps = PropTypes.InferProps<typeof statePropTypes> & {
+  files: Array<ServiceState>,
+  printers: Array<ServiceState>,
+  cameras: Array<ServiceState>
+}
+
+export default class PrintForm extends React.Component<PrintProps, PrintStateProps> {
   state = {
     newPrint: {
       name:     '',
@@ -41,14 +88,15 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
       layerkeep_sync: false
     },
     selectedFile: null,
-    files: Array<{}>(),
-    cameras: Array<{}>(),
+    files: Array(),
+    cameras: Array(),
+    printers: Array(),
     filesLoading: true
   }
 
   getFiles() {
     this.setState({filesLoading: true})
-    request.listLocal(this.props.node)
+    FileHandler.listLocal(this.props.node)
     .then((response) => {
       if (response.data && response.data.data) {
         this.setState({
@@ -66,18 +114,24 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
     })
   }
 
+  getPrinters() {
+    var printers = this.props.node.services.filter(s => {
+        return s.kind == 'printer'
+    })
+    this.setState({printers: printers})    
+  }
+
   getCameras() {
     var cameras = this.props.node.services.filter(s => {
-        console.log(s)
         return s.kind == 'camera'
     })
     this.setState({cameras: cameras})    
   }
 
   componentDidMount() {
-    window.pf = this
     this.getFiles()
     this.getCameras()
+    this.getPrinters()
   }
 
   save() {
@@ -87,32 +141,78 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
 
 
   toggleCamera(cam, checked) {
-    // if(this.state.newPrint.settings.cameras && this.state.newPrint.settings.cameras[cam.id])
     var cameras = this.state.newPrint.settings.cameras
-    // var camid = cam.id
-    console.log("toggle cam", cam)
+
     if (checked) {
       cameras = {...cameras, [cam.id]: checked }
-      console.log("cameras checked ", cameras)
     }
     else {
       cameras = (Object.keys(cameras) || []).filter((k) => k != `${cam.id}` ).reduce((map, c) => { map[c] = cameras[c]; return map }, {})
-      console.log("cameras = ", cameras)
     }
       
     var newstate = {...this.state.newPrint, settings: {...this.state.newPrint.settings, 
         cameras: cameras}}
-    console.log("toggle newstate", newstate)
     this.setState({newPrint: newstate})
   }
   cameraChecked(cam) {
     var res = (this.state.newPrint.settings.cameras && this.state.newPrint.settings.cameras[cam.id])
-    console.log("cam checked = ", res)
     return res
       
   }
 
+  renderPrinter() {
+    return (
+      <Pane>
+        Send to Printer:  {this.props.printerService ? this.props.printerService.model.name : ""}
+      </Pane>
+    )
+  }
 
+
+  // renderPrinters() {
+  //   return (
+  //   <SelectMenu
+  //     isMultiSelect
+  //     title="Select printer"
+  //     options={this.state.printers}
+  //     selected={this.state.selected}
+  //     onSelect={item => {
+  //       const selected = [...state.selected, item.value]
+  //       const selectedItems = selected
+  //       const selectedItemsLength = selectedItems.length
+  //       let selectedNames = ''
+  //       if (selectedItemsLength === 0) {
+  //         selectedNames = ''
+  //       } else if (selectedItemsLength === 1) {
+  //         selectedNames = selectedItems.toString()
+  //       } else if (selectedItemsLength > 1) {
+  //         selectedNames = selectedItemsLength.toString() + ' selected...'
+  //       }
+  //       setState({
+  //         selected,
+  //         selectedNames
+  //       })
+  //     }}
+  //     onDeselect={item => {
+  //       const deselectedItemIndex = state.selected.indexOf(item.value)
+  //       const selectedItems = state.selected.filter(
+  //         (_item, i) => i !== deselectedItemIndex
+  //       )
+  //       const selectedItemsLength = selectedItems.length
+  //       let selectedNames = ''
+  //       if (selectedItemsLength === 0) {
+  //         selectedNames = ''
+  //       } else if (selectedItemsLength === 1) {
+  //         selectedNames = selectedItems.toString()
+  //       } else if (selectedItemsLength > 1) {
+  //         selectedNames = selectedItemsLength.toString() + ' selected...'
+  //       }
+  //       setState({ selected: selectedItems, selectedNames })
+  //     }}
+  //   >
+  //     <Button>{state.selectedNames || 'Select multiple...'}</Button>
+  //   </SelectMenu>)
+  // }
     
   renderItem(props) {
     var item = props.item
@@ -136,7 +236,6 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
 
 
   renderCameraOptions() {
-    console.log("render Cam options")
     if (this.state.cameras.length > 0) {
       return this.state.cameras.map((c) => {
         return (
@@ -165,8 +264,12 @@ export default class PrintForm extends React.Component<{save:Function, loading:b
   }
 
   render() {
+    if (this.props.loading) {
+      return (<Loader />)
+    }
     return (
       <Pane>
+        {this.renderPrinter()}
 
         <Combobox 
           openOnFocus 

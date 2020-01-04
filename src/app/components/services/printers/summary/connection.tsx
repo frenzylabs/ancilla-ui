@@ -19,21 +19,20 @@ import {
 } from 'evergreen-ui'
 
 
-// import Form from './form'
-import { PrinterHandler } from '../../../../network'
-// import { NodeAction } from '../../../../store/reducers/nodes'
+
 
 import ErrorModal           from '../../../modal/error'
-import PrintForm from './print_form'
 
-import { NodeState }  from '../../../../store/reducers/state'
-import { ServiceState }  from '../../../../store/reducers/service'
+import { NodeState, PrinterState }  from '../../../../store/state'
+
 
 import PubSub from 'pubsub-js'
 
 type Props = {
   node: NodeState, 
-  service: ServiceState
+  service: PrinterState,
+  startPrint: Function,
+  createPrint: Function
 }
 
 export default class Connection extends React.Component<Props> {
@@ -45,7 +44,8 @@ export default class Connection extends React.Component<Props> {
 
   constructor(props:any) {
     super(props)
-    this.startPrint = this.startPrint.bind(this)
+    // this.startPrint = this.startPrint.bind(this)
+    this.renderCreatePrint = this.renderCreatePrint.bind(this)
     window.pc = this
   }
 
@@ -56,55 +56,59 @@ export default class Connection extends React.Component<Props> {
   }
 
   toggleDialog(show:boolean) {
+    // if (show && this.props.createPrint)
+    //   this.props.createPrint()
     this.setState({
       ...this.state,
       showing: show
     })
   }
 
-  onNewPrint(closeDialog) {
-    if (!(this.form.state.newPrint && this.form.state.newPrint.file_id)) {
-      toaster.danger("Select a File")
-      return
-    }
 
-    var newPrint = this.form.state.newPrint
-    this.startPrint(newPrint, closeDialog)
-  }
 
-  startPrint(printParams, closeDialog = null) {
-    // if (!(this.form.state.newPrint && this.form.state.newPrint.file_id)) {
-    //   toaster.danger("Select a File")
-    //   return
-    // }
+  // onNewPrint(closeDialog) {
+  //   if (!(this.form.state.newPrint && this.form.state.newPrint.file_id)) {
+  //     toaster.danger("Select a File")
+  //     return
+  //   }
 
-    // var newPrint = this.form.state.newPrint
-    return PrinterHandler.start_print(this.props.node, this.props.service, printParams)
-    .then((response) => {
-      // var attachments = this.state.attachments
-      console.log("START PRINT", response.data)
-      var f = response.data.print
-      // attachments = attachments.concat(f)
-      // this.setState({
-      //   loading: false,
-      //   attachments: attachments
-      // })
+  //   var newPrint = this.form.state.newPrint
+  //   this.startPrint(newPrint, closeDialog)
+  // }
 
-      toaster.success(`Print Started ${printParams.name} has been successfully added`)
-      if (closeDialog)
-        closeDialog()
-    })
-    .catch((error) => {
-      console.log(error)
-      if (closeDialog)
-        closeDialog()
-      toaster.danger(<ErrorModal requestError={error} />)
+  // startPrint(printParams, closeDialog = null) {
+  //   // if (!(this.form.state.newPrint && this.form.state.newPrint.file_id)) {
+  //   //   toaster.danger("Select a File")
+  //   //   return
+  //   // }
 
-      this.setState({
-        loading: false,
-      })
-    })
-  }
+  //   // var newPrint = this.form.state.newPrint
+  //   return PrinterHandler.start_print(this.props.node, this.props.service, printParams)
+  //   .then((response) => {
+  //     // var attachments = this.state.attachments
+  //     console.log("START PRINT", response.data)
+  //     var f = response.data.print
+  //     // attachments = attachments.concat(f)
+  //     // this.setState({
+  //     //   loading: false,
+  //     //   attachments: attachments
+  //     // })
+
+  //     toaster.success(`Print Started ${printParams.name} has been successfully added`)
+  //     if (closeDialog)
+  //       closeDialog()
+  //   })
+  //   .catch((error) => {
+  //     console.log(error)
+  //     if (closeDialog)
+  //       closeDialog()
+  //     toaster.danger(<ErrorModal requestError={error} />)
+
+  //     this.setState({
+  //       loading: false,
+  //     })
+  //   })
+  // }
 
   cancelPrint() {
     let cmd = [this.props.service.name, "cancel_print"]
@@ -124,7 +128,7 @@ export default class Connection extends React.Component<Props> {
     // PubSub.publish(this.props.node.name + ".request", cmd)
     if (this.props.service.currentPrint && this.props.service.currentPrint.model) {
       var printParams = { print_id: this.props.service.currentPrint.id, name: this.props.service.currentPrint.model.name}
-      this.startPrint(printParams)
+      this.props.startPrint(printParams)
     }
     
     // this.pubsubToken = PubSub.publish(this.topic, );
@@ -140,24 +144,12 @@ export default class Connection extends React.Component<Props> {
     )
   }
 
-  renderStartPrint() {
+  renderCreatePrint() {
     if (!this.props.service.state.printing) {
       return (
-        <React.Fragment key="print">
-        <Dialog
-          isShown={this.state.showing}
-          title="Start Print"
-          confirmLabel="Save"
-          onCloseComplete={() => this.toggleDialog(false)}
-          onConfirm={this.onNewPrint.bind(this)}
-        >
-          <PrintForm ref={frm => this.form = frm} save={this.startPrint} loading={this.state.loading}/>
-        </Dialog>
-
         <Pane display="flex" marginBottom={6}>
-          <Button disabled={!this.props.service.state.connected} onClick={() => this.toggleDialog(true)} minWidth={180} iconBefore="application" >Print</Button>          
+          <Button disabled={!this.props.service.state.connected} onClick={() => this.props.createPrint()} minWidth={180} iconBefore="application" >Print</Button>          
         </Pane>
-        </React.Fragment>
       )
     }
     return null
@@ -205,7 +197,7 @@ export default class Connection extends React.Component<Props> {
   renderPrintAction() {
     return (
       <div>
-        {this.renderStartPrint()}
+        {this.renderCreatePrint()}
         {this.renderCancelPrint()}
         {this.renderPausePrint()}
       </div>

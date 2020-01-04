@@ -18,13 +18,23 @@ import {
   Spinner,
 } from 'evergreen-ui'
 
-import FileDrop from 'react-file-drop'
+// import FileDrop from 'react-file-drop'
+
+import FileDrop from '../../../utils/filedrop'
 
 import {
   LayerKeepHandler,
 } from '../../../../network'
 
-export default class FileForm extends React.Component {
+import { NodeState }  from '../../../../store/state'
+
+type Props = {
+  node: NodeState,
+  printSlice: object,
+  loading: boolean
+}
+
+export default class FileForm extends React.Component<Props> {
   filepicker = null
 
   state = {
@@ -82,7 +92,8 @@ export default class FileForm extends React.Component {
     this.setState({
       newFile: {
         ...this.state.newFile, 
-        file: files[0]
+        file: files[0],
+        name: this.state.filename || files[0].name || ""
       }
     })
 

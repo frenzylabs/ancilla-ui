@@ -176,7 +176,6 @@ export class PrintList extends React.Component {
 
 
   unsyncFromLayerkeep(row) {
-    console.log("UnSync")
     PrinterRequest.unsyncFromLayerkeep(this.props.node, this.props.service, row.id)
     .then((res) => {
       // this.listLocal()

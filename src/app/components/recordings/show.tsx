@@ -234,7 +234,6 @@ export class RecordingShow extends React.Component {
   }
 
   onChangePage(page) {
-    console.log("page change", page)
     this.setState({ search: {...this.state.search, page: page }});    
   }
 
@@ -297,7 +296,6 @@ export class RecordingShow extends React.Component {
   renderPagination() {
     if (this.state.commands.data.length > 0) {
       var {current_page, last_page, total} = this.state.commands.meta;
-      console.log("render Pagination ", current_page, last_page, total)
       return (
         <PaginatedList currentPage={current_page} pageSize={this.state.search.per_page} totalPages={last_page} totalItems={total} onChangePage={this.onChangePage} /> 
       )
@@ -410,7 +408,7 @@ export class RecordingShow extends React.Component {
     if (this.state.cameraRecording && this.state.cameraRecording.video_path) {
       return (
         <Pane>
-          <video type="video/mp4" width="370" height="285" controls src={`${this.props.node.apiUrl}/services/camera/${this.props.service.id}/recordings/${this.state.cameraRecording.id}/video`}></video>
+          <video width="370" height="285" controls src={`${this.props.node.apiUrl}/services/camera/${this.props.service.id}/recordings/${this.state.cameraRecording.id}/video`}></video>
         </Pane>
       )
     }

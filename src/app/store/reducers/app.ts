@@ -1,5 +1,5 @@
 
-import { initialState } from './state'
+import { initialState } from '../state'
 
 import { nodeReducer } from './nodes'
 

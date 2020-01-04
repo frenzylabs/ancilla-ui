@@ -26,9 +26,7 @@ import Modal from '../../modal/index'
 import ErrorModal from '../../modal/error'
 import Form from './form'
 import { NodeAction } from '../../../store/actions/node'
-import {Form as AuthForm } from '../../services/layerkeep/form'
-import camera, {default as request} from '../../../network/camera'
-import { CameraState }  from '../../../store/reducers/cameras'
+import { CameraState }  from '../../../store/state'
 
 
 type Props = {
@@ -111,7 +109,6 @@ export class CameraNew extends React.Component<Props> {
     let items =  cameras.length > 0 ? cameras : [{name: "No cameras found."}]
     
     return ( 
-      <div>
       <Pane display="flex" is="section" flexDirection="column" padding={16} background="tint2" borderRadius={3}>
         <Pane flex={1} alignItems="center" display="flex">
           <Heading >Add Camera</Heading>
@@ -120,7 +117,6 @@ export class CameraNew extends React.Component<Props> {
           <Form ref={frm => this.form = frm} node={this.props.node} onSave={this.onSave} onError={this.onError}/>        
         </Pane>
       </Pane>
-      </div>
     )
   }
 }

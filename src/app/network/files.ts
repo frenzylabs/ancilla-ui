@@ -42,8 +42,9 @@ export default {
     return Request.patch(`${node.apiUrl}/files/${id}`, data, {headers: {'Content-Type' : 'multipart/form-data'}})
   },
 
-  delete: (id, options={}) => {
-    return Request.delete(`/files/${id}`, options)
+  delete: (node, id, params = {}, options={}) => {
+    var path = `${node.apiUrl}/files/${id}` + QS.stringify(params, { addQueryPrefix: true }) 
+    return Request.delete(path, options)
   },
 
   listLocal: (node, options= {}) => {

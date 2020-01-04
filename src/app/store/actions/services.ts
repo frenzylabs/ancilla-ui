@@ -10,20 +10,32 @@ import types from './types'
 import Service from '../../network/service'
 
 export const ServiceAction = {
-  listAttachments(serviceState) {
+  listAttachments(node, serviceState) {
     return (dispatch, getState) => {
       console.log("LIST PRINTS NODE ACTION state", getState())
-      let activeNode = getState().activeNode
+
       var cancelRequest    = Service.cancelSource();  
       // dispatch(requestFeatures(username, cancelRequest))
       if (serviceState.model) {
-        return Service.attachments(activeNode, serviceState.model, {cancelToken: cancelRequest.token})
+        return Service.attachments(node, serviceState.model, {cancelToken: cancelRequest.token})
             .then((response) => {
-              dispatch(ServiceAction.updateAttachments(serviceState, response.data.attachments || []))
+              dispatch(ServiceAction.updateAttachments(node, serviceState, response.data.attachments || []))
+              return response
             })
       }
     }
   },
+
+  saveAttachment(node, serviceState, params) {
+    return (dispatch, getState) => {      
+      return Service.addAttachment(node, serviceState, params)
+        .then((response) => {
+          dispatch(ServiceAction.attachmentReceived(node, serviceState, response.data.attachment))
+          return response
+        })      
+    }
+  },
+
 
   deleteService: (node, serviceState) => {
     return (dispatch, getState) => {
@@ -35,10 +47,62 @@ export const ServiceAction = {
         return Service.delete(node, serviceState.model, {cancelToken: cancelRequest.token})
             .then((response) => {
               dispatch(ServiceAction.removeService(node, serviceState))
+              return response
             })
       }
     }
   },
+
+
+  updateService: (node, serviceState, params) => {
+    return (dispatch, getState) => {
+      console.log("UPDATE SERVICE NODE ACTION state", getState())
+      // let activeNode = getState().activeNode
+      var cancelRequest    = Service.cancelSource();  
+      // dispatch(requestFeatures(username, cancelRequest))
+      if (serviceState.id) {
+        return Service.update(node, serviceState.id, params, {cancelToken: cancelRequest.token})
+            .then((response) => {
+              dispatch(ServiceAction.serviceUpdated(node, serviceState, response.data.service_model))
+              return response
+            })
+      }
+    }
+  },
+
+
+  
+      //     var f = response.data.attachment
+      //     attachments = attachments.concat(f)
+      //     this.setState({
+      //       loading: false,
+      //       attachments: attachments
+      //     })
+
+      // toaster.success(`Attachment ${f.attachment.name} has been successfully added`)
+      // closeDialog()
+    // })
+    // .catch((error) => {
+    //   console.log(error)      
+    //   this.setState({
+    //     loading: false,
+    //   })
+    //   let errors = Object.keys(error.response.data.errors).map((key, index) => {
+    //     return  `${key} : ${error.response.data.errors[key]}<br/>`
+    //   })
+
+    //   toaster.danger(
+    //     `Unable to save attachment ${JSON.stringify(attachment)}`, 
+    //     {description: errors}
+    //   )
+    // })
+    // DeviceHandler.addAttachment(this.props.node, this.props.device.id)
+    //   .then((response) => {
+
+    //   }).catch((err) => {
+    //     console.log(err)
+    //   })
+  // }
   // lastPrint(printerState) {
   //   return (dispatch, getState) => {
   //     console.log("LAST PRINT NODE ACTION state", getState())
@@ -56,12 +120,27 @@ export const ServiceAction = {
   //   }
   // },
 
-  updateAttachments: (service, attachments) => ({
+  attachmentReceived: (node, service, attachment) => ({
+    type: 'SERVICE_RECEIVED_ATTACHMENT',
+    node: node,
+    service: service,
+    data: attachment
+  }),
+
+  updateAttachments: (node, service, attachments) => ({
     type: 'SERVICE_RECEIVED_ATTACHMENTS',
+    node: node,
     service: service,
     data: attachments
   }),
 
+  
+  serviceUpdated: (node, service, data) => ({
+    type: 'SERVICE_UPDATED',
+    node: node,
+    service: service,
+    data: data
+  }),
   // updatePrints: (printer, prnts) => ({
   //   type: 'PRINTER_RECEIVED_PRINTS',
   //   printer: printer,

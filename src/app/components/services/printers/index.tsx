@@ -34,8 +34,7 @@ import NodeAction           from '../../../store/actions/node'
 import ServiceAction        from '../../../store/actions/services'
 import PrinterHandler       from '../../../network/printer'
 
-import { NodeState }  from '../../../store/reducers/state'
-import { ServiceState }  from '../../../store/reducers/service'
+import { NodeState, ServiceState }  from '../../../store/state'
 
 import Prints from '../../prints'
 

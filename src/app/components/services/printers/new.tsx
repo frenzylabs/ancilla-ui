@@ -28,7 +28,8 @@ import Form from './form'
 import { NodeAction } from '../../../store/actions/node'
 import {Form as AuthForm } from '../../services/layerkeep/form'
 import printer, {default as request} from '../../../network/printer'
-import { PrinterState }  from '../../../store/reducers/printers'
+
+import { PrinterState }  from '../../../store/state'
 
 
 type Props = {

@@ -58,7 +58,7 @@ export default class Option extends PureComponent<UserProps> {
       ...props
     } = this.props
 
-    const textProps = {}
+    const textProps = {color: ''}
     if (disabled) {
       textProps.color = 'muted'
     }

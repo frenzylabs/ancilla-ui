@@ -20,27 +20,29 @@ import {
   SubNav
 } from '../../components'
 
-import PubSub from 'pubsub-js'
-
 import PrinterIndex 	from '../services/printers/index'
 import PrinterNew 	  from '../services/printers/new'
 import CameraIndex 	  from '../services/cameras/index'
 import CameraNew 	  from '../services/cameras/new'
 import FilesView 		  from '../files'
-import SettingsView   from '../settings'
 
 import { NodeAction } from '../../store/actions/node'
+import { NodeState } from '../../store/state'
 
-
-export class NodeView extends React.Component {
+type Props = {
+  node: NodeState,
+  match: object,
+  getServices: Function
+}
+export class NodeView extends React.Component<Props> {
   constructor(props:any) {
     super(props)    
 
     // this.toggleDialog = this.toggleDialog.bind(this)
     // this.savePrinter  = this.savePrinter.bind(this)
     // this.getPrinters  = this.getPrinters.bind(this)
-    console.log("NODE VIEW", this.props)
-    window.nv = this
+    // console.log("NODE VIEW", this.props)
+    // window.nv = this
   }
   
 

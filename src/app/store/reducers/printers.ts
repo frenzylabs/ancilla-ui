@@ -1,42 +1,23 @@
-import { PrintState, printState } from './prints'
+// import { PrintState, printState } from './prints'
 
-import { ServiceModel, ServiceState } from './service'
-
-// baud_rate: "115200"
-// created_at: 1573066173
-// device: {id: 1, created_at: 1573066173, updated_at: 1573066173, name: "ender3", device_type: "Printer"}
-// id: 1
-// name: "ender3"
-// port: "/dev/cu.usbserial-14140"
-// updated_at: 1573231193
-
+// import { ServiceModel, ServiceState } from './service'
+import { printState, PrinterState } from '../state'
 // type PrinterModel = {
-//   baud_rate: "115200",
-//   created_at: 0,
-//   device: {},
-//   id: 0,
-//   name: "",
-//   port: "",
-//   updated_at: 0
+//   baud_rate: string,
+//   created_at: number,
+//   service: object,
+//   id: number,
+//   name: string,
+//   port: string,
+//   updated_at: number
 // }
 
+// type PrinterServiceModel = ServiceModel & { model: PrinterModel}
 
-type PrinterModel = {
-  baud_rate: string,
-  created_at: number,
-  service: object,
-  id: number,
-  name: string,
-  port: string,
-  updated_at: number
-}
-
-type PrinterServiceModel = ServiceModel & { model: PrinterModel}
-
-export type PrinterState = ServiceState & {
-  model: PrinterServiceModel,
-  currentPrint?: PrintState
-}
+// export type PrinterState = ServiceState & {
+//   model: PrinterServiceModel,
+//   currentPrint?: PrintState
+// }
 
 // export type PrinterState = ServiceState & {
 //   id: number,
@@ -49,19 +30,19 @@ export type PrinterState = ServiceState & {
 // }
 
 
-export function PrinterState(model: PrinterServiceModel, state: {} = {}, logs: [] = [], currentPrint = {}) {
-  var res = ServiceState.call(this, ...arguments)  
-  res["currentPrint"] = currentPrint
-  return res
-  // return {
-  //   id: model.id,
-  //   name: model.name,
-  //   model: model,
-  //   state: state,
-  //   logs: logs,
-  //   currentPrint: currentPrint
-  // }
-}
+// export function PrinterState(model: PrinterServiceModel, state: {} = {}, logs: [] = [], currentPrint = {}) {
+//   var res = ServiceState.call(this, ...arguments)  
+//   res["currentPrint"] = currentPrint
+//   return res
+//   // return {
+//   //   id: model.id,
+//   //   name: model.name,
+//   //   model: model,
+//   //   state: state,
+//   //   logs: logs,
+//   //   currentPrint: currentPrint
+//   // }
+// }
 
 
 
@@ -102,9 +83,9 @@ export function printerReducer(printerstate: PrinterState, action) {
     // console.log("PRINTER RECEIVED DATA", action)
     // var logs = printerstate.logs.concat(action.data)
     var logs = [...printerstate.logs, action.data]
-    // if (logs.length > 100) {
-    //   logs.shift()
-    // }
+    if (logs.length > 100) {
+      logs.shift()
+    }
 
     return {
       ...printerstate,

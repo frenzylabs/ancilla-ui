@@ -26,6 +26,10 @@ export const ServiceHandler = {
     return Request.delete(`${node.apiUrl}/services/${service.id}`, options)
   },
 
+  update: (node, service_id, data, options = {}) => {    
+    return Request.patch(`${node.apiUrl}/services/${service_id}`, data, options)
+  },
+
   state: (node, service, options= {}) => {
     return Request.get(`${node.apiUrl}/services/${service.kind}/${service.id}/state`, options)
   },
@@ -37,24 +41,20 @@ export const ServiceHandler = {
 
   addAttachment: (node, service, data, options = {}) => {
     // var data = Object.assign(options['params'] || {}, {attachment_id: attachment_id})
-    console.log("ADD OPTIONS", options)
     return Request.post(`${node.apiUrl}/services/${service.kind}/${service.id}/attachments`, data, options)
   },
 
   deleteAttachment: (node, service, attachment, options = {}) => {
     // var data = Object.assign(options['params'] || {}, {attachment_id: attachment_id})
-    console.log("del OPTIONS", options)
     return Request.delete(`${node.apiUrl}/services/${service.kind}/${service.id}/attachments/${attachment.id}`, options)
   },
 
   updateAttachment: (node, attachment_id, data, options = {}) => {
     // var data = Object.assign(options['params'] || {}, {attachment_id: attachment_id})
-    console.log("ADD OPTIONS", options)
     return Request.patch(`${node.apiUrl}/attachments/${attachment_id}`, data, options)
   }
 
 
 }
-
 
 export default ServiceHandler

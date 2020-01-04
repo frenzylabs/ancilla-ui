@@ -36,8 +36,8 @@ import ErrorModal     from '../../modal/error'
 import NodeAction  from '../../../store/actions/node'
 import ServiceAction  from '../../../store/actions/services'
 
-import { NodeState }  from '../../../store/reducers/state'
-import { ServiceState }  from '../../../store/reducers/service'
+import { NodeState, ServiceState }  from '../../../store/state'
+
 
 type Props = {
   node: NodeState, 
@@ -96,7 +96,7 @@ export class CameraView extends React.Component<Props> {
     // }), 0);
     // this.setState({videoUrl: ''})
     // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "UNSUB", "events.camera.connection"])
-    PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "UNSUB", "events.camera.recording"])
+    // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "UNSUB", "events.camera.recording"])
     if (this.pubsubToken) 
       PubSub.unsubscribe(this.pubsubToken)
     if (this.pubsubRequestToken)

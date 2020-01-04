@@ -35,8 +35,9 @@ import ServiceAction  from '../../../store/actions/services'
 
 import Recordings from '../../recordings/index'
 
-import { NodeState }  from '../../../store/reducers/state'
-import { ServiceState }  from '../../../store/reducers/service'
+import { NodeState, ServiceState }  from '../../../store/state'
+
+
 
 type Props = {
   node: NodeState, 

@@ -33,8 +33,7 @@ import ErrorModal     from '../../modal/error'
 import NodeAction  from '../../../store/actions/node'
 import ServiceAction  from '../../../store/actions/services'
 
-import { NodeState }  from '../../../store/reducers/state'
-import { ServiceState }  from '../../../store/reducers/service'
+import { NodeState, ServiceState }  from '../../../store/state'
 
 type Props = {
   node: NodeState, 

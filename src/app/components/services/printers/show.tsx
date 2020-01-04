@@ -21,6 +21,8 @@ import React  from 'react'
 // } from '../../'
 
 import Statusbar from '../statusbar'
+import Connection from './summary/connection'
+import State      from './summary/state'
 import Summary from './summary/index'
 import Terminal from './terminal'
 import SettingsForm from './settings'
@@ -30,10 +32,28 @@ import ServiceAttachment from '../attachments/index'
 import PrinterActions from '../../../store/actions/printers'
 import ServiceActions from '../../../store/actions/services'
 
+import { PrinterHandler } from '../../../network'
+import PrintForm from '../../prints/new'
+
+import { NodeState, ServiceState }  from '../../../store/state'
+
 
 import PubSub from 'pubsub-js'
 
-export default class PrinterShow extends React.Component {
+
+type PrinterProps = {
+  // listAttachments: Function,
+  // attachments: Array<{}>,
+  node: NodeState, 
+  service: ServiceState
+}
+
+export class PrinterShow extends React.Component<PrinterProps> {
+  pubsubRequestToken = null
+  pubsubToken        = null
+  requestTopic       = ""
+  eventTopic         = ""
+
   constructor(props:any) {
     super(props)
 
@@ -42,7 +62,9 @@ export default class PrinterShow extends React.Component {
       printerState: {
         open: false
       },
-      connected: false
+      connected: false,
+      reloadTime: Date.now(),
+      createPrint: false
     }
 
     this.receiveRequest  = this.receiveRequest.bind(this)
@@ -172,6 +194,45 @@ export default class PrinterShow extends React.Component {
   }
 
 
+  startPrint(printParams) {
+    // if (!(this.form.state.newPrint && this.form.state.newPrint.file_id)) {
+    //   toaster.danger("Select a File")
+    //   return
+    // }
+
+    // this.form.state.selectedPrinter
+    // var newPrint = this.form.state.newPrint
+    return PrinterHandler.start_print(this.props.node, this.props.service, printParams)
+    .then((response) => {
+      // var attachments = this.state.attachments
+      console.log("START PRINT", response.data)
+      var f = response.data.print
+      // attachments = attachments.concat(f)
+      // this.setState({
+      //   loading: false,
+      //   attachments: attachments
+      // })
+
+      // toaster.success(`Print Started ${printParams.name} has been successfully added`)
+      
+    })
+    .catch((error) => {
+      console.log(error)
+      // if (closeDialog)
+      //   closeDialog()
+      // toaster.danger(<ErrorModal requestError={error} />)
+
+      this.setState({
+        loading: false,
+      })
+    })
+  }
+
+  attachmentAdded(attachment) {
+    // this.setState({reloadTime: Date.now()})
+  }
+
+
   renderSettings() {
     return (
 			<React.Fragment>
@@ -190,17 +251,55 @@ export default class PrinterShow extends React.Component {
 		)
   }
 
-    
+  
+
+  renderCreatePrint() {
+    if (this.state.createPrint) {
+      return (
+        <PrintForm onAttachmentAdded={this.attachmentAdded.bind(this)} onComplete={() => this.setState({createPrint: false})} printerService={this.props.service} node={this.props.node} />
+      )
+    }
+    return null
+  }
+
+  showPrintForm() {
+    console.log("SHOW PRINT FORM")
+    this.setState({createPrint: true})
+  }
 
 
-  render() {
-    // const Component = this.props.component;    
+  render() {    
     return (
-      <div>
-          <Summary {...this.props}  />
-          <ServiceAttachment {...this.props} attachmentKind="Camera" device={this.props.service && this.props.service.model}/>
+      <Pane>
+        {this.renderCreatePrint()}
+          <Pane display="flex">
+            <Pane display="flex" width="100%">
+              <Connection {...this.props} startPrint={this.startPrint.bind(this)} createPrint={this.showPrintForm.bind(this)} />
+              <State {...this.props} />
+            </Pane>
+          </Pane>
+          <ServiceAttachment {...this.props} attachments={this.props.service.model.attachments} attachmentKind="Camera" reload={this.state.reloadTime} device={this.props.service && this.props.service.model}/>
           <Terminal {...this.props}  />
-      </div>
+      </Pane>
     );
  }
 }
+
+
+
+
+const mapStateToProps = (state) => {
+  // return state
+  return {
+    // printers: state.activeNode.printers
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    deleteService: (node, service) => dispatch(ServiceActions.listAttachments(node, service))
+  }
+}
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(PrinterShow)

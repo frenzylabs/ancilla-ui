@@ -23,8 +23,7 @@ const defaultProps = {
 export class PaginatedList extends React.Component<{onChangePage?, currentPage, lastPage?, totalItems, totalPages, pageSize}, {pager}> {
   constructor(props) {
     super(props);
-    
-    window.pl   = this
+
     this.state  = { pager: {} };    
 
     this.renderPrevious = this.renderPrevious.bind(this)
@@ -38,6 +37,14 @@ export class PaginatedList extends React.Component<{onChangePage?, currentPage, 
           this.setPage(this.props.currentPage);
       }
   }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentPage != this.props.currentPage || 
+        prevProps.totalPages != this.props.totalPages ||
+        prevProps.pageSize != this.props.pageSize) {
+        this.setPage(this.props.currentPage);
+    }
+}
 
   setPage(page) {
     var { totalItems, pageSize, totalPages } = this.props;
@@ -169,7 +176,7 @@ export class PaginatedList extends React.Component<{onChangePage?, currentPage, 
 
   render() {
     var pager = this.state.pager;
-    if (!pager.pages || pager.pages.length <= 1) {
+    if (this.props.totalItems < 1 || !pager.pages || pager.pages.length <= 1) {
         // don't display pager if there is only 1 page
         return null;
     }

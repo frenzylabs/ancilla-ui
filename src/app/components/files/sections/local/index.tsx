@@ -12,8 +12,10 @@ import Dayjs from 'dayjs'
 import {
   Pane,
   IconButton,
+  Checkbox,
   Button,
   Dialog,
+  Paragraph,
   Text,
   Position,
   Table,
@@ -21,6 +23,8 @@ import {
   Popover,
   toaster
 } from 'evergreen-ui'
+
+import PubSub from 'pubsub-js'
 
 import Loader from '../../../loader'
 
@@ -33,7 +37,18 @@ import Row      from './row'
 
 import List from '../../../table/list'
 
-export default class Local extends React.Component {
+
+import { NodeState, ServiceState }  from '../../../../store/state'
+
+type Props = {
+  node: NodeState,
+  service: ServiceState,
+  authenticated: boolean,
+  showAuth: Function
+}
+
+
+export default class Local extends React.Component<Props> {
   
   state = {
     showingAddFile: false,
@@ -41,7 +56,9 @@ export default class Local extends React.Component {
     saving:         false,
     data:          {
       data: [],
-      meta: {}
+      meta: {
+        total: 0
+      }
     },
     filter: {
       name: ""
@@ -51,11 +68,16 @@ export default class Local extends React.Component {
       per_page: 20, 
       q: {name: undefined}
     },
-    printSlice:     null
+    printSlice:     null,
+    deleteRemote: false,
+    confirmDelete: null,
+    deleting: false
   }
 
-  addForm       = {}
+  addForm: FileForm       =  null
   cancelRequest = FileHandler.cancelSource()
+  pubsubToken  = null
+  eventTopic   = ""
 
   constructor(props:any) {
     super(props)
@@ -65,9 +87,14 @@ export default class Local extends React.Component {
     this.download = this.download.bind(this)
     this.delete   = this.delete.bind(this)
     this.save     = this.save.bind(this)
+    this.setupListeners = this.setupListeners.bind(this)
+    this.receiveEvent  = this.receiveEvent.bind(this)
+    
+    this.renderLayerkeepSync = this.renderLayerkeepSync.bind(this)
   }
 
   componentDidMount() {
+    this.setupListeners()
     this.load()
   }
 
@@ -75,14 +102,44 @@ export default class Local extends React.Component {
     if(this.cancelRequest) {
       this.cancelRequest.cancel("Local Files unmounted")
     }
+    PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "UNSUB", "events.file"])
+    if (this.pubsubToken)
+      PubSub.unsubscribe(this.pubsubToken)
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (JSON.stringify(this.state.search) != JSON.stringify(prevState.search)) {
       this.load();
     }
+    
+    if (prevProps.service != this.props.service) {
+      this.setupListeners()
+    }
   }
 
+  setupListeners() {
+    if (this.props.service) {
+      this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events.file`
+      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", ""])
+
+      if (this.pubsubToken) {
+        PubSub.unsubscribe(this.pubsubToken)
+      }
+      this.pubsubToken = PubSub.subscribe(this.eventTopic, this.receiveEvent);
+    }
+  }
+
+  
+  receiveEvent(msg, data) {
+    var [to, kind] = msg.split("events.")
+    switch(kind) {
+      case 'file.created':
+          this.load()
+          break
+      default:
+        break
+    }
+  }
 
 
   get loading(): boolean {
@@ -130,14 +187,6 @@ export default class Local extends React.Component {
     document.location.href = `${this.props.node.apiUrl}/files/${id}?download=true`
   }
 
-  delete(row) {
-    FileHandler.delete(row.id)
-    .then((res) => {
-      this.load()
-      toaster.success(`${row.name} has been successfully deleted.`)
-    })
-    .catch((_err) => {}) 
-  }
 
   save() {
     this.saving = true
@@ -188,6 +237,65 @@ export default class Local extends React.Component {
   }
 
 
+  delete(row) {
+    var params = {}
+    if (this.state.deleteRemote) {
+      params = {"delete_remote": true}
+    }
+    this.setState({deleting: true})
+    FileHandler.delete(this.props.node, row.id, params)
+    .then((res) => {
+      this.setState({deleting: false, deleteRemote: false, confirmDelete: false})
+      this.load()
+      toaster.success(`${row.name} has been successfully deleted.`)
+    })
+    .catch((_err) => {
+      this.setState({deleting: false, deleteRemote: false, confirmDelete: false})
+    }) 
+  }
+
+  syncFile(row) {
+    if (!this.props.authenticated) {
+      return this.props.showAuth()
+    }
+    FileHandler.syncToLayerkeep(this.props.node, row)
+    .then((res) => {
+      // this.listLocal()
+      toaster.success(`${row.name} has been successfully added to Layerkeep.`)
+      var file = res.data.file
+      var files = this.state.data.data.map((f) => {
+        if (f.id == file.id) {
+          return file
+        }
+        return f
+      })
+      this.setState({data: {...this.state.data, data: files}})
+    })
+    .catch((error) => {
+      if (error.response && error.response.status == 401) {
+        this.props.showAuth()        
+      }
+      console.log("Sync Error", error)
+    })
+  }
+
+  unsyncFile(row) {
+    FileHandler.unsyncFromLayerkeep(this.props.node, row)
+    .then((res) => {
+      toaster.success(`${row.name} has been successfully unsynced.`)
+      var file = res.data.file
+      var files = this.state.data.data.map((f) => {
+        if (f.id == file.id) {
+          return file
+        }
+        return f
+      })
+      this.setState({data: {...this.state.data, data: files}})
+    })
+    .catch((error) => {
+      console.log("UnSync Error", error)
+    })
+  }
 
   onChangePage(page) {
     this.setState({ search: {...this.state.search, page: page }});    
@@ -199,6 +307,7 @@ export default class Local extends React.Component {
         <Dialog
           isShown={this.state.showingAddFile}
           title="Add File"
+          isConfirmLoading={this.state.saving}
           confirmLabel={this.state.saving ? "Saving..." : "Save"}
           onCloseComplete={() => this.setState({...this.state, showingAddFile: false})}
           onConfirm={this.save}
@@ -216,17 +325,92 @@ export default class Local extends React.Component {
     )
   }
 
+  renderLayerkeepSync = (row) => {
+    if (row.layerkeep_id) {
+      return (<Menu.Item onSelect={() => this.unsyncFile(row)}>UnSync from Layerkeep...</Menu.Item>)
+    } else {
+      return (<Menu.Item onSelect={() => this.syncFile(row)}>Sync to Layerkeep...</Menu.Item>)
+    }
+  }
+
+  onDelete(row) {
+    if (this.props.authenticated && row.layerkeep_id) {
+      this.setState({confirmDelete: row})
+    } else {
+      this.delete(row)
+    }
+  }
+
+  renderConfirmDelete() {
+    if (!this.state.confirmDelete) return
+      return (
+        <React.Fragment>
+          <Dialog
+            isShown={this.state.confirmDelete ? true : false}
+            title="Delete File?"
+            isConfirmLoading={this.state.deleting}
+            confirmLabel={this.state.deleting ? "Deleting..." : "Delete"}
+            onCloseComplete={() => this.setState({...this.state, deleteRemote: false, confirmDelete: null})}
+            onConfirm={() => this.delete(this.state.confirmDelete)}
+          >
+
+          {({ close }) => (
+            <Pane>
+              <Paragraph>Your file is currently synced with LayerKeep.</Paragraph>
+              <Checkbox
+                label="Check this box to delete from LayerKeep as well"
+                checked={this.state.deleteRemote}
+                onChange={e => {
+                  this.setState({deleteRemote: e.target.checked})
+                }}
+            />
+          </Pane>
+        )}
+
+        </Dialog>
+      </React.Fragment>
+    )
+  }
+
+  renderMenu(row) {
+    return (
+      <Popover
+        position={Position.BOTTOM_RIGHT}
+        content={() => (
+          <Menu>
+            <Menu.Group>
+              {this.renderLayerkeepSync(row)}
+              <Menu.Item secondaryText="" onSelect={() => this.download(row.id)}>Download</Menu.Item>
+            </Menu.Group>
+            
+            <Menu.Divider />
+            
+            <Menu.Group>
+              <Menu.Item intent="danger"  onSelect={() => this.onDelete(row)}>
+                Delete... 
+              </Menu.Item>
+            </Menu.Group>
+          </Menu>
+        )}>
+        <IconButton icon="more" height={24} appearance="minimal" />
+      </Popover>
+
+    )
+  }
 
   renderRow(row, index) {
+    // const row = this.props['row']
+
     return (
-          <Row 
-            key={row.id}
-            row={row}
-            download={this.download}
-            onDelete={this.delete}
-          />
-        )
+      <Table.Row key={row.id} isSelectable>
+        <Table.TextCell>{row.name}</Table.TextCell>
+        <Table.TextCell>{row.description}</Table.TextCell>
+        <Table.TextCell>{Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
+        <Table.Cell width={48} flex="none">{this.renderMenu(row)}</Table.Cell>
+      </Table.Row>
+    )
   }
+
   renderTableHeader() {
     return (
         <Table.Head>
@@ -262,11 +446,13 @@ export default class Local extends React.Component {
           <Pane display="flex">
             <Pane display="flex" flex={1}>Local</Pane>
             <Pane>{this.renderAdd()}</Pane>
+            {this.renderConfirmDelete()}
           </Pane>
 
           <Pane borderBottom borderLeft borderRight>
             {this.renderData()}
           </Pane>
+
         </Pane>
       </Pane>
     )

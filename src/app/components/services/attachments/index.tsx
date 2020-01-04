@@ -18,12 +18,7 @@ import {
 } from 'evergreen-ui'
 
 import React  from 'react'
-// import {
-//   Nav,
-//   SubNav,
-//   Statusbar,
-//   Summary
-// } from '../../'
+
 
 import ErrorModal     from '../../modal/error'
 
@@ -32,10 +27,26 @@ import { ServiceHandler } from '../../../network'
 import AttachmentForm from './form'
 
 import PubSub from 'pubsub-js'
-import { ServiceState } from '../../../store/reducers/service'
+
+
+import { NodeState, ServiceState, AttachmentModel }  from '../../../store/state'
+
+import ServiceActions from '../../../store/actions/services'
+
 import dayjs from 'dayjs'
 
-export default class ServiceAttachment extends React.Component<{node: object, service: ServiceState}> {
+type AttachmentProps = {
+  listAttachments: Function,
+  saveAttachment: Function,
+  updateAttachments: Function,
+  attachmentReceived: Function,
+  attachments: Array<AttachmentModel>,
+  node: NodeState, 
+  service: ServiceState, 
+  reload: Date 
+}
+
+export class ServiceAttachment extends React.Component<AttachmentProps> {
   form: AttachmentForm = null
   cancelRequest = null
   constructor(props:any) {
@@ -64,13 +75,13 @@ export default class ServiceAttachment extends React.Component<{node: object, se
     this.renderView        = this.renderView.bind(this)
     this.toggleAttachmentView = this.toggleAttachmentView.bind(this)
 
-    window.at = this
     this.cancelRequest = ServiceHandler.cancelSource()
     
   }
 
   componentDidMount() {
-    this.getAttachments()
+    // this.getAttachments()
+    this.props.listAttachments(this.props.node, this.props.service)
   }
 
   componentWillUnmount() {
@@ -79,8 +90,8 @@ export default class ServiceAttachment extends React.Component<{node: object, se
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps.service.id != this.props.service.id) {
-      this.getAttachments()
+    if (prevProps.service.id != this.props.service.id || prevProps.reload != this.props.reload) {
+      // this.getAttachments()
     }
   }
   
@@ -118,17 +129,10 @@ export default class ServiceAttachment extends React.Component<{node: object, se
     })
 
     var attachment = this.form.state.newAttachment
-    ServiceHandler.addAttachment(this.props.node, this.props.service, attachment)
+    this.props.saveAttachment(this.props.node, this.props.service, attachment)
     .then((response) => {
-      var attachments = this.state.attachments
-      var f = response.data.attachment
-      attachments = attachments.concat(f)
-      this.setState({
-        loading: false,
-        attachments: attachments
-      })
-
-      toaster.success(`Attachment ${f.attachment.name} has been successfully added`)
+      this.setState({loading: false})
+      toaster.success(`Attachment ${response.data.attachment.attachment.name} has been successfully added`)
       closeDialog()
     })
     .catch((error) => {
@@ -145,6 +149,34 @@ export default class ServiceAttachment extends React.Component<{node: object, se
         {description: errors}
       )
     })
+
+    // ServiceHandler.addAttachment(this.props.node, this.props.service, attachment)
+    // .then((response) => {
+    //   var attachments = this.state.attachments
+    //   var f = response.data.attachment
+    //   attachments = attachments.concat(f)
+    //   this.setState({
+    //     loading: false,
+    //     attachments: attachments
+    //   })
+
+    //   toaster.success(`Attachment ${f.attachment.name} has been successfully added`)
+    //   closeDialog()
+    // })
+    // .catch((error) => {
+    //   console.log(error)      
+    //   this.setState({
+    //     loading: false,
+    //   })
+    //   let errors = Object.keys(error.response.data.errors).map((key, index) => {
+    //     return  `${key} : ${error.response.data.errors[key]}<br/>`
+    //   })
+
+    //   toaster.danger(
+    //     `Unable to save attachment ${JSON.stringify(attachment)}`, 
+    //     {description: errors}
+    //   )
+    // })
     // DeviceHandler.addAttachment(this.props.node, this.props.device.id)
     //   .then((response) => {
 
@@ -163,12 +195,13 @@ export default class ServiceAttachment extends React.Component<{node: object, se
   deleteAttachment(attachment) {
     ServiceHandler.deleteAttachment(this.props.node, this.props.service, attachment)
     .then((response) => {
-      var attachments = this.state.attachments.filter((item) => item.id != attachment.id) 
+      var attachments = this.props.attachments.filter((item) => item.id != attachment.id) 
       // var currentAttachmentIds = attachments.map(item => item.attachment.id)
+
       this.setState({
-        loading: false,
-        attachments: attachments
+        loading: false
       })
+      this.props.updateAttachments(this.props.node, this.props.service, attachments)
 
       toaster.success(`Attachment ${attachment.attachment.name} has been deleted`)
     })
@@ -179,13 +212,13 @@ export default class ServiceAttachment extends React.Component<{node: object, se
   }
 
   toggleAttachmentView(attachment) {
-    console.log(attachment)
     var expand = !(attachment.settings.expanded || false)
     // if (attachment.settings.expanded)
-    var settings = {...attachment.settings, expanded: expand}
-    ServiceHandler.updateAttachment(this.props.node, attachment.id, {settings: settings})
+    // var settings = {...attachment.settings, expanded: expand}
+    attachment.settings = {...attachment.settings, expanded: expand}
+    ServiceHandler.updateAttachment(this.props.node, attachment.id, {settings: attachment.settings})
     .then((response) => {
-      console.log(response)
+      // console.log(response)
       // var attachments = this.state.attachments.filter((item) => item.id != attachment.id) 
       // // var currentAttachmentIds = attachments.map(item => item.attachment.id)
       // this.setState({
@@ -196,14 +229,15 @@ export default class ServiceAttachment extends React.Component<{node: object, se
     })
     .catch((error) => {
       console.log(error)
-    })
-    var atc = this.state.attachments.map((a) => {
-      if (a.id == attachment.id) {
-        return {...a, settings: settings}
-      }
-      return a
-    })
-    this.setState({attachments: atc})
+    })    
+    this.props.attachmentReceived(this.props.node, this.props.service, attachment)
+    // var atc = this.state.attachments.map((a) => {
+    //   if (a.id == attachment.id) {
+    //     return {...a, settings: settings}
+    //   }
+    //   return a
+    // })
+    // this.setState({attachments: atc})
   }
 
   renderView(attachment) {
@@ -226,7 +260,7 @@ export default class ServiceAttachment extends React.Component<{node: object, se
   }
   
 
-	renderRow(key:number, attachment:object, caption:string = "") {
+	renderRow(key:number, attachment, caption:string = "") {
 		return (
 			<Pane display="flex" flex={1} key={key} width="100%" background={key % 2 ? "#f9f9f9" : "#fff"} padding={10} alignItems="center" borderTop borderBottom>
 				<Pane display="flex" flex={1}>
@@ -243,7 +277,7 @@ export default class ServiceAttachment extends React.Component<{node: object, se
 		)
   }
 
-  renderAttachment(attachment:object) {
+  renderAttachment(attachment) {
     if (attachment.settings.expanded) {
       return this.renderView(attachment)
     } else {
@@ -252,10 +286,10 @@ export default class ServiceAttachment extends React.Component<{node: object, se
   }
   
   renderAttachments() {
-    if (this.state.attachments) {
+    if (this.props.attachments) {
       return (
         <Pane borderBottom borderLeft borderRight>
-          {this.state.attachments.map((da) => {
+          {this.props.attachments.map((da) => {
             return this.renderAttachment(da)
           })}
         </Pane>
@@ -274,7 +308,7 @@ export default class ServiceAttachment extends React.Component<{node: object, se
           onCloseComplete={() => this.toggleDialog(false)}
           onConfirm={this.saveAttachment}
         >              
-          <AttachmentForm ref={frm => this.form = frm} {...this.props} attachments={this.state.attachments} />
+          <AttachmentForm ref={frm => this.form = frm} {...this.props} attachments={this.props.attachments} />
         </Dialog>
 
 				<IconButton appearance='minimal' icon="add" onClick={(e) => this.setState({showing: true})}/>
@@ -302,3 +336,22 @@ export default class ServiceAttachment extends React.Component<{node: object, se
     );
  }
 }
+
+const mapStateToProps = (state) => {
+  // return state
+  return {
+    // printers: state.activeNode.printers
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    listAttachments: (node, service) => dispatch(ServiceActions.listAttachments(node, service)),
+    saveAttachment: (node, service, attachment) => dispatch(ServiceActions.saveAttachment(node, service, attachment)),
+    updateAttachments: (node, service, attachments) => dispatch(ServiceActions.updateAttachments(node, service, attachments)),
+    attachmentReceived: (node, service, attachment) => dispatch(ServiceActions.attachmentReceived(node, service, attachment))
+  }
+}
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(ServiceAttachment)

@@ -1,54 +1,25 @@
 
 
 
-import { initialState } from './state'
-import { PrinterState, printerReducer } from './printers'
-import { CameraState, cameraReducer } from './cameras'
-import { ServiceState, serviceReducer } from './service'
+import { initialState } from '../state'
+import { printerReducer } from './printers'
+import { cameraReducer } from './cameras'
+import { serviceReducer } from './service'
 
-// export function NodeState(initialState, state = {}) {
-//   return {
-//     activeNode: initialState.activeNode,
-//     state: state
-//   }
-// }
+import { serviceState, printerState, cameraState } from '../state'
 
 
-function getServiceReducer(item) {
-  switch(item.kind) {
-    case 'printer':
-      return PrinterState(item)
-    default:
-      return ServiceState(item)
-      break
-  }
-}
 // const initialState = NodeState();
 
 export function nodeReducer(state = initialState.activeNode, action) {
   switch(action.type) {
-  case 'SERVICE_DELETED':
-      // console.log("INSIDE RECEIVE PRINTERS", action.data)
-      // console.log("CURRENT STATE = ", state)    
-      // var clone = Object.assign( Object.create( Object.getPrototypeOf(state)), state)
-      var services = state.services.filter((svc) => svc.id != action.data.id)
+  case 'SERVICE_DELETED': {
+      let services = state.services.filter((svc) => svc.id != action.data.id)
       return {...state, services: services} 
-      // var printers = action.data.printers.reduce((acc, item) => {
-      //   acc = acc.concat(PrinterState(item))
-      //   return acc
-      // }, [])
-  
-      // var newstate = {
-      //   ...state, 
-      //   printers: printers
-      // }
-      // return newstate
-  case 'RECEIVED_PRINTERS':
-    // console.log("INSIDE RECEIVE PRINTERS", action.data)
-    // console.log("CURRENT STATE = ", state)    
-    // var clone = Object.assign( Object.create( Object.getPrototypeOf(state)), state)
+  }
+  case 'RECEIVED_PRINTERS': {
     var printers = action.data.printers.reduce((acc, item) => {
-      acc = acc.concat(PrinterState(item))
+      acc = acc.concat(printerState(item))
       return acc
     }, [])
 
@@ -57,35 +28,37 @@ export function nodeReducer(state = initialState.activeNode, action) {
       printers: printers
     }
     return newstate
+  }
 
-  case 'RECEIVED_CAMERAS':
-      // console.log("INSIDE RECEIVE PRINTERS", action.data)
-      // console.log("CURRENT STATE = ", state)
+  case 'RECEIVED_CAMERAS': {
     var clone = Object.assign( Object.create( Object.getPrototypeOf(state)), state)
     clone.cameras = action.data.cameras
     return clone
-
+  }
   case 'RECEIVED_SERVICES': {
       // console.log("INSIDE RECEIVE PRINTERS", action.data)
       // console.log("CURRENT STATE = ", state)
     // var dv = state.printers
     // dv[action.data.id] = action.data
-    var services = action.data.services.reduce((acc, item) => {
+    let services = action.data.services.reduce((acc, item) => {
       var itemstate = item
       switch(item.kind) {
         case 'printer':
-          itemstate = PrinterState(item)
+          itemstate = printerState(item)
           break
+        case 'camera':
+            itemstate = cameraState(item)
+            break
         default:
-          itemstate = ServiceState(item)
+          itemstate = serviceState(item)
           break
       }
       
       acc = acc.concat(itemstate)
       return acc
     }, [])
-
-    var newstate = {
+    // console.log("SERVICE REDUCERS", services)
+    let newstate = {
       ...state, 
       services: services
     }
@@ -96,15 +69,21 @@ export function nodeReducer(state = initialState.activeNode, action) {
     // clone.cameras = action.data.cameras
     // return clone
 
+  case 'SERVICE_UPDATED': {
+    let services = state.services.map((item) => {
+      if (item.id == action.service.id) {
+        return {...item, ...action.data}
+        // return serviceReducer(item, action)
+      }
+      return item
+    })
+    return {...state, services: services}
+  }
+
   case 'ADDED_PRINTER':
-    // var dv = state.printers
-    // dv[action.data.id] = PrinterState(action.data)
-    return {...state, services: [...state.services, PrinterState(action.data)]} 
-  case 'ADDED_CAMERA':
-    console.log("ADDED CAMERA", action.data)
-      // var dv = state.printers
-      // dv[action.data.id] = PrinterState(action.data)
-      return {...state, services: [...state.services, CameraState(action.data)]} 
+    return {...state, services: [...state.services, printerState(action.data)]} 
+  case 'ADDED_CAMERA':    
+    return {...state, services: [...state.services, cameraState(action.data)]} 
     
   case 'CONNECT_DEVICE':
     return {
@@ -114,9 +93,8 @@ export function nodeReducer(state = initialState.activeNode, action) {
   case 'PRINTER_UPDATED': {
     var services = state.services.map((item) => {
       if (item.id == action.data.id) {
-        var st = PrinterState(action.data)
+        var st = printerState(action.data)
         return {...item, ...st}
-        // return serviceReducer(item, action)
       }
       return item
     })
@@ -125,7 +103,7 @@ export function nodeReducer(state = initialState.activeNode, action) {
   case 'CAMERA_UPDATED': {
     var services = state.services.map((item) => {
       if (item.id == action.data.id) {
-        var st = CameraState(action.data)
+        var st = cameraState(action.data)
         return {...item, ...st}
       }
       return item
@@ -152,8 +130,8 @@ export function nodeReducer(state = initialState.activeNode, action) {
       return {...state, services: services}
     } else if (action.type.startsWith("CAMERA")) {
       var services = state.services.map((item) => {
-        if (item.id == action.printer.id) {
-          return printerReducer(item, action)
+        if (item.id == action.camera.id) {
+          return cameraReducer(item, action)
         }
         return item
       })

@@ -17,7 +17,14 @@ import {
 
 import PubSub from 'pubsub-js'
 
-export default class Input extends React.Component {
+import { NodeState, PrinterState }  from '../../../../store/state'
+
+type Props = {
+  node: NodeState, 
+  service: PrinterState
+}
+
+export default class Input extends React.Component<Props> {
   historyIndex:number     = 0
   trackingHistory:boolean = false
 
@@ -151,7 +158,7 @@ export default class Input extends React.Component {
           <Pane display="flex" width="100%" flex={1} marginRight={8}>
             <input 
               type="text"
-              disabled={!this.props.service.state.connected}
+              disabled={!this.props.service.state["connected"]}
               placeholder="Enter command..." 
               // name="cmd"
               id="terminal-input-field" 

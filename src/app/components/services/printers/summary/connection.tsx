@@ -18,15 +18,12 @@ import {
   toaster
 } from 'evergreen-ui'
 
-
+import PubSub from 'pubsub-js'
 
 
 import ErrorModal           from '../../../modal/error'
 
 import { NodeState, PrinterState }  from '../../../../store/state'
-
-
-import PubSub from 'pubsub-js'
 
 type Props = {
   node: NodeState, 
@@ -46,11 +43,10 @@ export default class Connection extends React.Component<Props> {
     super(props)
     // this.startPrint = this.startPrint.bind(this)
     this.renderCreatePrint = this.renderCreatePrint.bind(this)
-    window.pc = this
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.service.state.printing != this.props.service.state.printing) {
+    if (prevProps.service.state.printing != this.props.service.state["printing"]) {
       this.setState({showing: false})
     }
   }
@@ -112,14 +108,14 @@ export default class Connection extends React.Component<Props> {
 
   cancelPrint() {
     let cmd = [this.props.service.name, "cancel_print"]
-    PubSub.publish(this.props.node.name + ".request", cmd)
+    PubSub.make_request(this.props.node, cmd)
 
     // this.pubsubToken = PubSub.publish(this.topic, );
   }
 
   pausePrint() {
     let cmd = [this.props.service.name, "pause_print"]
-    PubSub.publish(this.props.node.name + ".request", cmd)
+    PubSub.make_request(this.props.node, cmd)
     // this.pubsubToken = PubSub.publish(this.topic, );
   }
 
@@ -145,10 +141,10 @@ export default class Connection extends React.Component<Props> {
   }
 
   renderCreatePrint() {
-    if (!this.props.service.state.printing) {
+    if (!this.props.service.state["printing"]) {
       return (
         <Pane display="flex" marginBottom={6}>
-          <Button disabled={!this.props.service.state.connected} onClick={() => this.props.createPrint()} minWidth={180} iconBefore="application" >Print</Button>          
+          <Button disabled={!this.props.service.state["connected"]} onClick={() => this.props.createPrint()} minWidth={180} iconBefore="application" >Print</Button>          
         </Pane>
       )
     }
@@ -156,7 +152,7 @@ export default class Connection extends React.Component<Props> {
   }
 
   renderCancelPrint() {
-    if (this.props.service.state.printing) {
+    if (this.props.service.state["printing"]) {
       return (
         <React.Fragment key="print">
           <Dialog
@@ -178,7 +174,7 @@ export default class Connection extends React.Component<Props> {
     return null
   }
   renderPausePrint() {
-    if (this.props.service.state.printing) {
+    if (this.props.service.state["printing"]) {
       return (
           <Pane display="flex" marginBottom={6}>
             <Button onClick={() => this.pausePrint()} minWidth={180} iconBefore="application" >Pause Print</Button>

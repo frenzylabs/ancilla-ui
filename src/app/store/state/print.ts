@@ -11,6 +11,7 @@ export type PrintModel = {
 }
 
 export type PrintState = {
+  id: number,
   model: PrintModel,
   status: string
 }

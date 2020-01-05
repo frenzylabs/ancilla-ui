@@ -16,13 +16,18 @@ import {
   toaster
 } from 'evergreen-ui'
 
-import LKAuthModal        from './auth';
+// import LKAuthModal        from './auth';
 import SpinnerModal       from './spinner';
 import ErrorModal         from './error';
 
+type Props = {
+  component: React.Component<{dismissAction, parentStyles}>,
+  dismissAction?: Function,
+  isActive: boolean
+}
 
-export default class Modal extends React.Component<{component: React.Component}> {
-  static auth         = LKAuthModal;
+export default class Modal extends React.Component<Props> {
+  // static auth         = LKAuthModal;
   static spinner        = SpinnerModal;
   static error          = ErrorModal;
 
@@ -33,7 +38,7 @@ export default class Modal extends React.Component<{component: React.Component}>
   }
 
   render() {
-    const styles = this.props.component.parentStyles || {}
+    const styles = this.props.component.props.parentStyles || {}
     const Comp = this.props.component 
     return (<Dialog
       isShown={this.props.isActive}

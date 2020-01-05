@@ -25,7 +25,15 @@ import List from 'react-virtualized/dist/commonjs/List';
 import PubSub from 'pubsub-js'
 import ServiceActions from '../../../../store/actions/services'
 
-export default class Body extends React.Component {
+import { NodeState, PrinterState }  from '../../../../store/state'
+
+type Props = {
+  node: NodeState, 
+  service: PrinterState,
+  dispatch: Function
+}
+
+export default class Body extends React.Component<Props> {
   lastLine?:any
   pubsubToken = null
   topic = null
@@ -44,12 +52,9 @@ export default class Body extends React.Component {
     this._onRowsRendered = this._onRowsRendered.bind(this)
        
     
-    if (this.props.service) {
-      this.topic = `${this.props.node.name}.${this.props.service.name}.events.printer.data_received`
-      this.pubsubToken = PubSub.subscribe(this.topic, this.receiveData);
-    }
 
   }
+
 
   receiveData(msg, data) {
     // console.log("Received Data here1", msg)
@@ -72,6 +77,10 @@ export default class Body extends React.Component {
   }
 
   componentDidMount() {
+    if (this.props.service) {
+      this.topic = `${this.props.node.name}.${this.props.service.name}.events.printer.data_received`
+      this.pubsubToken = PubSub.subscribe(this.topic, this.receiveData);
+    }
   }
 
   componentDidUpdate(prevProps) {
@@ -96,8 +105,8 @@ export default class Body extends React.Component {
     }
     var item = this.props.service.logs[index]
     var command = null
-    if (item.command && prevItem.command != item.command) {
-      command = item.command
+    if (item["command"] && prevItem["command"] != item["command"]) {
+      command = item["command"]
     }
     return command
   }
@@ -134,7 +143,7 @@ export default class Body extends React.Component {
             </Pane>     
             <Pane width="100%" padding={8} height={this.rowHeight} background={(index % 2 > 0) ? "#f0f0f0" : "#fff" }>
               <Pane display="flex" flex={1} width="100%">
-                <Text size={300} color="black">{item.resp}</Text>
+                <Text size={300} color="black">{item["resp"]}</Text>
               </Pane>
             </Pane>
         </Pane>
@@ -143,7 +152,7 @@ export default class Body extends React.Component {
       return (
         <Pane key={key} width="100%" padding={8} background={(index % 2 > 0) ? "#f0f0f0" : "#fff" } style={style} className="row">
           <Pane width="100%">
-            <Text size={300} color="black">{item.resp}</Text>
+            <Text size={300} color="black">{item["resp"]}</Text>
           </Pane>
         </Pane>
       )

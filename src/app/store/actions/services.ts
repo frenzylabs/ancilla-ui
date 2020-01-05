@@ -153,18 +153,18 @@ export const ServiceAction = {
   //   data: prnt
   // }),
 
-  getState(serviceState) {
+  getState(node, serviceState) {
     return (dispatch, getState) => {
       // console.log("NODE ACTION state", getState())
-      let activeNode = getState().activeNode
+      // let activeNode = getState().activeNode
       var cancelRequest    = Service.cancelSource();  
       // dispatch(requestFeatures(username, cancelRequest))
       // console.log(printerState)
       if (serviceState.model) {
-        return Service.state(activeNode, serviceState.model, {cancelToken: cancelRequest.token})
+        return Service.state(node, serviceState.model, {cancelToken: cancelRequest.token})
               .then((response) => {
                 // dispatch(PrinterAction.updateState(printer, {...printer.state, connected: false}))
-                dispatch(ServiceAction.updateState(serviceState, response.data || {}))
+                dispatch(ServiceAction.updateState(node, serviceState, response.data || {}))
               })
       }
     }
@@ -176,8 +176,9 @@ export const ServiceAction = {
     data: service
   }),
   
-  updateState: (service, service_state) => ({
+  updateState: (node, service, service_state) => ({
     type: 'SERVICE_RECEIVED_STATE',
+    node: node,
     service: service,
     data: service_state
   }),

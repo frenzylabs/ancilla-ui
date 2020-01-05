@@ -14,7 +14,15 @@ import {
 import Body   from './body'
 import Input  from './input'
 
-export default class Terminal extends React.Component {
+import { NodeState, PrinterState }  from '../../../../store/state'
+
+type Props = {
+  node: NodeState, 
+  service: PrinterState,
+  dispatch: Function
+}
+
+export default class Terminal extends React.Component<Props> {
   // constructor(props:any) {
   //   super(props)
 

@@ -26,13 +26,14 @@ import Modal from '../../modal/index'
 import ErrorModal from '../../modal/error'
 import Form from './form'
 import { NodeAction } from '../../../store/actions/node'
-import { CameraState }  from '../../../store/state'
+import { NodeState, CameraState }  from '../../../store/state'
 
 
 type Props = {
-  node: object,
+  node: NodeState,
   camera: CameraState,
-  addCamera: Function
+  addCamera: Function,
+  history: any
 }
 
 export class CameraNew extends React.Component<Props> {  

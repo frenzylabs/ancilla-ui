@@ -91,10 +91,12 @@ export default class Connection {
   }
 
   send(message) {
+    console.log("Send Message", message)
     this.socket.send(message)
   }
 
   onConnect(event) {
+    console.log("ON CONNECT", event)
     this.connected = true
 
     // msg = ["", "connect"]

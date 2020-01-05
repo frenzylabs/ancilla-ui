@@ -57,8 +57,8 @@ export class LKSlicedFilesView extends React.Component {
     }
   }
 
+  
   timer:number  = null
-  form:Form     = {}
   cancelRequest = null
   
   constructor(props:any) {

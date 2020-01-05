@@ -44,19 +44,30 @@ type Props = {
   service: ServiceState,
   deleteService: Function,
   cameraUpdated: Function,
-  dispatch: Function
+  dispatch: Function,
+  getState: Function,
+  updateState: Function
 }
 
-export class CameraView extends React.Component<Props> {
+type StateProps = {
+  recordSettings: object,
+  videoUrl: any
+}
+
+export class CameraView extends React.Component<Props, StateProps> {
   videoRef = null
+  requestTopic = ''
+  eventTopic = ''
+  pubsubRequestToken = null
+  pubsubToken        = null
+
+
   constructor(props:any) {
     super(props)
 
     
     this.state = {
-      connected: false,
       videoUrl: null,
-      serviceState: {},
       recordSettings: {
         videoSettings: {
           fps: 10
@@ -70,16 +81,12 @@ export class CameraView extends React.Component<Props> {
     this.setupCamera      = this.setupCamera.bind(this)
     this.toggleRecording  = this.toggleRecording.bind(this)
     this.setVideoUrl      = this.setVideoUrl.bind(this)
-
-    this.setupCamera()
-    
-    window.React = React
-    window.c = this
   }
 
   componentDidMount() {
     // this.setupCamera()
     // this.setVideoUrl()
+    this.setupCamera()
   }
 
   componentWillUnmount() {
@@ -115,7 +122,7 @@ export class CameraView extends React.Component<Props> {
 
   setVideoUrl() {
     var videoUrl = ''
-    if (this.props.service && this.props.service.state.connected) {
+    if (this.props.service && this.props.service.state["connected"]) {
       let url = this.props.node.apiUrl
       videoUrl = `${url}/webcam/${this.props.service.name}`
     }
@@ -127,9 +134,12 @@ export class CameraView extends React.Component<Props> {
   setupCamera() {
     if (this.props.service) {
       console.log("SETUP CAMERA")
-      this.props.dispatch(ServiceActions.getState(this.props.service))
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.connection"])
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.recording"])
+      this.props.getState(this.props.node, this.props.service)
+      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.connection"])
+      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.recording"])
+
+      // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.connection"])
+      // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.recording"])
 
       // PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.get_state"])
       // console.log("Has printer")
@@ -150,19 +160,19 @@ export class CameraView extends React.Component<Props> {
     // console.log("PV Received Data here1", msg)    
     // console.log("PV Received Data here2", data)
     // console.log(typeof(data))
-    if(!data)
-      return
-    if (data["action"] == "get_state") {
-      // console.log("get STATE", data)
-      this.setState({serviceState: data["resp"]})
-    }
-    if (data["action"] == "start_recording") {
-      // console.log("get STATE", data)
-      this.setState({...this.state, serviceState: {...this.state.serviceState, recording: true}})
-    } else if (data["action"] == "stop_recording") {
-      // console.log("get STATE", data)
-      this.setState({...this.state, serviceState: {...this.state.serviceState, recording: false}})
-    }
+    // if(!data)
+    //   return
+    // if (data["action"] == "get_state") {
+    //   // console.log("get STATE", data)
+    //   this.setState({serviceState: data["resp"]})
+    // }
+    // if (data["action"] == "start_recording") {
+    //   // console.log("get STATE", data)
+    //   this.setState({...this.state, serviceState: {...this.state.serviceState, recording: true}})
+    // } else if (data["action"] == "stop_recording") {
+    //   // console.log("get STATE", data)
+    //   this.setState({...this.state, serviceState: {...this.state.serviceState, recording: false}})
+    // }
   }
 
   receiveEvent(msg, data) {
@@ -175,23 +185,25 @@ export class CameraView extends React.Component<Props> {
       case 'camera.recording.state.changed':
           // console.log("Camera Recording state changed", data)
           // if (data.status != "recording")
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: data.status == "recording"}))
+          this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, recording: data.status == "recording"})
+          // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: data.status == "recording"}))
           break
       case 'camera.recording.started':
-          console.log("Camera Recording started", data)
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
+          this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, recording: true})
+          // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
           break
       case 'camera.recording.changed':
-          console.log("Camera Recording STate", data)
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
+          // this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, recording: true})
+          // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
           break
       case 'camera.connection.closed':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
+          this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, connected: false})
+          // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
           // this.setState({...this.state, serviceState: {...this.state.serviceState, open: false}})
           break
       case 'camera.connection.opened':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: true}))
-          // this.setState({...this.state, serviceState: {...this.state.serviceState, open: true}})
+          this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, connected: true})
+          // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: true}))          
           break      
       default:
         break
@@ -201,10 +213,10 @@ export class CameraView extends React.Component<Props> {
     
 
   toggleRecording() {
-    if (this.props.service.state.recording) {
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.stop_recording", {"settings": this.state.recordSettings}])
+    if (this.props.service.state["recording"]) {
+      PubSub.make_request(this.props.node, [this.props.service.name, "REQUEST.stop_recording", {"settings": this.state.recordSettings}])
     } else {
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.start_recording", {"settings": this.state.recordSettings}])
+      PubSub.make_request(this.props.node, [this.props.service.name, "REQUEST.start_recording", {"settings": this.state.recordSettings}])
     }
   }
 
@@ -218,7 +230,7 @@ export class CameraView extends React.Component<Props> {
   }
 
   getColorState() {
-    if (this.props.service.state.connected) {
+    if (this.props.service.state["connected"]) {
       return 'success'
     } else {
       return 'danger'
@@ -245,7 +257,7 @@ export class CameraView extends React.Component<Props> {
   }
 
   power(){
-    if (this.props.service.state.connected) {
+    if (this.props.service.state["connected"]) {
       CameraHandler.disconnect(this.props.node, this.props.service)
       .then((response) => {
         console.log("disconnected", response)
@@ -275,7 +287,7 @@ export class CameraView extends React.Component<Props> {
         </div>
 
         <div className="card-content">
-          <Button onClick={() => { this.power() }}>{this.props.service.state.connected ?  'Disconnect' : 'Connect Camera'}</Button>
+          <Button onClick={() => { this.power() }}>{this.props.service.state["connected"] ?  'Disconnect' : 'Connect Camera'}</Button>
           <br/>
           <Paragraph>{JSON.stringify(this.props.service.state)}</Paragraph>
         </div>
@@ -284,7 +296,7 @@ export class CameraView extends React.Component<Props> {
   }
 
   renderVideo() {
-    if (this.props.service.state.connected) {
+    if (this.props.service.state["connected"]) {
       // let url = this.props.node.apiUrl
       let url = this.props.node.apiUrl
       var videoUrl = `${url}/webcam/${this.props.service.name}`
@@ -350,11 +362,11 @@ export class CameraView extends React.Component<Props> {
                 height={48}
                 onChange={e => 
                   this.setState({recordSettings: {...this.state.recordSettings, 
-                    videoSettings: {...this.state.recordSettings.videoSettings, fps: e.target.value}
+                    videoSettings: {...this.state.recordSettings["videoSettings"], fps: e.target.value}
                   }})
                 }
               />
-              <Button onClick={this.toggleRecording}>{this.props.service.state.recording ? "Stop Recording" : "Record"}</Button>
+              <Button onClick={this.toggleRecording}>{this.props.service.state["recording"] ? "Stop Recording" : "Record"}</Button>
               <Pane>
                 <Link to={`/cameras/${this.props.service.id}/recordings`}>List Recordings</Link>
               </Pane>
@@ -382,6 +394,8 @@ const mapDispatchToProps = (dispatch) => {
   return {
     deleteService: (node, service) => dispatch(ServiceAction.deleteService(node, service)),
     cameraUpdated: (node, service) => dispatch(NodeAction.cameraUpdated(node, service)),
+    getState: (node, service) => dispatch(ServiceActions.getState(node, service)),
+    updateState: (node, service, state) => dispatch(ServiceActions.updateState(node, service, state))
   }
 }
 

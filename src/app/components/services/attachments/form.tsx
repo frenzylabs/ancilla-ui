@@ -18,18 +18,44 @@ import {
 import { ServiceHandler } from '../../../network/'
 import { string } from 'prop-types'
 
-export default class AttachmentForm extends React.Component {
-  state = {
-    newAttachment: {
-      parent_id:     '',
-      service_id:     ''
-    },
-    services: Array<{}>(),
-    kind: string
-  }
+import { NodeState, ServiceState, AttachmentModel }  from '../../../store/state'
 
+import ServiceActions from '../../../store/actions/services'
+
+
+
+type Props = {
+  listAttachments: Function,
+  saveAttachment: Function,
+  updateAttachments: Function,
+  attachmentReceived: Function,
+  attachments: Array<AttachmentModel>,
+  node: NodeState, 
+  service: ServiceState, 
+  attachmentKind?: string,
+  loading: boolean
+}
+
+type StateProps = {
+  newAttachment: any,
+  services: Array<ServiceState>,
+  kind: string
+}
+
+
+export default class AttachmentForm extends React.Component<Props, StateProps> {
+  
   constructor(props:any) {
     super(props)
+    this.state = {
+      newAttachment: {
+        parent_id:     '',
+        service_id:     ''
+      },
+      services: [],
+      kind: this.props.attachmentKind
+    }
+  
     this.setServices = this.setServices.bind(this)
   }
 
@@ -85,8 +111,10 @@ export default class AttachmentForm extends React.Component {
     var services = this.props.node.services.filter(s => {
       if (this.props.attachments) {
         var serviceIds = this.props.attachments.map(a => a.attachment.id)
-        if (serviceIds.includes(s.id))
+        if (serviceIds.indexOf(s.id) >= 0)
           return false
+        // if (serviceIds.includes(s.id))
+        //   return false
       }
       if (this.props.attachmentKind) {
         return s.kind == this.props.attachmentKind.toLowerCase()

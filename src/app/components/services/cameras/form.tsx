@@ -28,15 +28,17 @@ import {
 
 import {default as request} from '../../../network/camera'
 
+import { NodeState, CameraState }  from '../../../store/state'
 
 type Props = {
-  save:Function, 
-  data: Object, 
-  onSave: Function, 
-  onError: Function
+  node: NodeState,
+  save?:Function, 
+  data?: any, 
+  onSave?: Function, 
+  onError?: Function
 }
 
-export default class Form extends React.Component<{Props}> {
+export default class Form extends React.Component<Props> {
   state = {
     newCamera: {
       name:     '',
@@ -126,7 +128,7 @@ export default class Form extends React.Component<{Props}> {
       this.saveCamera()
       // return
     } else {
-      this.props.save(this.values)
+      this.props.save(this.state.newCamera)
     }
   }
 

@@ -15,18 +15,11 @@ import {
 } from 'evergreen-ui'
 
 import React  from 'react'
-// import {
-//   Nav,
-//   SubNav
-// } from '../../'
 
-import Statusbar from '../statusbar'
 import Connection from './summary/connection'
 import State      from './summary/state'
-import Summary from './summary/index'
-import Terminal from './terminal'
-import SettingsForm from './settings'
 
+import Terminal from './terminal'
 import ServiceAttachment from '../attachments/index'
 
 import PrinterActions from '../../../store/actions/printers'
@@ -35,7 +28,7 @@ import ServiceActions from '../../../store/actions/services'
 import { PrinterHandler } from '../../../network'
 import PrintForm from '../../prints/new'
 
-import { NodeState, ServiceState }  from '../../../store/state'
+import { NodeState, PrinterState }  from '../../../store/state'
 
 
 import PubSub from 'pubsub-js'
@@ -45,10 +38,19 @@ type PrinterProps = {
   // listAttachments: Function,
   // attachments: Array<{}>,
   node: NodeState, 
-  service: ServiceState
+  service: PrinterState,
+  getLastPrint: Function,
+  updateState: Function,
+  getState: Function,
+  dispatch: Function,
+
 }
 
-export class PrinterShow extends React.Component<PrinterProps> {
+type StateProps = {
+  createPrint: boolean
+}
+
+export class PrinterShow extends React.Component<PrinterProps, StateProps> {
   pubsubRequestToken = null
   pubsubToken        = null
   requestTopic       = ""
@@ -59,11 +61,6 @@ export class PrinterShow extends React.Component<PrinterProps> {
 
     
     this.state = {
-      printerState: {
-        open: false
-      },
-      connected: false,
-      reloadTime: Date.now(),
       createPrint: false
     }
 
@@ -112,14 +109,16 @@ export class PrinterShow extends React.Component<PrinterProps> {
   }
 
   getPrint() {
-    this.props.dispatch(PrinterActions.lastPrint(this.props.service))
+    this.props.getLastPrint(this.props.node, this.props.service)
+    // this.props.dispatch(PrinterActions.lastPrint(this.props.service))
   }
 
 
   setupPrinter() {
     if (this.props.service) {
-      this.props.dispatch(ServiceActions.getState(this.props.service))
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", ""])
+      this.props.getState(this.props.node, this.props.service)
+      // this.props.dispatch(ServiceActions.getState(this.props.service))
+      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", ""])
       // PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "REQUEST.get_state"])
       // console.log("Has printer")
       this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
@@ -142,7 +141,8 @@ export class PrinterShow extends React.Component<PrinterProps> {
       return
     if (data["action"] == "get_state") {
       console.log("get STATE", data)
-      this.props.dispatch(PrinterActions.updateState(this.props.service, data["resp"]))
+      this.props.updateState(this.props.node, this.props.service, data["resp"])
+      // this.props.dispatch(PrinterActions.updateState(this.props.service, data["resp"]))
 
       // this.setState({printerState: data["resp"]})
     }
@@ -164,28 +164,34 @@ export class PrinterShow extends React.Component<PrinterProps> {
     switch(kind) {
       case 'printer.state.changed':
           // console.log(data)
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, ...data}))
+          this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, ...data})
+          // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, ...data}))
           // this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, connected: false}))
           // this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
           break
       case 'printer.connection.closed':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
+          this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, connected: false})
+          // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
           // this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
           break
       case 'printer.connection.opened':          
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: true}))
+          this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, connected: true})
+          // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: true}))
           // this.setState({...this.state, printerState: {...this.state.printerState, open: true}})
           break
       case 'printer.print.started':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, printing: true}))
+          this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, printing: true})
+          // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, printing: true}))
           // this.setState({...this.state, printerState: {...this.state.printerState, printing: true}})
           break
       case 'printer.print.cancelled':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, printing: false}))
+          this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, printing: false})
+          // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, printing: false}))
           // this.setState({...this.state, printerState: {...this.state.printerState, printing: false}})
           break
       case 'printer.print.failed':
-          this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, printing: false, status: "print_failed"}))
+          this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, printing: false, status: "print_failed"})
+          // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, printing: false, status: "print_failed"}))
           // this.setState({...this.state, printerState: {...this.state.printerState, printing: false, status: "print_failed"}})
           break
       default:
@@ -195,13 +201,7 @@ export class PrinterShow extends React.Component<PrinterProps> {
 
 
   startPrint(printParams) {
-    // if (!(this.form.state.newPrint && this.form.state.newPrint.file_id)) {
-    //   toaster.danger("Select a File")
-    //   return
-    // }
-
-    // this.form.state.selectedPrinter
-    // var newPrint = this.form.state.newPrint
+    
     return PrinterHandler.start_print(this.props.node, this.props.service, printParams)
     .then((response) => {
       // var attachments = this.state.attachments
@@ -221,10 +221,6 @@ export class PrinterShow extends React.Component<PrinterProps> {
       // if (closeDialog)
       //   closeDialog()
       // toaster.danger(<ErrorModal requestError={error} />)
-
-      this.setState({
-        loading: false,
-      })
     })
   }
 
@@ -232,38 +228,18 @@ export class PrinterShow extends React.Component<PrinterProps> {
     // this.setState({reloadTime: Date.now()})
   }
 
-
-  renderSettings() {
-    return (
-			<React.Fragment>
-				<Dialog
-          isShown={this.state.showing}
-          title="Attach Service"
-          confirmLabel="Save"
-          onCloseComplete={() => this.toggleDialog(false)}
-          onConfirm={this.saveAttachment}
-        >              
-          <SettingsForm ref={frm => this.form = frm} {...this.props} />
-        </Dialog>
-
-				<IconButton appearance='minimal' icon="add" onClick={(e) => this.setState({showing: true})}/>
-			</React.Fragment>
-		)
-  }
-
   
 
   renderCreatePrint() {
     if (this.state.createPrint) {
       return (
-        <PrintForm onAttachmentAdded={this.attachmentAdded.bind(this)} onComplete={() => this.setState({createPrint: false})} printerService={this.props.service} node={this.props.node} />
+        <PrintForm onComplete={() => this.setState({createPrint: false})} printerService={this.props.service} node={this.props.node} />
       )
     }
     return null
   }
 
   showPrintForm() {
-    console.log("SHOW PRINT FORM")
     this.setState({createPrint: true})
   }
 
@@ -278,7 +254,7 @@ export class PrinterShow extends React.Component<PrinterProps> {
               <State {...this.props} />
             </Pane>
           </Pane>
-          <ServiceAttachment {...this.props} attachments={this.props.service.model.attachments} attachmentKind="Camera" reload={this.state.reloadTime} device={this.props.service && this.props.service.model}/>
+          <ServiceAttachment {...this.props} attachments={this.props.service.model.attachments} attachmentKind="Camera" device={this.props.service && this.props.service.model}/>
           <Terminal {...this.props}  />
       </Pane>
     );
@@ -297,7 +273,12 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    deleteService: (node, service) => dispatch(ServiceActions.listAttachments(node, service))
+    deleteService: (node, service) => dispatch(ServiceActions.listAttachments(node, service)),
+    getState: (node, service) => dispatch(ServiceActions.getState(node, service)),
+    updateState: (node, service, state) => dispatch(ServiceActions.updateState(node, service, state)),
+    getLastPrint: (node, service) => dispatch(PrinterActions.lastPrint(node, service)),
+    dispatch: dispatch
+    
   }
 }
 

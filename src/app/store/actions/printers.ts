@@ -23,16 +23,16 @@ export const PrinterAction = {
       }
     }
   },
-  lastPrint(printerState) {
+  lastPrint(node, printerState) {
     return (dispatch, getState) => {
-      let activeNode = getState().activeNode
+      // let activeNode = getState().activeNode
       var cancelRequest    = Printer.cancelSource();  
       // dispatch(requestFeatures(username, cancelRequest))
       // console.log("PRINTER STATE =", printerState)
       if (printerState.model) {
-        return Printer.lastPrint(activeNode, printerState.model, {cancelToken: cancelRequest.token})
+        return Printer.lastPrint(node, printerState.model, {cancelToken: cancelRequest.token})
               .then((response) => {
-                dispatch(PrinterAction.updateLastPrint(printerState, response.data.data[0] || {}))
+                dispatch(PrinterAction.updateLastPrint(node, printerState, response.data.data[0] || {}))
               })
       }
     }
@@ -50,8 +50,9 @@ export const PrinterAction = {
     data: prnts
   }),
 
-  updateLastPrint: (printer, prnt) => ({
+  updateLastPrint: (node, printer, prnt) => ({
     type: 'PRINTER_RECEIVED_LAST_PRINT',
+    node: node,
     printer: printer,
     data: prnt
   }),

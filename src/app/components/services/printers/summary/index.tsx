@@ -15,15 +15,16 @@ import {
 import Connection from './connection'
 import State      from './state'
 
-export default class Summary extends React.Component {
-  render() {
-    return (
-      <Pane display="flex">
-        <Pane display="flex" width="100%">
-          <Connection {...this.props} />
-          <State {...this.props} />
-        </Pane>
-      </Pane>
-    )
-  }
-}
+
+// export default class Summary extends React.Component {
+//   render() {
+//     return (
+//       <Pane display="flex">
+//         <Pane display="flex" width="100%">
+//           <Connection {...this.props} />
+//           <State {...this.props} />
+//         </Pane>
+//       </Pane>
+//     )
+//   }
+// }

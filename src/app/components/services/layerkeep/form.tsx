@@ -21,8 +21,22 @@ import {
 import layerkeep, {default as request} from '../../../network/layerkeep'
 
 import ErrorModal from '../../modal/error'
+import { NodeState, PrinterState }  from '../../../store/state'
 
-export class Form extends React.Component<{onAuthenticated:Function, onError:Function, loading:boolean}> {
+type Props = {
+  node: NodeState,
+  onAuthenticated:Function, 
+  onError:Function, 
+  loading:boolean
+}
+
+type StateProps = {
+  creds: any,
+  requestError: any,
+  isSaving: any  
+}
+
+export class Form extends React.Component<Props, StateProps> {
   
 
   constructor(props:any) {

@@ -29,12 +29,13 @@ import { NodeAction } from '../../../store/actions/node'
 import {Form as AuthForm } from '../../services/layerkeep/form'
 import printer, {default as request} from '../../../network/printer'
 
-import { PrinterState }  from '../../../store/state'
+import { NodeState, PrinterState }  from '../../../store/state'
 
 
 type Props = {
-  node: object,
+  node: NodeState,
   printer: PrinterState,
+  history: any,
   listPrinters: Function,
   addPrinter: Function
 }

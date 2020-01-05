@@ -16,7 +16,17 @@ import {
   Icon
 } from 'evergreen-ui'
 
-export default class Statusbar extends React.Component {
+import { NodeState, ServiceState }  from '../../../store/state'
+
+type Props = {
+  service: ServiceState,
+  status: string,
+  powerAction?: Function,
+  settingsAction?: Function
+}
+
+
+export default class Statusbar extends React.Component<Props> {
   renderOption(icon, target) {
     return (
       <IconButton 

@@ -43,32 +43,35 @@ import PubSub from 'pubsub-js'
 type Props = {
   node: NodeState, 
   service: ServiceState,
+  match: any,
+  history: any,
   deleteService: Function,
   printerUpdated: Function,
   dispatch: Function
 }
 
-export class PrinterIndex extends React.Component<Props> {
+type StateProps = {
+  showing: boolean
+}
+
+export class PrinterIndex extends React.Component<Props, StateProps> {
+  requestTopic = ''
+  eventTopic = ''
+  pubsubRequestToken = null
+  pubsubToken        = null
+
   constructor(props:any) {
     super(props)
 
     
     this.state = {
-      printerState: {
-        open: false
-      },
-      connected: false
+      showing: false
     }
 
-    this.receiveRequest  = this.receiveRequest.bind(this)
-    this.receiveEvent    = this.receiveEvent.bind(this)
-    this.setupPrinter    = this.setupPrinter.bind(this)
-    this.getPrint        = this.getPrint.bind(this)
+    // this.setupPrinter    = this.setupPrinter.bind(this)   
   }
 
   componentDidMount() {
-    // this.setupPrinter()
-    // this.getPrint()
   }
 
   componentWillUnmount() {
@@ -101,81 +104,30 @@ export class PrinterIndex extends React.Component<Props> {
     // }
   }
 
-  getPrint() {
-    this.props.dispatch(PrinterActions.lastPrint(this.props.service))
-  }
+
+  // setupPrinter() {
+  //   if (this.props.service) {
+  //     this.props.dispatch(PrinterActions.getState(this.props.service))
+  //     PubSub.make_request(this.props.node, [this.props.service.name, "SUB", ""])
+  //     // PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "REQUEST.get_state"])
+  //     // console.log("Has printer")
+  //     this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
+  //     this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events`
+  //     if (this.pubsubRequestToken) {
+  //       PubSub.unsubscribe(this.pubsubRequestToken)
+  //     }
+  //     if (this.pubsubToken) {
+  //       PubSub.unsubscribe(this.pubsubToken)
+  //     }
+  //     this.pubsubRequestToken = PubSub.subscribe(this.requestTopic, this.receiveRequest);
+  //     this.pubsubToken = PubSub.subscribe(this.eventTopic, this.receiveEvent);
+  //   }
+  // }
 
 
-  setupPrinter() {
-    if (this.props.service) {
-      this.props.dispatch(PrinterActions.getState(this.props.service))
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", ""])
-      // PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "REQUEST.get_state"])
-      // console.log("Has printer")
-      this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
-      this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events`
-      if (this.pubsubRequestToken) {
-        PubSub.unsubscribe(this.pubsubRequestToken)
-      }
-      if (this.pubsubToken) {
-        PubSub.unsubscribe(this.pubsubToken)
-      }
-      this.pubsubRequestToken = PubSub.subscribe(this.requestTopic, this.receiveRequest);
-      this.pubsubToken = PubSub.subscribe(this.eventTopic, this.receiveEvent);
-    }
-  }
-
-  receiveRequest(msg, data) {
-    // console.log("PV Received Data here1", msg)    
-    // console.log("PV Received Data here2", data)
-    if(!data)
-      return
-    if (data["action"] == "get_state") {
-      console.log("get STATE", data)
-      this.props.dispatch(PrinterActions.updateState(this.props.service, data["resp"]))
-      // this.setState({printerState: data["resp"]})
-    }
-  }
-
-  receiveEvent(msg, data) {
-    // console.log("PV Received Event here1", msg)    
-    // console.log("PV Received Event here2", data)
-    // console.log(typeof(data))
-    var [to, kind] = msg.split("events.")
-    switch(kind) {
-      case 'printer.state.changed':
-          // console.log(data)
-          this.props.dispatch(PrinterActions.updateState(this.props.service, data))
-          // this.props.dispatch(PrinterActions.updateState(this.props.printer, {...this.props.printer.state, connected: false}))
-          // this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
-          break
-      case 'printer.connection.closed':
-          this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
-          // this.setState({...this.state, printerState: {...this.state.printerState, open: false}})
-          break
-      case 'printer.connection.opened':          
-          this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: true}))
-          // this.setState({...this.state, printerState: {...this.state.printerState, open: true}})
-          break
-      case 'printer.print.started':
-          this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, printing: true}))
-          // this.setState({...this.state, printerState: {...this.state.printerState, printing: true}})
-          break
-      case 'printer.print.cancelled':
-          this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, printing: false}))
-          // this.setState({...this.state, printerState: {...this.state.printerState, printing: false}})
-          break
-      case 'printer.print.failed':
-          this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, printing: false, status: "print_failed"}))
-          // this.setState({...this.state, printerState: {...this.state.printerState, printing: false, status: "print_failed"}})
-          break
-      default:
-        break
-    }    
-  }
 
   power(){
-    if (this.props.service.state.connected) {
+    if (this.props.service.state["connected"]) {
       PrinterHandler.disconnect(this.props.node, this.props.service)
       .then((response) => {
         this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
@@ -195,7 +147,7 @@ export class PrinterIndex extends React.Component<Props> {
   }
 
   getColorState() {
-    if (this.props.service.state.connected) {
+    if (this.props.service.state["connected"]) {
       return 'success'
     } else {
       return 'danger'
@@ -211,7 +163,7 @@ export class PrinterIndex extends React.Component<Props> {
     // console.log("save failed", error)
     if (error.response.status == 401) {
       console.log("Unauthorized")
-      this.setState({showing: true, loading: false})
+      this.setState({showing: true})
     } else {
     // this.setState({requestError: error})
       toaster.danger(<ErrorModal requestError={error} />)
@@ -252,7 +204,7 @@ export class PrinterIndex extends React.Component<Props> {
   }
 
   render() {
-    var params = this.props.match.params;
+    var params = this.props.match["params"];
     return (
       <div className="flex-wrapper">
         <Statusbar {...this.props} status={this.getColorState()} powerAction={this.power.bind(this)} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />

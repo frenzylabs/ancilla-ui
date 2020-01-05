@@ -26,14 +26,12 @@ import CameraView from '../cameras/show'
 import { ServiceHandler } from '../../../network'
 import AttachmentForm from './form'
 
-import PubSub from 'pubsub-js'
-
 
 import { NodeState, ServiceState, AttachmentModel }  from '../../../store/state'
 
 import ServiceActions from '../../../store/actions/services'
 
-import dayjs from 'dayjs'
+
 
 type AttachmentProps = {
   listAttachments: Function,
@@ -43,10 +41,16 @@ type AttachmentProps = {
   attachments: Array<AttachmentModel>,
   node: NodeState, 
   service: ServiceState, 
-  reload: Date 
+  reload: Date,
+  attachmentKind?: string
 }
 
-export class ServiceAttachment extends React.Component<AttachmentProps> {
+type StateProps = {
+  showing: boolean,
+  loading: boolean
+}
+
+export class ServiceAttachment extends React.Component<AttachmentProps, StateProps> {
   form: AttachmentForm = null
   cancelRequest = null
   constructor(props:any) {
@@ -55,20 +59,12 @@ export class ServiceAttachment extends React.Component<AttachmentProps> {
     
     this.state = {
       showing: false,
-      isLoading: false,
-      attachments: [],
-      currentAttachmentIds: [],
-      recordSettings: {
-        videoSettings: {
-          fps: 10
-        },
-        timelapse: 2
-      }
+      loading: false      
     }
 
     // this.receiveRequest  = this.receiveRequest.bind(this)
     // this.receiveEvent    = this.receiveEvent.bind(this)
-    this.getAttachments    = this.getAttachments.bind(this)
+    // this.getAttachments    = this.getAttachments.bind(this)
     this.saveAttachment    = this.saveAttachment.bind(this)
     this.renderAttachments = this.renderAttachments.bind(this)
     this.renderAttachment  = this.renderAttachment.bind(this)
@@ -95,32 +91,32 @@ export class ServiceAttachment extends React.Component<AttachmentProps> {
     }
   }
   
-  getAttachments() {
-    if (this.props.service) {
-      this.setState({isLoading: true})
-      ServiceHandler.attachments(this.props.node, this.props.service, {cancelToken: this.cancelRequest.token})
-      .then((response) => {
-        var currentAttachmentIds = response.data.attachments.map((a) => a.attachment.id)
-        this.setState({isLoading: false, attachments: response.data.attachments, currentAttachmentIds: currentAttachmentIds})
-      }).catch((err) => {
-        console.log(err)
-        this.setState({isLoading: false})
-      })
-      // PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "SUB", "events.connection"])
-      // PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.get_state"])
-      // // console.log("Has printer")
-      // this.requestTopic = `${this.props.node.name}.${this.props.camera.name}.request`
-      // this.eventTopic = `${this.props.node.name}.${this.props.camera.name}.events`
-      // if (this.pubsubRequestToken) {
-      //   PubSub.unsubscribe(this.pubsubRequestToken)
-      // }
-      // if (this.pubsubToken) {
-      //   PubSub.unsubscribe(this.pubsubToken)
-      // }
-      // this.pubsubRequestToken = PubSub.subscribe(this.requestTopic, this.receiveRequest);
-      // this.pubsubToken = PubSub.subscribe(this.eventTopic, this.receiveEvent);
-    }
-  }
+  // getAttachments() {
+  //   if (this.props.service) {
+  //     this.setState({isLoading: true})
+  //     ServiceHandler.attachments(this.props.node, this.props.service, {cancelToken: this.cancelRequest.token})
+  //     .then((response) => {
+  //       var currentAttachmentIds = response.data.attachments.map((a) => a.attachment.id)
+  //       this.setState({isLoading: false, attachments: response.data.attachments, currentAttachmentIds: currentAttachmentIds})
+  //     }).catch((err) => {
+  //       console.log(err)
+  //       this.setState({isLoading: false})
+  //     })
+  //     // PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "SUB", "events.connection"])
+  //     // PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.get_state"])
+  //     // // console.log("Has printer")
+  //     // this.requestTopic = `${this.props.node.name}.${this.props.camera.name}.request`
+  //     // this.eventTopic = `${this.props.node.name}.${this.props.camera.name}.events`
+  //     // if (this.pubsubRequestToken) {
+  //     //   PubSub.unsubscribe(this.pubsubRequestToken)
+  //     // }
+  //     // if (this.pubsubToken) {
+  //     //   PubSub.unsubscribe(this.pubsubToken)
+  //     // }
+  //     // this.pubsubRequestToken = PubSub.subscribe(this.requestTopic, this.receiveRequest);
+  //     // this.pubsubToken = PubSub.subscribe(this.eventTopic, this.receiveEvent);
+  //   }
+  // }
 
   saveAttachment(closeDialog) {
     this.setState({
@@ -196,8 +192,6 @@ export class ServiceAttachment extends React.Component<AttachmentProps> {
     ServiceHandler.deleteAttachment(this.props.node, this.props.service, attachment)
     .then((response) => {
       var attachments = this.props.attachments.filter((item) => item.id != attachment.id) 
-      // var currentAttachmentIds = attachments.map(item => item.attachment.id)
-
       this.setState({
         loading: false
       })
@@ -231,13 +225,6 @@ export class ServiceAttachment extends React.Component<AttachmentProps> {
       console.log(error)
     })    
     this.props.attachmentReceived(this.props.node, this.props.service, attachment)
-    // var atc = this.state.attachments.map((a) => {
-    //   if (a.id == attachment.id) {
-    //     return {...a, settings: settings}
-    //   }
-    //   return a
-    // })
-    // this.setState({attachments: atc})
   }
 
   renderView(attachment) {
@@ -308,7 +295,7 @@ export class ServiceAttachment extends React.Component<AttachmentProps> {
           onCloseComplete={() => this.toggleDialog(false)}
           onConfirm={this.saveAttachment}
         >              
-          <AttachmentForm ref={frm => this.form = frm} {...this.props} attachments={this.props.attachments} />
+          <AttachmentForm ref={frm => this.form = frm} {...this.props} loading={this.state.loading} attachments={this.props.attachments} />
         </Dialog>
 
 				<IconButton appearance='minimal' icon="add" onClick={(e) => this.setState({showing: true})}/>

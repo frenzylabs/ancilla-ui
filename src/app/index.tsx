@@ -52,8 +52,19 @@ import PubSub from 'pubsub-js'
 //  }
 // }
 
+import { NodeState, ServiceState }  from './store/state'
 
-export class App extends React.Component {
+type AppProps = { 
+  activeNode: NodeState,
+  printerService?: ServiceState 
+}
+
+type stateProps = {
+  connection: Connection
+}
+export class App extends React.Component<AppProps, stateProps> {
+  pubsubToken = null
+
   constructor(props:any) {
     super(props)    
 
@@ -72,7 +83,11 @@ export class App extends React.Component {
 
 
   sendData(msg, data) {
-    this.state.connection.send(JSON.stringify(data))
+    if (this.state.connection.connected) {
+      this.state.connection.send(JSON.stringify(data))
+    } else {
+      
+    }
   }
 
   

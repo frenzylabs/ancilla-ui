@@ -20,7 +20,22 @@ import PubSub from 'pubsub-js'
 
 import PrinterAction from '../../../../store/actions/printers'
 
-export default class State extends React.Component {
+
+import { NodeState, PrinterState }  from '../../../../store/state'
+
+type Props = {
+  node: NodeState, 
+  service: PrinterState,
+  dispatch: Function
+}
+
+
+export default class State extends React.Component<Props> {
+  requestTopic = ''
+  eventTopic = ''
+  pubsubRequestToken = null
+  pubsubToken        = null
+
   constructor(props:any) {
     super(props)
 
@@ -104,41 +119,41 @@ export default class State extends React.Component {
     )
   }
   getProgress() {
-    var curprnt = (this.props.service.currentPrint.id ? this.props.service.currentPrint.model : {})
-    if (curprnt.state) {
-      let pg = (curprnt.state.pos / curprnt.state.end_pos * 100).toFixed(2)
+    var curprnt = this.props.service.currentPrint.model
+    if (curprnt && curprnt.state) {
+      let pg = (curprnt.state["pos"] / (curprnt.state["end_pos"] || 1) * 100).toFixed(2)
       return `${pg}%` 
     }
     return ``
   }
 
-  renderLastPrint() {
-    var curprnt = (this.props.service.currentPrint.id ? this.props.service.currentPrint.model : {})
+  renderLastPrint() {    
+    var curprnt = this.props.service.currentPrint.model
     if (curprnt && curprnt.name && curprnt.status != "running") {
       return (
         <div>
           {this.renderRow("Last Print", curprnt.name)}
           {this.renderRow("Status", curprnt.status)}
-          {this.renderRow("Started On", curprnt.created_at)}          
-          {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice.name) || "")}
+          {this.renderRow("Started On", `${curprnt.created_at}`)}          
+          {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice["name"]) || "")}
           {this.renderRow("Duration", String(curprnt.updated_at - curprnt.created_at))}
         </div>
       )
     }
   }
 
-  renderCurrentPrint() {
-    var curprnt = (this.props.service.currentPrint.id ? this.props.service.currentPrint.model : {})
+  renderCurrentPrint() {    
+    var curprnt = this.props.service.currentPrint.model
     if (curprnt && curprnt.status == "running") {
       return (
         <div>
           {this.renderRow("Current Print", curprnt.name)}
           {this.renderRow("Status", curprnt.status)}
-          {this.renderRow("Started On", curprnt.created_at)}
+          {this.renderRow("Started On", `${curprnt.created_at}`)}
           {/* {this.renderRow("Filament", "14.41m")}
           {this.renderRow("Est Time", "12.4 hours")}
           {this.renderRow("Time left", "00:00:00")} */}
-          {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice.name) || "")}
+          {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice["name"]) || "")}
           {this.renderRow("Duration", String(curprnt.updated_at - curprnt.created_at))}
           {this.renderRow("Progress", this.getProgress())}
         </div>

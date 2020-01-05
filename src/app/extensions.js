@@ -6,6 +6,8 @@
 //  Copyright 2019 FrenzyLabs, LLC.
 //
 
+import PubSub from 'pubsub-js'
+
 (function() {
   Object.toMap = function(obj) {
     const _map = new Map()
@@ -24,4 +26,9 @@
 
     return obj['key']
   }
+
+  PubSub.make_request = function(node, data) {
+    PubSub.publish(node.name + ".request", data)
+  }
+  
 })()

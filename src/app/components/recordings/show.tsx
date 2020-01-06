@@ -28,42 +28,37 @@ import {
   toaster
 } from 'evergreen-ui'
 
-// import Form 				from './form'
 import CameraRequest 	from '../../network/camera'
-import Layerkeep 	from '../../network/layerkeep'
-import Modal from '../modal/index'
-import AuthForm from '../services/layerkeep/form'
+import { ServiceHandler } 	from '../../network'
 import { PaginatedList } from '../utils/pagination'
 
 import ErrorModal from '../modal/error'
 
 
-// const qs = require('qs');
+import { NodeState, ServiceState, AttachmentModel }  from '../../store/state'
 
-export class RecordingShow extends React.Component {
 
-  state = {    
-    isLoading: true,
-    cameraRecording: null,
-    redirectTo: null,
-    showAuth: false,
-    filter: {
-      name: ""
-    },
-    search: {
-      page: Number, 
-      per_page: Number, 
-      q: {name: undefined}
-    },
-    commands: {
-      data: [],
-      meta: {}
-    }
-  }
+type Props = {  
+  node: NodeState, 
+  service?: ServiceState,
+  location: any,
+  match: any,
+  previousUrl?: any,
+  listUrl?: any
+}
+
+type StateProps = {
+  loading: boolean,
+  cameraRecording: any,
+  redirectTo: any,
+  parentMatch: any    
+}
+
+
+export class RecordingShow extends React.Component<Props, StateProps> {
 
   timer:number = null
 
-  form:Form = {}
   cancelRequest = null
   
   constructor(props:any) {
@@ -71,27 +66,16 @@ export class RecordingShow extends React.Component {
     // var qparams = qs.parse(this.props.location.search, { ignoreQueryPrefix: true })
 
     this.state = {    
-      isLoading: true,
+      loading: true,
       cameraRecording: null,
       redirectTo: null,
-      filter: {
-        name: ""
-      },
-      search: {
-        page: 1, //parseInt(qparams["page"] || 1), 
-        per_page: 20, //parseInt(qparams["per_page"] || 20), 
-        q: {name: ""} //qparams["q"] || {}
-      },
-      commands: {
-        data: [],
-        meta: {}
-      }
-      // printerCommand: null
+      parentMatch: null      
     }
+
     this.getRecording       = this.getRecording.bind(this)
-    this.onChangePage       = this.onChangePage.bind(this)
-    this.renderPagination   = this.renderPagination.bind(this)
-    this.handleFilterChange = this.handleFilterChange.bind(this)
+    // this.onChangePage       = this.onChangePage.bind(this)
+    // this.renderPagination   = this.renderPagination.bind(this)
+    // this.handleFilterChange = this.handleFilterChange.bind(this)
     // this.syncToLayerkeep    = this.syncToLayerkeep.bind(this)
     // this.deleteFile     = this.deleteFile.bind(this)
     // this.saveFile				= this.saveFile.bind(this)
@@ -104,12 +88,18 @@ export class RecordingShow extends React.Component {
 
     this.cancelRequest = CameraRequest.cancelSource();
 
-    window.ps = this
+    
   }
 
   componentDidMount() {
-    if (this.props.location.state && this.props.location.state.cameraRecording) {
-      this.setState({cameraRecording: this.props.location.state.cameraRecording})
+    if (this.props.location.state) {
+      var state = {} 
+      if (this.props.location.state.cameraRecording)
+        state['cameraRecording'] = this.props.location.state.cameraRecording
+      if (this.props.location.state.parentMatch)
+        state['parentMatch'] = this.props.location.state.parentMatch
+
+      this.setState(state)
     } 
     // else {
     this.getRecording()
@@ -124,15 +114,11 @@ export class RecordingShow extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (JSON.stringify(this.state.search) != JSON.stringify(prevState.search)) {
-      // var url = qs.stringify(this.state.search, { addQueryPrefix: true });      
-      // this.getPrintCommands();
-    }
   }
 
   getRecording() {
     this.setState({loading: true})
-    CameraRequest.getRecording(this.props.node, this.props.service, this.props.match.params.cameraId, {cancelToken: this.cancelRequest.token})
+    ServiceHandler.getRecording(this.props.node, this.props.match.params.recordingId, {cancelToken: this.cancelRequest.token})
     .then((res) => {
       this.setState({
         ...this.state,
@@ -157,60 +143,32 @@ export class RecordingShow extends React.Component {
     })
   }
 
-  getPrintCommands() {
-    this.setState({loading: true})
-    var params = {print_id: this.props.match.params.printId}
-    CameraRequest.getPrinterCommands(this.props.node, this.props.service, {qs: this.state.search, params: params, cancelToken: this.cancelRequest.token})
-    .then((res) => {
-      this.setState({
-        ...this.state,
-        commands: res.data,
-        loading: false
-      })
-    })
-    .catch((error) => {
-      console.log(error)
-      if (error.response && error.response.status == 401) {
-        console.log("Unauthorized")
-        // this.setState({showAuth: true, loading: false})
-        this.setState({loading: false})
-      } else {
-        // this.setState({requestError: error})
-        // toaster.danger(<ErrorModal requestError={error} />)
-        this.setState({loading: false})
-      }
-      this.cancelRequest = PrinterRequest.cancelSource();
+  
 
-      
-    })
-  }
-
-  syncToLayerkeep() {
+  syncToLayerkeep(row) {
     // let lkslice  = e.currentTarget.getAttribute('data-row')
     
 
-    PrinterRequest.syncPrintToLayerkeep(this.props.node, this.props.service, this.state.cameraRecording.id)
-    .then((res) => {
-      // this.listLocal()
+    // CameraRequest.syncPrintToLayerkeep(this.props.node, this.props.service, this.state.cameraRecording.id)
+    // .then((res) => {
+    //   // this.listLocal()
 
-      toaster.success(`${this.state.cameraRecording} has been successfully synced.`)
-    })
-    .catch((_err) => {})
+    //   toaster.success(`${this.state.cameraRecording} has been successfully synced.`)
+    // })
+    // .catch((_err) => {})
   }
 
-  filterList() {
-    if (this.state.loading && this.cancelRequest) {
-      this.cancelRequest.cancel()
-    }
-    var search = this.state.search
-    this.setState({ search: {...search, page: 1, q: {...search.q, ...this.state.filter} }})
-  }
-
+  
   deleteRecording() {
-    CameraRequest.deleteRecording(this.props.node, this.props.service, this.state.cameraRecording.id)
+    ServiceHandler.deleteRecording(this.props.node, this.state.cameraRecording.id)
     .then((res) => {
-
-      this.setState({redirectTo: `/cameras/${this.props.service.id}/recordings`})
+      var url = `/cameras/${this.state.cameraRecording.camera.service.id}/recordings`
+      if (this.state.parentMatch) {
+        url = this.state.parentMatch.url
+      }
+      // if (this.props.redirectTo)
+      //   url = this.props.redirectTo
+      this.setState({redirectTo: url})
     })
     .catch((error) => {
       toaster.danger(<ErrorModal requestError={error} />)
@@ -218,109 +176,12 @@ export class RecordingShow extends React.Component {
     })
   }
 
-  handleFilterChange(val) {    
-    if (this.timer) {
-      clearTimeout(this.timer)
-    }
-    this.timer = setTimeout(this.filterList.bind(this), 500);
-    this.setState({ filter: {...this.state.filter, name: val}})
-    // if (this.state.loading && this.cancelRequest) {
-    //   this.cancelRequest.cancel()
-    // }
-    // var search = this.state.search
-    // this.setState({ search: {...search, page: 1, q: {...search.q, name: val} }})
-    // this.filterchange = 
-    // this.setState({ search: {...search, page: 1, q: {...search.q, project_id: item["id"]} }})
-  }
 
-  onChangePage(page) {
-    this.setState({ search: {...this.state.search, page: page }});    
-  }
-
-  showResponse(row) {
-    this.setState({printerCommand: row})
-  } 
-
-
-  renderRowMenu = (row) => {
-    return (
-      <Menu>
-        <Menu.Group>
-          <Menu.Item onSelect={() => this.syncToLayerkeep(row)}>Sync to Layerkeep...</Menu.Item>
-        </Menu.Group>
-        <Menu.Divider />
-        <Menu.Group>
-          <Menu.Item intent="danger"  data-id={row.id} data-name={row.name} onSelect={this.deleteFile}>
-            Delete... 
-          </Menu.Item>
-        </Menu.Group>
-      </Menu>
-    )
-  }
-
-  renderCommandRows(files) {
-    return files.map((row, index) => (
-      <Table.Row key={row.id} isSelectable >
-        <Table.TextCell>{row.command}</Table.TextCell>
-        <Table.TextCell>{row.status}</Table.TextCell>        
-        <Table.TextCell onClick={() => this.showResponse(row)}>{row.response}</Table.TextCell>
-        <Table.TextCell width={210} flex="none">{Dayjs.unix(row.created_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
-      </Table.Row>
-    ))
-  }
-  renderCommandsTable() {
-
-    return (
-      <Table>
-        <Table.Head>
-          <Table.SearchHeaderCell 
-            onChange={this.handleFilterChange}
-            value={this.state.filter.name}
-          />
-          <Table.TextHeaderCell >
-            Status:
-          </Table.TextHeaderCell>
-          <Table.TextHeaderCell>
-            Response:
-          </Table.TextHeaderCell>
-          <Table.TextHeaderCell  width={210} flex="none">
-            Created At:
-          </Table.TextHeaderCell>
-        </Table.Head>
-        <Table.VirtualBody height={440}>
-          {this.renderCommandRows(this.state.commands.data)}
-        </Table.VirtualBody>
-      </Table>)
-  }
-
-  renderPagination() {
-    if (this.state.commands.data.length > 0) {
-      var {current_page, last_page, total} = this.state.commands.meta;
-      return (
-        <PaginatedList currentPage={current_page} pageSize={this.state.search.per_page} totalPages={last_page} totalItems={total} onChangePage={this.onChangePage} /> 
-      )
-    }
-  }
-
-  renderCommands() {
-    if (this.state.commands.data.length < 1)
-      return null
-    return (
-      <Pane>
-        <Pane display="flex" flexDirection="column" width="100%" background="#fff" paddingY={10} paddingX={15} margin={0} borderBottom="default">
-            <Heading>Print Commands</Heading>
-        </Pane>
-        <Pane padding={20}>
-          {this.renderCommandsTable()}
-        </Pane>
-        {this.renderPagination()}
-      </Pane>
-    )
-  }
   renderCameraDetails() {
-    if (!this.state.cameraRecording || !this.state.cameraRecording.printer) 
+    if (!this.state.cameraRecording || !this.state.cameraRecording.camera) 
       return null;
     
+    var cam = this.state.cameraRecording.camera
       
     return (
         <Pane
@@ -340,8 +201,8 @@ export class RecordingShow extends React.Component {
                 <Heading>Camera</Heading>
               </Pane>
               <Pane padding={20}>
-                <Paragraph>Name: {this.state.cameraRecording.camera.name}</Paragraph>
-                <Paragraph>Endpoint: {this.state.printerPrint.camera.endpoint}</Paragraph>
+                <Paragraph>Name: <Link to={`/cameras/${cam.service.id}`}>{cam.name}</Link> </Paragraph>
+                <Paragraph>Endpoint: {this.state.cameraRecording.camera.endpoint}</Paragraph>
               </Pane>
           </Pane>
     )
@@ -372,6 +233,30 @@ export class RecordingShow extends React.Component {
     )
   }
 
+  renderPrintDetails() {
+    if (!this.state.cameraRecording || !this.state.cameraRecording.print) 
+      return null;
+    var prnt = this.state.cameraRecording.print
+    return (
+        <Pane
+              is="section"
+              innerRef={(ref) => {}}
+              background="tint2"
+              border="default"
+              marginLeft={12}
+              marginY={24}
+            >
+              <Pane display="flex" flexDirection="column" width="100%" background="#fff" paddingY={10} paddingX={15} margin={0} borderBottom="default">
+                <Heading>Print Details</Heading>
+              </Pane>
+              <Pane padding={20}>
+                <Paragraph>Name: <Link to={`/printers/${prnt.printer.service.id}/prints/${prnt.id}`}>{prnt.name}</Link> </Paragraph>
+                <Paragraph>Status: {this.state.cameraRecording.print.status}</Paragraph>
+              </Pane>
+          </Pane>
+    )
+  }
+
   renderDelete() {
     return (
       <Pane display="flex" borderTop paddingTop={20}>
@@ -384,63 +269,90 @@ export class RecordingShow extends React.Component {
     )
   }
 
-  renderCommandResponse(response) {
-    return (response || []).map((r, index) => {
-      return (
-        <Paragraph key={index}>{r}</Paragraph>
-      )
-    })
-  }
-  renderDialog() {
-    return (<Dialog
-      isShown={!!this.state.printerCommand}
-      title={this.state.printerCommand && this.state.printerCommand.command}
-      confirmLabel="OK"
-      onCloseComplete={() => this.setState({printerCommand: null})}
-      hasCancel={false}
-    >
-        <Pane >{this.state.printerCommand && this.renderCommandResponse(this.state.printerCommand.response)}</Pane>
 
-    </Dialog>)
+  renderDialog() {
+    // return (<Dialog
+    //   isShown={!!this.state.printerCommand}
+    //   title={this.state.printerCommand && this.state.printerCommand.command}
+    //   confirmLabel="OK"
+    //   onCloseComplete={() => this.setState({printerCommand: null})}
+    //   hasCancel={false}
+    // >
+    //     <Pane >{this.state.printerCommand && this.renderCommandResponse(this.state.printerCommand.response)}</Pane>
+
+    // </Dialog>)
   }
 
   renderVideo() {
     if (this.state.cameraRecording && this.state.cameraRecording.video_path) {
       return (
         <Pane>
-          <video width="370" height="285" controls src={`${this.props.node.apiUrl}/services/camera/${this.props.service.id}/recordings/${this.state.cameraRecording.id}/video`}></video>
+          <video width="370" height="285" controls src={`${this.props.node.apiUrl}/recordings/${this.state.cameraRecording.id}/video`}></video>
         </Pane>
       )
     }
     return null
   }
+
+  renderHeaderLinks() {
+    if (!this.state.cameraRecording) return null
+
+    var parentUrl = `/cameras/${this.state.cameraRecording.camera.service.id}`
+    var parentName = this.state.cameraRecording.camera.name
+    var listUrl = `/cameras/${this.state.cameraRecording.camera.service.id}/recordings`
+
+    if (this.state.parentMatch) {
+      listUrl = this.state.parentMatch.url
+      if (this.state.parentMatch.params['service'] == 'printers') {
+        var prnt = this.state.cameraRecording.print
+        parentUrl = `/printers/${this.state.parentMatch.params['serviceId']}/prints`
+        parentName = `${prnt.printer.name} Prints`
+      }
+    }
+
+    return (
+      <React.Fragment>
+        <Link to={parentUrl}>{parentName}</Link> &nbsp; / &nbsp;
+        <Link to={listUrl}>Recordings</Link>&nbsp; / &nbsp;
+      </React.Fragment>
+    )
+  }
+  // <Link to={"/cameras/" + this.props.service.id}>{this.props.service.name}</Link>&nbsp; / &nbsp;
+  //             <Link to={"/cameras/" + this.props.service.id + "/recordings"}>Recordings</Link>&nbsp; / &nbsp;
   render() {
     if (this.state.redirectTo) {
       return (<Redirect to={this.state.redirectTo} />)
     }
     return (
-      <div>
+      <div className={"scrollable-content"}>
       <Pane display="flex" key={"prints"}>
         <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={20} border="default">
           <Pane display="flex" marginBottom={20}>
             <Pane display="flex" flex={1}>
-              <Link to={"/cameras/" + this.props.service.id}>{this.props.service.name}</Link>&nbsp; / &nbsp;
-              <Link to={"/cameras/" + this.props.service.id + "/recordings"}>Recordings</Link>&nbsp; / &nbsp;
+              {this.renderHeaderLinks()}              
               {(this.state.cameraRecording && this.state.cameraRecording.id) || ""}
               
             </Pane>
             {this.renderDelete()}
 
           </Pane>
+          <Pane display="flex" flex={1}>
+            <Pane margin={20}>
+              {this.renderVideo()}
+              
+            </Pane>
+            <Pane display="flex" flexDirection="column" flex={1}>
+              {this.renderRecordingDetails()}
+              {this.renderCameraDetails()}
+              {this.renderPrintDetails()}
+            </Pane>
+
+          </Pane>
           
-          {this.renderRecordingDetails()}
-          {this.renderCameraDetails()}
+          
           
 
-          <Pane borderBottom borderLeft borderRight>
-            {this.renderVideo()}
-            
-          </Pane>
+          
           
         </Pane>
       </Pane>

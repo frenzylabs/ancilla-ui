@@ -14,7 +14,7 @@ import { Switch, Route, Link, Redirect }       from 'react-router-dom';
 import PrintList from './list'
 import PrintShow from './show'
 
-export class Prints extends React.Component {
+export class Prints extends React.Component<{match: any}> {
 
   
   constructor(props:any) {

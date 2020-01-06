@@ -10,7 +10,7 @@ import {Request, CancelToken, isCancel} from './request'
 
 
 
-const QS = require('qs');
+import {default as QS } from 'qs'
 
 export const Layerkeep = {
   cancelSource: () => {

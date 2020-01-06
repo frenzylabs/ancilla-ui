@@ -18,10 +18,12 @@ import {
 } from 'evergreen-ui'
 
 import printer, {default as request} from '../../../network/printer'
+import { NodeState, PrinterState }  from '../../../store/state'
 
 type Props = {
-  save:Function, 
-  data: Object, 
+  node: NodeState,
+  save?:Function, 
+  data?: any, 
   onSave: Function, 
   onError: Function
 }

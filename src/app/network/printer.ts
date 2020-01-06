@@ -8,7 +8,7 @@
 
 import {Request, CancelToken} from './request'
 
-const QS = require('qs');
+import {default as QS } from 'qs'
 
 export const Printer = {
   cancelSource: () => {

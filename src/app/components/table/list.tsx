@@ -148,10 +148,10 @@ export class List extends React.Component<TableProps, TableStateProps> {
   }
 
   renderPagination() {
-    if (this.props.data && this.props.data.data.length > 0) {
+    if (this.props.data && this.props.data.data && this.props.data.data.length > 0) {
       var {current_page, last_page, total} = this.props.data.meta;
       return (
-        <PaginatedList currentPage={current_page} pageSize={this.state.search.per_page} totalPages={last_page} totalItems={total} onChangePage={this.onChangePage} /> 
+        <PaginatedList currentPage={current_page} pageSize={this.state.search["per_page"]} totalPages={last_page} totalItems={total} onChangePage={this.onChangePage} /> 
       )
     }
   }

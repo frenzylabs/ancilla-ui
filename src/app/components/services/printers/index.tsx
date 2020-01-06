@@ -34,7 +34,7 @@ import NodeAction           from '../../../store/actions/node'
 import ServiceAction        from '../../../store/actions/services'
 import PrinterHandler       from '../../../network/printer'
 
-import { NodeState, ServiceState }  from '../../../store/state'
+import { NodeState, PrinterState }  from '../../../store/state'
 
 import Prints from '../../prints'
 
@@ -42,7 +42,7 @@ import PubSub from 'pubsub-js'
 
 type Props = {
   node: NodeState, 
-  service: ServiceState,
+  service: PrinterState,
   match: any,
   history: any,
   deleteService: Function,

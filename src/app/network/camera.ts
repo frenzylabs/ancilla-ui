@@ -9,6 +9,7 @@
 import {Request, CancelToken} from './request'
 import Connection from '../components/services/printers/summary/connection';
 
+// import {default as QS } from 'qs'
 const QS = require('qs');
 
 export const Camera = {

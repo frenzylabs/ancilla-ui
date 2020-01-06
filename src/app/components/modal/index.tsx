@@ -21,7 +21,7 @@ import SpinnerModal       from './spinner';
 import ErrorModal         from './error';
 
 type Props = {
-  component: React.Component<{dismissAction, parentStyles}>,
+  component: any, //React.Component<{dismissAction, parentStyles}>,
   dismissAction?: Function,
   isActive: boolean
 }
@@ -38,7 +38,7 @@ export default class Modal extends React.Component<Props> {
   }
 
   render() {
-    const styles = this.props.component.props.parentStyles || {}
+    const styles = (this.props.component.props && this.props.component.props.parentStyles) || {}
     const Comp = this.props.component 
     return (<Dialog
       isShown={this.props.isActive}

@@ -19,6 +19,7 @@ export default class Connection {
   socket = null
   node: Node
   retryConnect: Boolean = true
+  onMessageHandler = null
   
   constructor(props) {
     this.node = props.node
@@ -91,7 +92,7 @@ export default class Connection {
   }
 
   send(message) {
-    console.log("Send Message", message)
+    // console.log("Send Message", message)
     this.socket.send(message)
   }
 

@@ -27,10 +27,10 @@ import { ServiceHandler } from '../../../network'
 import AttachmentForm from './form'
 
 
-import { NodeState, ServiceState, AttachmentModel }  from '../../../store/state'
 
 import ServiceActions from '../../../store/actions/services'
 
+import { NodeState, ServiceState, AttachmentModel }  from '../../../store/state'
 
 
 type AttachmentProps = {

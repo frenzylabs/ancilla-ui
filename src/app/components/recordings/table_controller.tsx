@@ -42,7 +42,7 @@ import List from '../table/list'
 import TableController from '../table/controller'
 // const qs = require('qs');
 
-import PropTypes from 'prop-types'
+import PropTypes, { number } from 'prop-types'
 
 const optionPropTypes = {
   renderSectionHeader: PropTypes.func,  
@@ -50,14 +50,20 @@ const optionPropTypes = {
   isAuthorized: PropTypes.bool,
   node: PropTypes.object,
   service: PropTypes.object,
-  match: PropTypes.object,
+  match: PropTypes.any,
   height: PropTypes.number
 }
 
 const statePropTypes = {
   loading: PropTypes.bool,
-  filter: PropTypes.object,
-  search: PropTypes.object,
+  filter: PropTypes.shape({
+    name: PropTypes.string
+  }),
+  search: PropTypes.shape({
+    per_page: PropTypes.number,
+    page: PropTypes.number,
+    q: PropTypes.object
+  }),
   showUnauth: PropTypes.func,
   redirectTo: PropTypes.object,
   data: PropTypes.any
@@ -227,10 +233,13 @@ export class RecordingsController extends React.Component<TableProps, TableState
   }
 
   renderRow(row, index) {
+
+    var url = "/recordings/" + row.id
+
     return (
       <Table.Row key={row.id} >
         <Table.TextCell>
-          <Link to={{pathname: this.props.match.url + "/" + row.id, state: {cameraRecording: row}}} >
+          <Link to={{pathname: url , state: {parentMatch: this.props.match, cameraRecording: row}}} >
           {row.name}
           </Link>
         </Table.TextCell>
@@ -238,7 +247,7 @@ export class RecordingsController extends React.Component<TableProps, TableState
         <Table.TextCell>{Dayjs.unix(row.created_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
         <Table.TextCell>{(row.updated_at - row.created_at)}</Table.TextCell>
         <Table.TextCell>
-          <Link to={{pathname: this.props.match.url + "/" + row.id, state: {cameraRecording: row}}} >
+          <Link to={{pathname: url, state: {parentMatch: this.props.match, cameraRecording: row}}} >
             View
           </Link>
         </Table.TextCell>

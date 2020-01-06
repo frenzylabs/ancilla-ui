@@ -25,6 +25,7 @@ import PrinterNew 	  from '../services/printers/new'
 import CameraIndex 	  from '../services/cameras/index'
 import CameraNew 	  from '../services/cameras/new'
 import FilesView 		  from '../files'
+import RecordingShow 	  from '../recordings/show'
 
 import { NodeAction } from '../../store/actions/node'
 import { NodeState } from '../../store/state'
@@ -61,6 +62,8 @@ export class NodeView extends React.Component<Props> {
 
         <Pane background='#f6f6f6' width="100%" display="flex" flexDirection="column">
           <Switch>
+            <Route path={`/recordings/:recordingId`} render={ props => <RecordingShow {...this.props} {...props} /> }/>
+            <Route path={`/:service(cameras)/new`} render={ props => <CameraNew {...this.props} {...props} /> }/>
             <Route path={`/:service(cameras)/new`} render={ props => <CameraNew {...this.props} {...props} /> }/>
             <Route path={`/:service(printers)/new`} render={ props => <PrinterNew {...this.props} {...props} /> }/>
             <Route path={`/:service(printers)/:serviceId`}  render={ props => {

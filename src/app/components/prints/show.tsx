@@ -43,24 +43,28 @@ import CommandsController from './commands_controller'
 import RecordingsController from '../recordings/table_controller'
 // const qs = require('qs');
 
-export class PrintShow extends React.Component {
 
-  state = {    
-    isLoading: true,
-    printerPrint: null,
-    redirectTo: null,
-    showAuth: false,
-    projects: [],
-    profiles: [],
-    filter: {
-      name: ""
-    },
-    search: {
-      page: Number, 
-      per_page: Number, 
-      q: {name: undefined}
-    }
-  }
+
+import { NodeState, ServiceState, AttachmentModel }  from '../../store/state'
+
+
+type Props = {  
+  node: NodeState, 
+  service: ServiceState,
+  location: any,
+  match: any
+}
+
+type StateProps = {
+  loading: boolean,
+  printerPrint: any,
+  redirectTo: any    
+}
+
+
+export class PrintShow extends React.Component<Props, StateProps> {
+
+  
 
   cancelRequest = null
   
@@ -69,19 +73,9 @@ export class PrintShow extends React.Component {
     // var qparams = qs.parse(this.props.location.search, { ignoreQueryPrefix: true })
 
     this.state = {    
-      isLoading: true,
+      loading: true,
       printerPrint: null,
-      redirectTo: null,
-      projects: [],
-      profiles: [],
-      filter: {
-        name: ""
-      },
-      search: {
-        page: 1, //parseInt(qparams["page"] || 1), 
-        per_page: 5, //parseInt(qparams["per_page"] || 20), 
-        q: {name: ""} //qparams["q"] || {}
-      }
+      redirectTo: null      
     }
     this.getPrint         = this.getPrint.bind(this)
     this.syncToLayerkeep    = this.syncToLayerkeep.bind(this)

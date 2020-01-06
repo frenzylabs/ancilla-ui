@@ -11,10 +11,13 @@ import SplitPane from 'react-split-pane'
 
 import {
   Pane,
-  Dialog
+  Dialog,
+  toaster
 } from 'evergreen-ui'
 
 import React  from 'react'
+
+import ErrorModal from '../../modal/error'
 
 import Connection from './summary/connection'
 import State      from './summary/state'
@@ -220,7 +223,7 @@ export class PrinterShow extends React.Component<PrinterProps, StateProps> {
       console.log(error)
       // if (closeDialog)
       //   closeDialog()
-      // toaster.danger(<ErrorModal requestError={error} />)
+      toaster.danger(<ErrorModal requestError={error} />)
     })
   }
 

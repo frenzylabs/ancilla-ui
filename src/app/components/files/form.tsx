@@ -97,37 +97,6 @@ export default class Form extends React.Component<{save:Function, loading:boolea
   save() {    
     // this.props.save(this.state.file)
   }
-
-  // loadProjects() {    
-  //   Layerkeep.listProjects(this.props.node, {cancelToken: this.cancelRequest.token})
-  //   .then((response) => {
-  //     // console.log()
-  //     var projects = response.data.data.map((item) => {
-  //       return {name: item.attributes.name, value: item.attributes.path, id: item.id, kind: item.attributes.kind}
-  //     })
-      
-  //     this.setState({ projects: projects})
-  //   })
-  //   .catch((error) => {
-  //     console.log(error);
-  //   });
-  // }
-
-  // loadProfiles() {    
-  //   Layerkeep.listProfiles(this.props.node, {cancelToken: this.cancelRequest.token})
-  //   .then((response) => {
-  //     // console.log()
-  //     var profiles = response.data.data.map((item) => {
-  //       return {name: item.attributes.name, value: item.attributes.path, id: item.id, kind: item.attributes.kind}
-  //     })
-      
-  //     this.setState({ profiles: profiles})
-  //   })
-  //   .catch((error) => {
-  //     console.log(error);
-  //   });
-  // }
-
   
   handleDrop(files, evt) {
 
@@ -172,41 +141,41 @@ export default class Form extends React.Component<{save:Function, loading:boolea
     this.setState({newFile: newFile})
   }
 
-  renderProjectSection() {
-    return (
-      <Pane className={`card package`}>
-        <div className="card-header">
-          <p className="card-header-title">
-            Attach Project File
-          </p>
-        </div>
+  // renderProjectSection() {
+  //   return (
+  //     <Pane className={`card package`}>
+  //       <div className="card-header">
+  //         <p className="card-header-title">
+  //           Attach Project File
+  //         </p>
+  //       </div>
 
-        <div className="card-content">
-          <Pane className="is-fluid">            
-            <RepoForm kind="Project" node={this.props.node} repos={this.state.projects}  onFileSelected={this.onRepoFileSelected} currentRepos={this.state.currentProjects} />
-          </Pane>
-        </div>
-      </Pane>
-    )
-  }
+  //       <div className="card-content">
+  //         <Pane className="is-fluid">            
+  //           <RepoForm kind="Project" node={this.props.node} repos={this.state.projects}  onFileSelected={this.onRepoFileSelected} currentRepos={this.state.currentProjects} />
+  //         </Pane>
+  //       </div>
+  //     </Pane>
+  //   )
+  // }
 
-  renderProfileSection() {
-    return (
-      <div className={`card package`}>
-        <div className="card-header">
-          <p className="card-header-title">
-            Attach Profile
-          </p>
-        </div>
+  // renderProfileSection() {
+  //   return (
+  //     <div className={`card package`}>
+  //       <div className="card-header">
+  //         <p className="card-header-title">
+  //           Attach Profile
+  //         </p>
+  //       </div>
 
-        <div className="card-content">
-          <Pane className="is-fluid">
-            <RepoForm kind="Profile" node={this.props.node} repos={this.state.profiles} onFileSelected={this.onRepoFileSelected} currentRepos={this.state.currentProfiles} />
-          </Pane>
-        </div>
-      </div>
-    )
-  }
+  //       <div className="card-content">
+  //         <Pane className="is-fluid">
+  //           <RepoForm kind="Profile" node={this.props.node} repos={this.state.profiles} onFileSelected={this.onRepoFileSelected} currentRepos={this.state.currentProfiles} />
+  //         </Pane>
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
   renderFileDrop() {
     if (this.state.newFile.id) return

@@ -42,8 +42,8 @@ const optionPropTypes = {
 
 const statePropTypes = {
   loading: PropTypes.bool,
-  filter: PropTypes.object,
-  search: PropTypes.object,
+  filter: PropTypes.any,
+  search: PropTypes.any,
   showUnauth: PropTypes.func,
   redirectTo: PropTypes.object,
   data: PropTypes.any,

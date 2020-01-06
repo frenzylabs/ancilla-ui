@@ -8,6 +8,9 @@
 
 import {Request, CancelToken} from './request'
 
+// import {QS} from 'qs'
+import {default as QS } from 'qs'
+
 export const ServiceHandler = {
   cancelSource: () => {
     return CancelToken.source();
@@ -32,6 +35,22 @@ export const ServiceHandler = {
 
   state: (node, service, options= {}) => {
     return Request.get(`${node.apiUrl}/services/${service.kind}/${service.id}/state`, options)
+  },
+
+  recordings: (node, options = {}) => {
+    // options['params'] = {printer_id: printer.id, limit: 1}
+    var qs = options["qs"]
+    delete options["qs"]
+    var path = `${node.apiUrl}/recordings` + QS.stringify(qs, { addQueryPrefix: true }) 
+    return Request.get(path, options)
+  },
+  
+  getRecording: (node, recordingId, options= {}) => {
+    return Request.get(`${node.apiUrl}/recordings/${recordingId}`, options)
+  },
+
+  deleteRecording: (node, recordingId, options = {}) => {
+    return Request.delete(`${node.apiUrl}/recordings/${recordingId}`, options)
   },
 
   attachments: (node, service, options = {}) => {

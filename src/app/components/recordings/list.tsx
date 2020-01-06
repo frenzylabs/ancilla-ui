@@ -28,6 +28,7 @@ import {
 
 // import Form 				from './form'
 import CameraRequest 	from '../../network/camera'
+import { ServiceHandler } 	from '../../network'
 import Layerkeep 	from '../../network/layerkeep'
 import Modal from '../modal/index'
 import AuthForm from '../services/layerkeep/form'
@@ -37,45 +38,77 @@ import ErrorModal from '../modal/error'
 import RecordingsController from './table_controller'
 // const qs = require('qs');
 
-export class RecordingList extends React.Component {
 
-  state = {    
-    redirectTo: null,
-    isLoading: true,
-    showAuth: false,
+import { NodeState, ServiceState, AttachmentModel }  from '../../store/state'
+
+
+type Props = {  
+  node: NodeState, 
+  service: ServiceState
+}
+
+type StateProps = {
+  loading: boolean,
     filter: {
       name: ""
     },
     search: {
       page: Number, 
       per_page: Number, 
-      q: {name: undefined}
+      q: {
+        name: any,
+        print_id: any, 
+        camera_id: any
+      }
     },
     list: {
       data: [], 
       meta: {}
     }
-  }
+}
+
+
+export class RecordingList extends React.Component<Props, StateProps> {
+
+  // state = {    
+  //   redirectTo: null,
+  //   isLoading: true,
+  //   showAuth: false,
+  //   filter: {
+  //     name: ""
+  //   },
+  //   search: {
+  //     page: Number, 
+  //     per_page: Number, 
+  //     q: {name: undefined}
+  //   },
+  //   list: {
+  //     data: [], 
+  //     meta: {}
+  //   }
+  // }
 
   timer:number = null
 
-  form:Form = {}
   cancelRequest = null
   
   constructor(props:any) {
     super(props)
     // var qparams = qs.parse(this.props.location.search, { ignoreQueryPrefix: true })
 
-    this.state = {    
-      redirectTo: null,
-      isLoading: true,
+    this.state = {
+      loading: true,
       filter: {
         name: ""
       },
       search: {
         page: 1, //parseInt(qparams["page"] || 1), 
         per_page: 20, //parseInt(qparams["per_page"] || 20), 
-        q: {name: ""} //qparams["q"] || {}
+        q: {
+          name: "",
+          print_id: null,
+          camera_id: null
+        } //qparams["q"] || {}
       },
       list: {
         data: [], 
@@ -116,28 +149,12 @@ export class RecordingList extends React.Component {
   }
 
   listRecordings(search = {}) {
-    this.setState({loading: true, search: search})
-    return CameraRequest.recordings(this.props.node, this.props.service, {qs: search, cancelToken: this.cancelRequest.token})
-    // .then((res) => {
-    //   this.setState({
-    //     ...this.state,
-    //     list: res.data,
-    //     loading: false
-    //   })
-    // })
-    // .catch((error) => {
-    //   console.log(error)
-    //   if (error.response && error.response.status == 401) {
-    //     console.log("Unauthorized")
-    //     // this.setState({showAuth: true, loading: false})
-    //     this.setState({loading: false})
-    //   } else {
-    //     // this.setState({requestError: error})
-    //     // toaster.danger(<ErrorModal requestError={error} />)
-    //     this.setState({loading: false})
-    //   }
-    //   this.cancelRequest = CameraRequest.cancelSource();
-    // })
+    // this.setState({loading: true, search: search})
+    if (this.props.service.kind == 'camera' && this.props.service.model["model"]) {
+      if (!search['q']) search['q'] = {}
+      search['q']["camera_id"] = this.props.service.model["model"]["id"]
+    }
+    return ServiceHandler.recordings(this.props.node, {qs: search, cancelToken: this.cancelRequest.token})
   }
 
   deleteRecording(row) {
@@ -166,8 +183,7 @@ export class RecordingList extends React.Component {
 
   render() {
     return (
-      <div>
-      <Pane display="flex" key={"prints"}>
+      <Pane display="flex" key={"recordings"}>
         <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={20} border="default">
           {this.renderHeader()}
           <RecordingsController 
@@ -178,15 +194,6 @@ export class RecordingList extends React.Component {
 
         </Pane>
       </Pane>
-      <Modal
-          component={AuthForm}
-          node={this.props.node}
-          // requestError={this.state.requestError}
-          isActive={this.state.showAuth}
-          // dismissAction={this.authenticated.bind(this)}
-          // onAuthenticated={this.authenticated.bind(this)}
-        />
-      </div>
     )
   }	
 }

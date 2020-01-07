@@ -21,6 +21,7 @@ export function createNodeState(name: string, hostname: string, port: string = "
   var apiUrl = document.location.protocol+ "//" + hostname
   if (port.length > 0)
     apiUrl += `:${port}`
+  apiUrl += "/api"
 
   return {
     name: name,

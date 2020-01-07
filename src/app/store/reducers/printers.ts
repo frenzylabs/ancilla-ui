@@ -51,8 +51,8 @@ import { printState, PrinterState } from '../state'
 export function printerReducer(printerstate: PrinterState, action) {
   switch(action.type) {
   case 'PRINTER_PRINT_UPDATED':
-    console.log("Print Updated", action.data)
-    console.log("PrintState", printState(action.data))
+    // console.log("Print Updated", action.data)
+    // console.log("PrintState", printState(action.data))
     return {
       ...printerstate,
       currentPrint: action.data

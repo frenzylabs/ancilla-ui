@@ -51,6 +51,10 @@ export default class State extends React.Component<Props> {
     this.receiveEvent    = this.receiveEvent.bind(this)
     this.setupPrint    = this.setupPrint.bind(this)
 
+    
+  }
+
+  componentDidMount() {
     this.setupPrint()
   }
 
@@ -81,10 +85,11 @@ export default class State extends React.Component<Props> {
 
   receiveEvent(msg, data) {
     var [to, kind] = msg.split("events.")
-    console.log("REceive event ", to, kind)
+    // console.log("REceive event ", to, kind)
     
     switch(kind) {
       case 'printer.print.state.changed':              
+          // console.log("Print State Changed ", data)
           this.props.dispatch(PrinterAction.updatePrint(this.props.service, data))
           // this.setState({...this.state, printState: data})
           break
@@ -110,7 +115,7 @@ export default class State extends React.Component<Props> {
     }    
   }
 
-  renderRow(key:string, value:string) {
+  renderRow(key:string, value:any) {
     return (
       <Pane display="flex" marginBottom={6}>
         <Heading size={500} display="flex" flex={1} marginRight={8}>{key}</Heading>
@@ -132,7 +137,7 @@ export default class State extends React.Component<Props> {
     if (curprnt && curprnt.name && curprnt.status != "running") {
       return (
         <div>
-          {this.renderRow("Last Print", curprnt.name)}
+          {this.renderRow("Last Print", <Link to={`/printers/${this.props.service.id}/prints/${curprnt.id}`}>{curprnt.name}</Link>)}
           {this.renderRow("Status", curprnt.status)}
           {this.renderRow("Started On", `${curprnt.created_at}`)}          
           {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice["name"]) || "")}

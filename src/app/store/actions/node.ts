@@ -7,12 +7,23 @@
 //
 
 import types from './types'
-import { PrinterHandler, CameraHandler, ServiceHandler } from '../../network'
+import { NodeHandler, PrinterHandler, CameraHandler, ServiceHandler } from '../../network'
 
 
 
 
 export const NodeAction = {
+  listNodes() {
+    return (dispatch, getState) => {
+      // console.log("NODE ACTION state", getState())
+      let activeNode = getState().activeNode
+      var cancelRequest    = NodeHandler.cancelSource();  
+      // dispatch(requestFeatures(username, cancelRequest))
+      return NodeHandler.list(activeNode, {cancelToken: cancelRequest.token})
+            .then(response => dispatch(NodeAction.receivedNodes(activeNode, response.data)))
+    }
+  },
+
   listPrinters() {
     return (dispatch, getState) => {
       // console.log("NODE ACTION state", getState())
@@ -34,6 +45,11 @@ export const NodeAction = {
             .then(response => dispatch(NodeAction.receivedServices(activeNode, response.data)))
     }
   },
+
+  receivedNodes: (node, nodes) => ({
+    type: 'RECEIVED_NODES',
+    data: nodes
+  }),
 
   receivedServices: (node, services) => ({
     type: 'RECEIVED_SERVICES',

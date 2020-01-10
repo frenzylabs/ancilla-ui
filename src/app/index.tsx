@@ -52,11 +52,14 @@ import PubSub from 'pubsub-js'
 //  }
 // }
 
+import { NodeAction } from './store/actions/node'
+
 import { NodeState, ServiceState }  from './store/state'
 
 type AppProps = { 
   activeNode: NodeState,
-  printerService?: ServiceState 
+  printerService?: ServiceState,
+  listNodes: Function
 }
 
 type stateProps = {
@@ -94,6 +97,7 @@ export class App extends React.Component<AppProps, stateProps> {
 
   componentDidMount() {
     // this.getPrinters()
+    this.props.listNodes()
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -116,4 +120,12 @@ const mapStateToProps = (state) => {
   return state
 }
 
-export default withRouter(connect(mapStateToProps)(App))
+const mapDispatchToProps = (dispatch) => {
+  return {
+    listNodes: () => dispatch(NodeAction.listNodes())
+  }
+}
+
+
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(App))

@@ -5,30 +5,29 @@ import { ServiceState, PrinterState } from './index'
 export type NodeState = {  
   name:string,
   apiUrl: string,
-  webSocketUrl: string,
-  nodepath: string,
+  url: string,
+  // webSocketUrl: string,
   hostname:string,
   port: string,
   services: Array<ServiceState>
 }
 
-export function createNodeState(name: string, hostname: string, port: string = "", nodepath: string = "") {
+export function createNodeState(name: string, hostname: string, port: string = "", services: Array<ServiceState> = []) {
   // ...
-  if (!nodepath) {
-    nodepath = name
-  }
 
-  var apiUrl = document.location.protocol+ "//" + hostname
+  var url = document.location.protocol+ "//" + hostname
+  console.log(arguments)
   if (port.length > 0)
-    apiUrl += `:${port}`
-  apiUrl += "/api"
+    url += `:${port}`
+
+  var apiUrl = url + "/api"
 
   return {
     name: name,
     hostname: hostname,
     port: port,
-    nodepath: nodepath,
+    url: url,
     apiUrl: apiUrl,
-    services: []
+    services: services
   }
 }

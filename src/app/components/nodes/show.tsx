@@ -32,6 +32,7 @@ import { NodeState } from '../../store/state'
 
 type Props = {
   node: NodeState,
+  nodes: Array<NodeState>,
   match: object,
   getServices: Function
 }
@@ -56,7 +57,7 @@ export class NodeView extends React.Component<Props> {
     return (
       <Pane display="flex" flex={1}>
         <Pane display="flex" flex={0}>
-          <Nav/>
+          <Nav {...this.props} />
           <SubNav {...this.props} />
         </Pane>
 

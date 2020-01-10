@@ -6,12 +6,12 @@ import { printerReducer } from './printers'
 import { cameraReducer } from './cameras'
 import { serviceReducer } from './service'
 
-import { serviceState, printerState, cameraState } from '../state'
+import { NodeState, serviceState, printerState, cameraState } from '../state'
 
 
 // const initialState = NodeState();
 
-export function nodeReducer(state = initialState.activeNode, action) {
+export function nodeReducer(state: NodeState = initialState.activeNode, action) {
   switch(action.type) {
   case 'SERVICE_DELETED': {
       let services = state.services.filter((svc) => svc.id != action.data.id)

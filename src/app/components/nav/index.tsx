@@ -8,19 +8,32 @@
 
 import React from 'react'
 
+
 import {
   Pane,
   Menu,
   Icon,
-  Dialog
+  Dialog,
+  SideSheet,
+  Paragraph,
+  Heading,
+  Position
 } from 'evergreen-ui'
 
-import Action from './action'
+
 import { string } from 'prop-types'
 
-export default class Nav extends React.Component {
+import { NodeState } from '../../store/state'
+
+type Props = {
+  nodes: any,
+  node: NodeState
+}
+
+export default class Nav extends React.Component<Props> {
   state = {
-    isSettingsShowing: false
+    isSettingsShowing: false,
+    isShown: false
   }
 
   constructor(props) {
@@ -45,6 +58,7 @@ export default class Nav extends React.Component {
       isSettingsShowing: true
     })
   }
+  
 
   renderMenuItem(icon:string, action:string|Function, active:boolean = false, hasAdd:boolean = false) {
     let props = {
@@ -84,13 +98,25 @@ export default class Nav extends React.Component {
       </React.Fragment>
     )
   }
+  renderNodes() {
+    console.log("NODES", this.props.nodes)
+    return this.props.nodes.map((node) => {
+      var current = ""
+      if (node == this.props.node)
+        current = "Current: "
+      return (
+        <Pane key={`${node.url}`}>
+          <a href={`${node.url}`}>{node.name}</a> {current} 
+        </Pane>)
+    })
+  }
 
   render() {
     return (
       <Pane height="100%" display="flex" flexDirection="column" background="#234361">
         <Menu className="left-menu">
           {this.renderMenuItem('application', '/', true)}
-          {this.renderMenuItem('graph', '/nodes')} 
+          {this.renderMenuItem('graph', () => this.setState({isShown: true}) )} 
         </Menu>
 
         <Pane display="flex" margin="auto">&nbsp;</Pane>
@@ -98,6 +124,20 @@ export default class Nav extends React.Component {
         <Pane>
           {this.renderSettingsItem()}
         </Pane>
+
+        <SideSheet
+          isShown={this.state.isShown}
+          onCloseComplete={() => this.setState({ isShown: false })}
+          position={Position.LEFT}
+          width={400}
+        >
+          <Pane zIndex={1} flexShrink={0} elevation={0} backgroundColor="white">
+            <Pane padding={16}>
+              <Heading size={800}>Ancilla Nodes</Heading>
+              {this.renderNodes()}
+            </Pane>
+          </Pane>          
+        </SideSheet>
 
       </Pane>
     )

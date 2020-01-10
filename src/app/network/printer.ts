@@ -32,7 +32,7 @@ export const Printer = {
   },
 
   ports: () => {
-    return Request.get('/ports')
+    return Request.get('/api/ports')
   },
 
   prints: (node, printerService, options = {}) => { 

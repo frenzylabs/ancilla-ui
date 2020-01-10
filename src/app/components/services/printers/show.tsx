@@ -126,6 +126,7 @@ export class PrinterShow extends React.Component<PrinterProps, StateProps> {
       // console.log("Has printer")
       this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
       this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events`
+      // console.log("Printer SHOW EVENT TOPIC = ", this.eventTopic)
       if (this.pubsubRequestToken) {
         PubSub.unsubscribe(this.pubsubRequestToken)
       }

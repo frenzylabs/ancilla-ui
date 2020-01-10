@@ -79,8 +79,12 @@ export class CameraIndex extends React.Component<Props, StateProps> {
     this.setupCamera      = this.setupCamera.bind(this)
     this.toggleRecording  = this.toggleRecording.bind(this)
 
-    this.setupCamera()
     
+    
+  }
+
+  componentDidMount() {
+    this.setupCamera()
   }
 
   componentWillUnmount() {
@@ -102,10 +106,7 @@ export class CameraIndex extends React.Component<Props, StateProps> {
     if (this.props.service) {
       this.props.getState(this.props.node, this.props.service)
       PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.connection"])
-      // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.recording"])
 
-      // PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.get_state"])
-      // console.log("Has printer")
       this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
       this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events`
       if (this.pubsubRequestToken) {
@@ -283,6 +284,7 @@ const mapDispatchToProps = (dispatch) => {
     cameraUpdated: (node, service) => dispatch(NodeAction.cameraUpdated(node, service)),
     getState: (node, service) => dispatch(ServiceActions.getState(node, service)),
     updateState: (node, service, state) => dispatch(ServiceActions.updateState(node, service, state)),
+    dispatch: dispatch
   }
 }
 

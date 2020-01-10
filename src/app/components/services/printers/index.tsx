@@ -68,6 +68,7 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
       showing: false
     }
 
+    window.t = this
     // this.setupPrinter    = this.setupPrinter.bind(this)   
   }
 
@@ -135,7 +136,7 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
     } else {
       PrinterHandler.connect(this.props.node, this.props.service)
       .then((response) => {
-        console.log("CONNECT resp ", response)
+        // console.log("CONNECT resp ", response)
         this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: true}))
         toaster.success(`Connected to ${this.props.service.name}`)
       })
@@ -262,6 +263,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     deleteService: (node, service) => dispatch(ServiceAction.deleteService(node, service)),
     printerUpdated: (node, service) => dispatch(NodeAction.printerUpdated(node, service)),
+    dispatch: dispatch
   }
 }
 

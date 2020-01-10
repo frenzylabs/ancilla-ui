@@ -90,10 +90,6 @@ export class CameraView extends React.Component<Props, StateProps> {
   }
 
   componentWillUnmount() {
-    console.log("COMPONENT WILL UNMOUNT")
-    var vidsrc = this.videoRef
-    
-    console.log("video src before", vidsrc)
     // setTimeout(function() {
     //   console.log("video src", vidsrc.src)
     //   vidsrc.src = ""
@@ -112,7 +108,7 @@ export class CameraView extends React.Component<Props, StateProps> {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.service.model != this.props.service.model) {
-      console.log("PRINTER MODEL HAS BEEN UPDATED")
+      // console.log("Camera MODEL HAS BEEN UPDATED")
       this.setupCamera()      
     }
     // if (this.props.service && this.props.service.state)
@@ -126,25 +122,22 @@ export class CameraView extends React.Component<Props, StateProps> {
       let url = this.props.node.apiUrl
       videoUrl = `${url}/webcam/${this.props.service.name}`
     }
-    console.log("Video URL", videoUrl)
+    // console.log("Video URL", videoUrl)
     // if (this.state.videoUrl != videoUrl)
     //   this.setState({videoUrl: videoUrl})
   }
 
   setupCamera() {
     if (this.props.service) {
-      console.log("SETUP CAMERA")
+      // console.log("SETUP CAMERA")
       this.props.getState(this.props.node, this.props.service)
       PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.connection"])
       PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.recording"])
 
-      // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.connection"])
-      // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", "events.camera.recording"])
-
-      // PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.get_state"])
-      // console.log("Has printer")
+      
       this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
       this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events`
+      // console.log("Cam SHOW EVENT TOPIC = ", this.eventTopic)
       if (this.pubsubRequestToken) {
         PubSub.unsubscribe(this.pubsubRequestToken)
       }
@@ -180,7 +173,7 @@ export class CameraView extends React.Component<Props, StateProps> {
     // console.log("PV Received Event here2", data)
     // console.log(typeof(data))
     var [to, kind] = msg.split("events.")
-    // console.log("EVENT KIND", kind)
+    // console.log("EVENT KIND", kind, data)
     switch(kind) {
       case 'camera.recording.state.changed':
           // console.log("Camera Recording state changed", data)

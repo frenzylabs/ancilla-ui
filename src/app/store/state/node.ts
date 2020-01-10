@@ -15,8 +15,7 @@ export type NodeState = {
 export function createNodeState(name: string, hostname: string, port: string = "", services: Array<ServiceState> = []) {
   // ...
 
-  var url = document.location.protocol+ "//" + hostname
-  console.log(arguments)
+  var url = document.location.protocol+ "//" + hostname  
   if (port.length > 0)
     url += `:${port}`
 

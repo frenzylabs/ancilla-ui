@@ -12,8 +12,6 @@ import Service from '../../network/service'
 export const ServiceAction = {
   listAttachments(node, serviceState) {
     return (dispatch, getState) => {
-      console.log("LIST PRINTS NODE ACTION state", getState())
-
       var cancelRequest    = Service.cancelSource();  
       // dispatch(requestFeatures(username, cancelRequest))
       if (serviceState.model) {
@@ -39,7 +37,6 @@ export const ServiceAction = {
 
   deleteService: (node, serviceState) => {
     return (dispatch, getState) => {
-      console.log("DELETE SERVICE NODE ACTION state", getState())
       // let activeNode = getState().activeNode
       var cancelRequest    = Service.cancelSource();  
       // dispatch(requestFeatures(username, cancelRequest))
@@ -56,7 +53,6 @@ export const ServiceAction = {
 
   updateService: (node, serviceState, params) => {
     return (dispatch, getState) => {
-      console.log("UPDATE SERVICE NODE ACTION state", getState())
       // let activeNode = getState().activeNode
       var cancelRequest    = Service.cancelSource();  
       // dispatch(requestFeatures(username, cancelRequest))
@@ -69,56 +65,6 @@ export const ServiceAction = {
       }
     }
   },
-
-
-  
-      //     var f = response.data.attachment
-      //     attachments = attachments.concat(f)
-      //     this.setState({
-      //       loading: false,
-      //       attachments: attachments
-      //     })
-
-      // toaster.success(`Attachment ${f.attachment.name} has been successfully added`)
-      // closeDialog()
-    // })
-    // .catch((error) => {
-    //   console.log(error)      
-    //   this.setState({
-    //     loading: false,
-    //   })
-    //   let errors = Object.keys(error.response.data.errors).map((key, index) => {
-    //     return  `${key} : ${error.response.data.errors[key]}<br/>`
-    //   })
-
-    //   toaster.danger(
-    //     `Unable to save attachment ${JSON.stringify(attachment)}`, 
-    //     {description: errors}
-    //   )
-    // })
-    // DeviceHandler.addAttachment(this.props.node, this.props.device.id)
-    //   .then((response) => {
-
-    //   }).catch((err) => {
-    //     console.log(err)
-    //   })
-  // }
-  // lastPrint(printerState) {
-  //   return (dispatch, getState) => {
-  //     console.log("LAST PRINT NODE ACTION state", getState())
-  //     let activeNode = getState().activeNode
-  //     var cancelRequest    = Printer.cancelSource();  
-  //     // dispatch(requestFeatures(username, cancelRequest))
-  //     console.log("PRINTER STATE =", printerState)
-  //     if (printerState.model) {
-  //       return Printer.lastPrint(activeNode, printerState.model, {cancelToken: cancelRequest.token})
-  //             .then((response) => {
-  //               console.log("LAST PRINT = ", response.data.prints)
-  //               dispatch(PrinterAction.updateLastPrint(printerState, response.data.prints[0] || {}))
-  //             })
-  //     }
-  //   }
-  // },
 
   attachmentReceived: (node, service, attachment) => ({
     type: 'SERVICE_RECEIVED_ATTACHMENT',
@@ -141,17 +87,7 @@ export const ServiceAction = {
     service: service,
     data: data
   }),
-  // updatePrints: (printer, prnts) => ({
-  //   type: 'PRINTER_RECEIVED_PRINTS',
-  //   printer: printer,
-  //   data: prnts
-  // }),
 
-  // updateLastPrint: (printer, prnt) => ({
-  //   type: 'PRINTER_RECEIVED_LAST_PRINT',
-  //   printer: printer,
-  //   data: prnt
-  // }),
 
   getState(node, serviceState) {
     return (dispatch, getState) => {

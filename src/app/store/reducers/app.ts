@@ -10,20 +10,16 @@ const appReducer = (state = initialState, action) => {
       return { ...state, ...{ username: action.username, features: action.features }}
     }
     case 'RECEIVED_NODES': {
-      console.log("NODES = ", action)
       var activeNode = state.activeNode
       var nodes = Object.keys(action.data.nodes).map((name) => {
         var node = action.data.nodes[name]
-        // NodeState()
-        var hostname = "" //node.addresses ? node.addresses[0]
+        var hostname = "" 
         if (node.server && node.server.length > 1)
           hostname = node.server
         else if (node.addresses && node.addresses.length > 0) {
           hostname = node.addresses[0]
         }
-        
 
-        
         if(activeNode.hostname == hostname) {
           var nstate = createNodeState(name, hostname, `${node.port}`, activeNode.services)
           activeNode = {...state.activeNode, ...nstate}
@@ -34,14 +30,6 @@ const appReducer = (state = initialState, action) => {
         // {"addresses": ["192.168.1.129"], "port": 5000, "server": "ancilla.local.", "type": "_ancilla._tcp.local."}
       })
 
-      // let services = state.services.map((item) => {
-      //   if (item.id == action.service.id) {
-      //     return {...item, ...action.data}
-      //     // return serviceReducer(item, action)
-      //   }
-      //   return item
-      // })
-      console.log("RECEiveD NODES ", nodes)
       return {...state, nodes: nodes, activeNode: activeNode}      
     }
     case 'RECEIVED_NOTIFICATION':
@@ -57,15 +45,15 @@ const appReducer = (state = initialState, action) => {
         // note: since state doesn't have "user",
         // so it will return undefined when you access it.
         // this will allow you to use default value from actually reducer.
-      var activeNode = nodeReducer(state.activeNode, action)
+      var aNode = nodeReducer(state.activeNode, action)
       let nodes = state.nodes.map((item) => {
         if (item == state.activeNode) {
-          return activeNode
+          return aNode
           // return serviceReducer(item, action)
         }
         return item
       })
-      return {...state, nodes: nodes, activeNode: activeNode}
+      return {...state, nodes: nodes, activeNode: aNode}
     }
       // return state
   }

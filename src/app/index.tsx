@@ -25,13 +25,7 @@ import {
 } from 'evergreen-ui'
 
 import React  from 'react'
-import {
-  Nav,
-  SubNav,
-  Statusbar,
-  Summary,
-  Terminal
-} from './components'
+
 
 import NodeView from './components/nodes/show'
 
@@ -74,13 +68,13 @@ export class App extends React.Component<AppProps, stateProps> {
     // this.toggleDialog = this.toggleDialog.bind(this)
     // this.savePrinter  = this.savePrinter.bind(this)
     // this.getPrinters  = this.getPrinters.bind(this)
-    console.log("APP CONSTUCTOR", this.props.activeNode)
+    // console.log("APP CONSTUCTOR", this.props.activeNode)
     // this.props.activeNode
     this.state = {
       connection: new Connection({node: this.props.activeNode})
     }
     this.sendData  = this.sendData.bind(this)
-    window.app = this
+    // window.app = this
     this.pubsubToken = PubSub.subscribe(this.props.activeNode.name + ".request", this.sendData);
   }
 
@@ -89,7 +83,7 @@ export class App extends React.Component<AppProps, stateProps> {
     if (this.state.connection.connected) {
       this.state.connection.send(JSON.stringify(data))
     } else {
-      
+      console.log("Not connected yet", data)
     }
   }
 
@@ -104,8 +98,14 @@ export class App extends React.Component<AppProps, stateProps> {
     let prevNode = prevProps.activeNode
     if (this.props.activeNode && (!prevNode || prevNode.apiUrl != this.props.activeNode.apiUrl)) {
       PubSub.unsubscribe(this.pubsubToken)
-      this.pubsubToken = PubSub.subscribe(this.props.activeNode.name, this.sendData);
+      this.pubsubToken = PubSub.subscribe(this.props.activeNode.name + ".request", this.sendData);
       this.setState({connection: new Connection({node: this.props.activeNode})})
+    }
+    else if (prevNode.name != this.props.activeNode.name) {
+      // this.setState({connection: new Connection({node: this.props.activeNode})})
+      this.state.connection.node = this.props.activeNode
+      PubSub.unsubscribe(this.pubsubToken)
+      this.pubsubToken = PubSub.subscribe(this.props.activeNode.name + ".request", this.sendData);
     }
   }
 

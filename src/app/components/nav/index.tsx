@@ -99,7 +99,6 @@ export default class Nav extends React.Component<Props> {
     )
   }
   renderNodes() {
-    console.log("NODES", this.props.nodes)
     return this.props.nodes.map((node) => {
       var current = ""
       if (node == this.props.node)
@@ -134,7 +133,7 @@ export default class Nav extends React.Component<Props> {
           <Pane zIndex={1} flexShrink={0} elevation={0} backgroundColor="white">
             <Pane padding={16}>
               <Heading size={800}>Ancilla Nodes</Heading>
-              {this.renderNodes()}
+              {this.state.isShown ? this.renderNodes() : ""}
             </Pane>
           </Pane>          
         </SideSheet>

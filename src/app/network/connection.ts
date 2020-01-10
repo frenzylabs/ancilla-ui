@@ -10,14 +10,14 @@ import Node from '../models/node'
 
 import PubSub from 'pubsub-js'
 
-
+import { NodeState } from '../store/state'
 
 export default class Connection {
   buffer    = []
   sent      = []
   connected = false
   socket = null
-  node: Node
+  node: NodeState
   retryConnect: Boolean = true
   onMessageHandler = null
   

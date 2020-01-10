@@ -79,11 +79,12 @@ export function serviceReducer(state: ServiceState, action) {
           model: {...state.model, attachments: attachments}
         }  
     }
-    case 'SERVICE_RECEIVED_STATE':
+    case 'SERVICE_RECEIVED_STATE': {
         return {
           ...state,
           state: action.data
         }
+    }
     case 'SERVICE_RECEIVED_DATA':
         // console.log("PRINTER RECEIVED DATA", action)
         // var logs = printerstate.logs.concat(action.data)

@@ -11,21 +11,26 @@ const appReducer = (state = initialState, action) => {
     }
     case 'RECEIVED_NODES': {
       var activeNode = state.activeNode
-      var nodes = Object.keys(action.data.nodes).map((name) => {
-        var node = action.data.nodes[name]
+      var nodes = (action.data.nodes || []).map((node) => {
+        // var node = action.data.nodes[name]
         var hostname = "" 
         if (node.server && node.server.length > 1)
           hostname = node.server
+        else if (node.ip) {
+          hostname = node.ip
+        }
         else if (node.addresses && node.addresses.length > 0) {
           hostname = node.addresses[0]
         }
-
+        var name = node.name
+        var network_name = (node.network_name ? node.network_name : node.name)
+        
         if(activeNode.hostname == hostname) {
-          var nstate = createNodeState(name, hostname, `${node.port}`, activeNode.services)
+          var nstate = createNodeState(network_name, name, hostname, `${node.port}`, activeNode.services)
           activeNode = {...state.activeNode, ...nstate}
           return activeNode
         } else {
-          return createNodeState(name, hostname, `${node.port}`)
+          return createNodeState(network_name, name, hostname, `${node.port}`)
         }
         // {"addresses": ["192.168.1.129"], "port": 5000, "server": "ancilla.local.", "type": "_ancilla._tcp.local."}
       })

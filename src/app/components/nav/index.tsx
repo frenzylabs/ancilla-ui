@@ -17,7 +17,11 @@ import {
   SideSheet,
   Paragraph,
   Heading,
-  Position
+  Position,
+  Popover,
+  Button,
+  IconButton,
+  Badge
 } from 'evergreen-ui'
 
 
@@ -98,14 +102,49 @@ export default class Nav extends React.Component<Props> {
       </React.Fragment>
     )
   }
+
+  renderNodeInfo(node) {
+    return (<Popover
+      content={({ close }) => (
+        
+          <Pane
+              is="section"
+              background="tint2"
+              border="default"
+              // paddingX={40}
+              marginLeft={0}
+              marginY={0}
+            >
+              <Pane display="flex" flexDirection="column" width="100%" background="#fff" paddingY={10} paddingX={15} margin={0} borderBottom="default">
+                <Heading>Network Details</Heading>
+              </Pane>
+              <Pane padding={20}>
+                <Paragraph>Name: <a href={`${node.url}`}>{node.name}</a> </Paragraph>
+                <Paragraph>Network Url: <a href={`${node.networkUrl}`}>{node.networkUrl}</a> </Paragraph>
+                <Paragraph>Network IP: <a href={`${node.ipUrl}`}>{node.ip}</a> </Paragraph>
+              </Pane>
+          </Pane>          
+
+        
+      )}
+    >
+      <IconButton icon="info-sign" />
+    </Popover>)
+  }
+
   renderNodes() {
     return this.props.nodes.map((node) => {
-      var current = ""
-      if (node == this.props.node)
-        current = "Current: "
+      var current = (null)
+      if (node.uuid == this.props.node.uuid)
+        current = (<Badge color="green"><small>current</small></Badge>)
       return (
-        <Pane key={`${node.url}`}>
-          <a href={`${node.url}`}>{node.name}</a> {current} 
+        <Pane key={`${node.url}`} display="flex" flex={1} alignItems="center">
+          <Pane display="flex" flex={1} alignItems="center">
+            <a href={`${node.networkUrl}`}>{node.name}</a>
+            &nbsp; {current} 
+          </Pane>
+          
+          <Pane>{this.renderNodeInfo(node)}</Pane>
         </Pane>)
     })
   }

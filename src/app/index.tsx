@@ -53,7 +53,8 @@ import { NodeState, ServiceState }  from './store/state'
 type AppProps = { 
   activeNode: NodeState,
   printerService?: ServiceState,
-  listNodes: Function
+  listNodes: Function,
+  getNode: Function
 }
 
 type stateProps = {
@@ -84,7 +85,9 @@ export class App extends React.Component<AppProps, stateProps> {
 
   componentDidMount() {
     // this.getPrinters()
+    this.props.getNode(this.props.activeNode)
     this.props.listNodes()
+    
     this.setupNotification()
   }
 
@@ -150,7 +153,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    listNodes: () => dispatch(NodeAction.listNodes())
+    listNodes: () => dispatch(NodeAction.listNodes()),
+    getNode: (node) => dispatch(NodeAction.getNode(node))
   }
 }
 

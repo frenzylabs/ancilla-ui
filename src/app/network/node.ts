@@ -18,7 +18,15 @@ export const NodeHandler = {
 
   list: (node, options= {}) => {
       return Request.get(`${node.apiUrl}/nodes`, options)
-  }
+  },
+
+  get: (node, options= {}) => {
+    return Request.get(`${node.apiUrl}/node`, options)
+  },
+
+  update: (node, data, options = {}) => {    
+    return Request.patch(`${node.apiUrl}/node`, data, options)
+  },
 
 }
 

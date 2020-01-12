@@ -24,6 +24,28 @@ export const NodeAction = {
     }
   },
 
+  getNode(node) {
+    return (dispatch, getState) => {
+      // console.log("NODE ACTION state", getState())
+      // let activeNode = getState().activeNode
+      var cancelRequest    = NodeHandler.cancelSource();  
+      // dispatch(requestFeatures(username, cancelRequest))
+      return NodeHandler.get(node, {cancelToken: cancelRequest.token})
+            .then(response => dispatch(NodeAction.receivedNodeModel(node, response.data)))
+    }
+  },
+
+  updateNode: (node, params) => {
+    return (dispatch, getState) => {
+      var cancelRequest    = NodeHandler.cancelSource();
+      return NodeHandler.update(node, params, {cancelToken: cancelRequest.token})
+          .then((response) => {
+            dispatch(NodeAction.receivedNodeModel(node, response.data))
+            return response
+          })
+    }
+  },
+
   listPrinters() {
     return (dispatch, getState) => {
       // console.log("NODE ACTION state", getState())
@@ -48,7 +70,14 @@ export const NodeAction = {
 
   receivedNodes: (node, nodes) => ({
     type: 'RECEIVED_NODES',
+    node: node,
     data: nodes
+  }),
+
+  receivedNodeModel: (node, model) => ({
+    type: 'RECEIVED_NODE_MODEL',
+    node: node,
+    data: model
   }),
 
   receivedServices: (node, services) => ({

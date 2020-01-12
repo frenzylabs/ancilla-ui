@@ -201,7 +201,7 @@ export default class Form extends React.Component<{save:Function, loading:boolea
 
         <Pane>
           <Label
-            htmlFor="description"
+            htmlFor="filename"
             marginBottom={4}
             display="block"
           >

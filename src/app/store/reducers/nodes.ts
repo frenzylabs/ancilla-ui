@@ -112,13 +112,13 @@ export function nodeReducer(state: NodeState = initialState.activeNode, action) 
   }
   default: {
     if (action.type.startsWith("SERVICE")) {
-      var services = state.services.map((item) => {
+      var s = state.services.map((item) => {
         if (item.id == action.service.id) {
           return serviceReducer(item, action)
         }
         return item
       })
-      return {...state, services: services}
+      return {...state, services: s}
 
     } else if (action.type.startsWith("PRINTER")) {
       var services = state.services.map((item) => {

@@ -11,7 +11,8 @@ import {
 import SplitPane from 'react-split-pane'
 
 import {
-  Pane
+  Pane,
+  toaster
 } from 'evergreen-ui'
 
 import React  from 'react'
@@ -26,6 +27,10 @@ import CameraIndex 	  from '../services/cameras/index'
 import CameraNew 	  from '../services/cameras/new'
 import FilesView 		  from '../files'
 import RecordingShow 	  from '../recordings/show'
+import ErrorModal           from '../modal/error'
+
+import NodeForm             from './form'
+import Settings             from '../settings'
 
 import { NodeAction } from '../../store/actions/node'
 import { NodeState } from '../../store/state'
@@ -34,14 +39,15 @@ type Props = {
   node: NodeState,
   nodes: Array<NodeState>,
   match: object,
-  getServices: Function
+  getServices: Function,
+  updateNode: Function
 }
 export class NodeView extends React.Component<Props> {
   constructor(props:any) {
     super(props)    
 
     // this.toggleDialog = this.toggleDialog.bind(this)
-    // this.savePrinter  = this.savePrinter.bind(this)
+    this.saveFailed  = this.saveFailed.bind(this)
     // this.getPrinters  = this.getPrinters.bind(this)
     // console.log("NODE VIEW", this.props)
     // window.nv = this
@@ -51,6 +57,17 @@ export class NodeView extends React.Component<Props> {
   componentDidMount() {
     // this.getDevices()
     this.props.getServices()
+  }
+
+  saveFailed(error) {
+    // console.log("save failed", error)
+    if (error.response.status == 401) {
+      console.log("Unauthorized")
+      this.setState({showing: true})
+    } else {
+    // this.setState({requestError: error})
+      toaster.danger(<ErrorModal requestError={error} />)
+    }
   }
 
   render() {
@@ -63,6 +80,20 @@ export class NodeView extends React.Component<Props> {
 
         <Pane background='#f6f6f6' width="100%" display="flex" flexDirection="column">
           <Switch>
+            <Route path={`/node/settings`} render={ props => {
+                if (!this.props.node.model) {
+                  return null
+                }
+                return (
+                  <Pane className="scrollable-content" >
+                    <Settings {...this.props} {...props} title="Edit Node" service={this.props.node} forms={[
+                      <NodeForm save={this.props.updateNode.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.node.model} {...this.props} {...props}/>, 
+                  
+                    ]} /> 
+                  </Pane>
+                )
+              }
+            }/>
             <Route path={`/recordings/:recordingId`} render={ props => <RecordingShow {...this.props} {...props} /> }/>
             <Route path={`/:service(cameras)/new`} render={ props => <CameraNew {...this.props} {...props} /> }/>
             <Route path={`/:service(cameras)/new`} render={ props => <CameraNew {...this.props} {...props} /> }/>
@@ -100,7 +131,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    getServices: () => dispatch(NodeAction.getServices())
+    getServices: () => dispatch(NodeAction.getServices()),
+    updateNode: (node, params) => dispatch(NodeAction.updateNode(node, params))
   }
 }
 

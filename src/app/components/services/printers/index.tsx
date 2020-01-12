@@ -68,7 +68,7 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
       showing: false
     }
 
-    window.t = this
+    
     // this.setupPrinter    = this.setupPrinter.bind(this)   
   }
 

@@ -1,5 +1,5 @@
 
-import { initialState, NodeState, createNodeState } from '../state'
+import { initialState, NodeState, NodeNetworkModel, createNodeState } from '../state'
 
 import { nodeReducer } from './nodes'
 
@@ -9,32 +9,39 @@ const appReducer = (state = initialState, action) => {
     case 'RECEIVED_FEATURES': {
       return { ...state, ...{ username: action.username, features: action.features }}
     }
+    case 'RECEIVED_NODE_MODEL': {
+      // console.log("RECEIVED NODE MODEL", action)
+      var activeNode = state.activeNode
+      if (activeNode.uuid == action.node.uuid) {
+        activeNode = {...activeNode, model: action.data.node, uuid: action.data.node.uuid,  name: action.data.node.name}
+      }
+      let nodes = state.nodes.map((item) => {
+        // console.log("RECEIVED NODE MODEL", item.uuid, action.data.node.uuid)
+
+        if (item.uuid == action.data.node.uuid) {
+          var anode = {...item, model: action.data.node, name: action.data.node.name}
+          
+          // return aNode
+          // return serviceReducer(item, action)
+        }
+        return item
+      })
+      return {...state, nodes: nodes, activeNode: activeNode}
+    }
     case 'RECEIVED_NODES': {
       var activeNode = state.activeNode
-      var nodes = (action.data.nodes || []).map((node) => {
-        // var node = action.data.nodes[name]
-        var hostname = "" 
-        if (node.server && node.server.length > 1)
-          hostname = node.server
-        else if (node.ip) {
-          hostname = node.ip
-        }
-        else if (node.addresses && node.addresses.length > 0) {
-          hostname = node.addresses[0]
-        }
-        var name = node.name
-        var network_name = (node.network_name ? node.network_name : node.name)
-        
-        if(activeNode.hostname == hostname) {
-          var nstate = createNodeState(network_name, name, hostname, `${node.port}`, activeNode.services)
-          activeNode = {...state.activeNode, ...nstate}
+      var nodes = (action.data.nodes || []).map((node) => {        
+        // console.log("NodesActiveNode= ", activeNode)
+        // console.log("NodesNode= ", ns)
+        if (activeNode.uuid == node.uuid) {
+          node.hostname = activeNode.hostname
+          var ns = createNodeState(node)
+          
+          activeNode = {...activeNode, ...ns}
           return activeNode
-        } else {
-          return createNodeState(network_name, name, hostname, `${node.port}`)
         }
-        // {"addresses": ["192.168.1.129"], "port": 5000, "server": "ancilla.local.", "type": "_ancilla._tcp.local."}
+        return createNodeState(node)        
       })
-
       return {...state, nodes: nodes, activeNode: activeNode}      
     }
     case 'RECEIVED_NOTIFICATION':
@@ -50,9 +57,12 @@ const appReducer = (state = initialState, action) => {
         // note: since state doesn't have "user",
         // so it will return undefined when you access it.
         // this will allow you to use default value from actually reducer.
+        // console.log("NodeReduce", action)
       var aNode = nodeReducer(state.activeNode, action)
       let nodes = state.nodes.map((item) => {
-        if (item == state.activeNode) {
+        // console.log("ITEM, activeNode", item.uuid, state.activeNode.uuid)
+        if (item.uuid == state.activeNode.uuid) {
+          // console.log("ITEM = activeNode")
           return aNode
           // return serviceReducer(item, action)
         }

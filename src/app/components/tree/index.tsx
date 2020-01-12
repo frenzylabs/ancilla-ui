@@ -15,9 +15,38 @@ import {
   IconButton
 } from 'evergreen-ui'
 
+import { NodeState, ServiceState, AttachmentModel }  from '../../store/state'
+
+
+type Props = {
+  name:string, 
+  
+  item: any,
+  key?:string, 
+  icon?:string,   
+  children?:Array<{}>, 
+  addAction?:Function,
+  selectItem?: Function
+}
+// {  
+//   node: NodeState, 
+//   service?: ServiceState,
+//   location: any,
+//   match: any,
+//   previousUrl?: any,
+//   listUrl?: any
+// }
+
+// type StateProps = {
+//   loading: boolean,
+//   cameraRecording: any,
+//   redirectTo: any,
+//   parentMatch: any    
+// }
+
 
 namespace Tree {
-  export class Node extends React.Component<{name:string, key:string, icon?:string, children?:Array<{}>, addAction?:Function}> {
+  export class Node extends React.Component<Props> {
     state = {
       expanded: false
     }
@@ -74,7 +103,7 @@ namespace Tree {
             <Pane id={`group-${this.props.name}`} paddingLeft={16} paddingTop={0} marginTop={0} marginBottom={0}>
               {this.props.children.map((child, index) => {
                 return (
-                  <Tree.Node selectItem={this.props.selectItem} name={child.name} item={child} key={`tree-node-${this.props.name}-${index}`}/>
+                  <Tree.Node selectItem={this.props.selectItem} name={child["name"]} item={child} key={`tree-node-${this.props.name}-${index}`}/>
                 )
               })}
             </Pane>

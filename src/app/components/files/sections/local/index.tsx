@@ -176,9 +176,8 @@ export default class Local extends React.Component<Props> {
         loading: false
       })
     })
-    .catch((err) => {
-      console.error(err)
-
+    .catch((error) => {
+      console.error(error)      
       this.loading = false
     })
   }
@@ -219,6 +218,7 @@ export default class Local extends React.Component<Props> {
     .catch((err) => {
       if(err.response && err.response.status == 401) {
         this.saving = false
+        this.props.showAuth()
 
         return
       }

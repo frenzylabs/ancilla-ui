@@ -35,7 +35,8 @@ type Props = {
   save?:Function, 
   data?: any, 
   onSave?: Function, 
-  onError?: Function
+  onError?: Function,
+  onUpdate?: Function
 }
 
 export default class Form extends React.Component<Props> {
@@ -46,6 +47,7 @@ export default class Form extends React.Component<Props> {
     }    
   }
 
+  
   constructor(props:any) {
     super(props)
 
@@ -134,59 +136,53 @@ export default class Form extends React.Component<Props> {
 
   render() {
     return (
-      <Pane>
-        <Label
-            htmlFor="name"
-            marginBottom={4}
-            display="block"
-          >
-            Camera Name
-          </Label>
-        <TextInput 
-          name="name" 
-          placeholder="Camera name" 
-          value={this.state.newCamera.name}
-          marginBottom={4}  
-          width="100%" 
-          height={48}
-          onChange={e => 
-            this.setState({
-              newCamera: {
-                ...this.state.newCamera,
-                name: e.target.value     
-              }
-            })
-          }
-        />
-        <Label
-            htmlFor="endpoint"
-            marginBottom={4}
-            display="block"
-          >
-            Camera Endpoint
-          </Label>
-        <TextInput 
-          name="url" 
-          placeholder="Camera endpoint" 
-          value={this.state.newCamera.endpoint}
-          marginBottom={4}  
-          width="100%" 
-          height={48}
-          onChange={e => 
-            this.setState({
-              newCamera: {
-                ...this.state.newCamera,
-                endpoint: e.target.value     
-              }
-            })
-          }
-        />
+      <Pane display="flex" flex={1} flexDirection="column" paddingBottom={40}>
+        <Pane marginBottom={20}>
+          <TextInput 
+            name="name" 
+            placeholder="Camera name" 
+            value={this.state.newCamera.name}
+            height={48}
+            onChange={e => {
+                this.setState({
+                  newCamera: {
+                    ...this.state.newCamera,
+                    name: e.target.value     
+                  }
+                })
 
-        <Pane display="flex" marginTop={20}>
+                if(this.props.onUpdate) {
+                  this.props.onUpdate(this.state.newCamera)
+                }
+              }
+            }
+          />
+        </Pane>
 
-          <Pane paddingTop={6}>
-            <Button appearance="primary" onClick={this.save}>Save</Button>
-          </Pane>
+        <Pane marginBottom={20}>
+          <TextInput 
+            name="url" 
+            placeholder="Camera endpoint" 
+            value={this.state.newCamera.endpoint}
+            height={48}
+            onChange={e => {
+                this.setState({
+                  newCamera: {
+                    ...this.state.newCamera,
+                    endpoint: e.target.value
+                  }
+                })
+
+                if(this.props.onUpdate) {
+                  this.props.onUpdate(this.state.newCamera)
+                }
+              }
+            }
+            />
+        </Pane>
+
+        <Pane marginBottom={20}>
+          <Button appearance="primary" onClick={this.save}>Save</Button>
         </Pane>
       </Pane>
     )

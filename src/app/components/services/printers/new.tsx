@@ -113,25 +113,25 @@ export class PrinterNew extends React.Component<Props> {
     let items =  printers.length > 0 ? printers : [{name: "No printers found."}]
     
     return ( 
-      <div>
-      <Pane display="flex" is="section" flexDirection="column" padding={16} background="tint2" borderRadius={3}>
-        <Pane flex={1} alignItems="center" display="flex">
-          <Heading >Add Printer</Heading>
+      <Pane padding={40}>
+        <Pane display="flex" is="section" flexDirection="column" padding={30} background="white" borderRadius={3} border>
+          <Pane flex={1} alignItems="center" display="flex" marginBottom={20}>
+            <Heading size={700}>Add Printer</Heading>
+          </Pane>
+          <Pane flex={1} alignItems="center" display="flex">
+            <Form ref={frm => this.form = frm} node={this.props.node} onSave={this.onSave} onError={this.onError}/>        
+          </Pane>
         </Pane>
-        <Pane flex={1} alignItems="center" display="flex">
-          <Form ref={frm => this.form = frm} node={this.props.node} onSave={this.onSave} onError={this.onError}/>        
-        </Pane>
+          
+        <Modal
+            component={AuthForm}
+            node={this.props.node}
+            // requestError={this.state.requestError}
+            isActive={this.state.showing}
+            dismissAction={this.authenticated.bind(this)}
+            onAuthenticated={this.authenticated.bind(this)}
+          />
       </Pane>
-        
-      <Modal
-          component={AuthForm}
-          node={this.props.node}
-          // requestError={this.state.requestError}
-          isActive={this.state.showing}
-          dismissAction={this.authenticated.bind(this)}
-          onAuthenticated={this.authenticated.bind(this)}
-        />
-      </div>
     )
   }
 }

@@ -21,11 +21,16 @@ import {
   Popover,
   Button,
   IconButton,
-  Badge
+  Badge,
+  Tablist,
+  SidebarTab,
+  Tab
 } from 'evergreen-ui'
 
 
 import { string } from 'prop-types'
+
+import { WifiShow } from '../wifi/show'
 
 import { NodeState } from '../../store/state'
 
@@ -37,7 +42,11 @@ type Props = {
 export default class Nav extends React.Component<Props> {
   state = {
     isSettingsShowing: false,
-    isShown: false
+    isShown: false,
+    tabs: [
+      {"key": "Wifi", "component": WifiShow }
+    ],
+    selectedSettingsIndex: 0
   }
 
   constructor(props) {
@@ -87,6 +96,8 @@ export default class Nav extends React.Component<Props> {
   }
 
   renderSettingsItem() {
+    
+     const $component = this.state.tabs[this.state.selectedSettingsIndex].component
     return (
       <React.Fragment>
         <Dialog 
@@ -94,8 +105,67 @@ export default class Nav extends React.Component<Props> {
           title="Settings" 
           onCloseComplete={() => this.setState({isSettingsShowing: false})}
           confirmLabel="Save"
+          width={"650px"}
+          hasFooter={false}
         >
-          Content
+          {({ close }) => (
+            <Pane display="flex" width="100%" flex={1}>
+              <Tablist marginBottom={16} flexBasis={140} marginRight={24}>
+                {this.state.tabs.map((tab, index) => {
+                  return (
+                    <SidebarTab
+                    key={tab.key}
+                    id={tab.key}
+                    onSelect={() => this.setState({ selectedSettingsIndex: index })}
+                    isSelected={index === this.state.selectedSettingsIndex}
+                    aria-controls={`panel-${tab.key}`}
+                  >
+                    {tab.key}
+                  </SidebarTab>
+                  )
+                })}
+                {/* {this.state.tabs.map((tab, index) => (
+                  <SidebarTab
+                    key={tab}
+                    id={tab}
+                    onSelect={() => this.setState({ selectedSettingsIndex: index })}
+                    isSelected={index === this.state.selectedSettingsIndex}
+                    aria-controls={`panel-${tab}`}
+                  >
+                    {tab}
+                  </SidebarTab>
+                ))} */}
+              </Tablist>
+              <Pane padding={16} background="tint1" flex={1} width="500px">
+                
+                <$component node={this.props.node} />
+                
+
+              {/* {(Object.keys(this.state.tabs) || []).map((tab, index) => {
+                if (this.state.tabs[tab]) {
+                  return 
+                }
+                {this.state.tabs.map((tab, index) => (
+                  <Pane
+                    key={tab}
+                    id={`panel-${tab}`}
+                    role="tabpanel"
+                    aria-labelledby={tab}
+                    aria-hidden={index !== this.state.selectedSettingsIndex}
+                    display={index === this.state.selectedSettingsIndex ? 'block' : 'none'}
+                  >
+                    <Paragraph>Panel {tab}</Paragraph>
+                  </Pane>
+                ))} */}
+              </Pane>
+            </Pane>
+          )}
+          
+          {/* <Pane>
+            <Heading>Wifi</Heading>
+            <WifiShow node={this.props.node}></WifiShow>
+          </Pane>  */}
+
         </Dialog>
 
         {this.renderMenuItem('cog', this.settingsAction)}

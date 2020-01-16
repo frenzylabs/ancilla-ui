@@ -358,6 +358,7 @@ export class CameraView extends React.Component<Props, StateProps> {
       let url = this.props.node.apiUrl
       var videoUrl = `${url}/webcam/${this.props.service.name}`
       return (
+        // <img width={640} ref={fp => this.videoRef = fp} src={`${videoUrl}`} />        
         <iframe id="image" width={640} style={{minHeight: "480px", border: '1px solid #c0c0c0'}} height={"100%"} ref={fp => this.videoRef = fp} src={`${videoUrl}`}  seamless={false} >
           <p>Your browser does not support iframes.</p>          
         </iframe>

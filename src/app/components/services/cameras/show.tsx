@@ -18,10 +18,14 @@ import {
 import {
   Pane,
   TextInput,
-  Label,
   Button,
   Paragraph,
-  toaster
+  Icon,
+  IconButton,
+  Heading,
+  Text,
+  Strong,
+  toaster,
 } from 'evergreen-ui'
 
 import PubSub from 'pubsub-js'
@@ -76,11 +80,15 @@ export class CameraView extends React.Component<Props, StateProps> {
       }
     }
 
-    this.receiveRequest   = this.receiveRequest.bind(this)
-    this.receiveEvent     = this.receiveEvent.bind(this)
-    this.setupCamera      = this.setupCamera.bind(this)
-    this.toggleRecording  = this.toggleRecording.bind(this)
-    this.setVideoUrl      = this.setVideoUrl.bind(this)
+    this.receiveRequest       = this.receiveRequest.bind(this)
+    this.receiveEvent         = this.receiveEvent.bind(this)
+    this.setupCamera          = this.setupCamera.bind(this)
+    this.toggleRecording      = this.toggleRecording.bind(this)
+    this.setVideoUrl          = this.setVideoUrl.bind(this)
+    this.renderConnectButton  = this.renderConnectButton.bind(this)
+    this.renderRecordButton   = this.renderRecordButton.bind(this)
+    this.renderSubStatusbar   = this.renderSubStatusbar.bind(this)
+    this.renderRecordSection  = this.renderRecordSection.bind(this)
   }
 
   componentDidMount() {
@@ -270,20 +278,76 @@ export class CameraView extends React.Component<Props, StateProps> {
     }
   }
 
+  renderConnectButton() {
+    return (
+      <IconButton 
+        marginLeft={10}
+        icon="power"
+        appearance="minimal"
+        intent={this.props.service.state["connected"] ?  'success' : 'danger'}
+        onClick={() => { this.power() }}
+      />
+    )
+  }
+
+  renderRecordButton() {
+    return (
+      <IconButton 
+        icon="mobile-video" 
+        disabled={!this.props.service.state["connected"]}
+        intent={this.props.service.state["recording"] ? "danger" : "success"}
+        onClick={this.toggleRecording}
+      />
+    )
+  }
+
+
   renderState() {
     return (
-      <Pane className={`card package`}>
+      <Pane>
         <div className="card-header">
-          <p className="card-header-title">
-            State
-          </p>
+          hi
         </div>
 
         <div className="card-content">
-          <Button onClick={() => { this.power() }}>{this.props.service.state["connected"] ?  'Disconnect' : 'Connect Camera'}</Button>
+          <Pane display="flex" flex={1} alignItems="center">
+            <Pane display="flex" flex={1} flexDirection="row">
+              <Pane>
+                Recording
+               </Pane>
+            </Pane>
+
+            <Pane display="flex">
+
+            </Pane>
+          </Pane>
+          
           <br/>
           <Paragraph>{JSON.stringify(this.props.service.state)}</Paragraph>
         </div>
+      </Pane>
+    )
+  }
+
+  renderRecordSection() {
+    return (
+      <Pane display="flex" flexDirection="column" background="white" border>
+        <Pane display="flex" padding={10} background="#f7f7f7" borderBottom>
+          <Pane display="flex" flex={1} alignItems="center">
+            <Pane display="flex" flex={1}>
+              <Heading>
+                {this.props.service.state["recording"] ? "Recording" : "Record"}
+              </Heading>
+            </Pane>
+            <Pane display="flex">
+              {this.renderRecordButton()}
+            </Pane>
+          </Pane>
+        </Pane>
+
+        <Pane padding={20}>
+          {this.renderTimeLapse()}
+        </Pane>
       </Pane>
     )
   }
@@ -294,18 +358,96 @@ export class CameraView extends React.Component<Props, StateProps> {
       let url = this.props.node.apiUrl
       var videoUrl = `${url}/webcam/${this.props.service.name}`
       return (
-        // <img width={640} ref={fp => this.videoRef = fp} src={`${this.state.videoUrl}`} />
-        <iframe id="image" width={640} style={{minHeight: "480px", border: 0, marginBottom: '20px'}} height={"100%"} ref={fp => this.videoRef = fp} src={`${videoUrl}`}  seamless={false} >
+        <iframe id="image" width={640} style={{minHeight: "480px", border: '1px solid #c0c0c0'}} height={"100%"} ref={fp => this.videoRef = fp} src={`${videoUrl}`}  seamless={false} >
           <p>Your browser does not support iframes.</p>          
         </iframe>
-        
       )
-      // <img width={640} ref={fp => this.videoRef = fp} src={`${videoUrl}`} />
     }
     return ( 
-        <Pane display="flex" width={640}  padding={20}> 
-            <Button onClick={() => { this.power() }}>Turn On Camera</Button>              
+        <Pane display="flex" width={640} height={480}  padding={20} justifyContent="center" alignItems="center"> 
+            <Icon icon="mobile-video" size={40} color="#c0c0c0" />
         </Pane>
+    )
+  }
+
+  renderTimeLapse() {
+    return (
+        <React.Fragment>
+          <TextInput 
+            name="timelapse" 
+            placeholder={`Timelapse in seconds (default: ${this.state.recordSettings.timelapse})`}
+            marginBottom={10}
+            width="100%" 
+            height={48}
+            disabled={this.props.service.state["recording"]}
+            onChange={e => 
+              this.setState({
+                recordSettings: {...this.state.recordSettings, timelapse: e.target.value}
+              })
+            }
+          />
+
+          <TextInput 
+            name="fps" 
+            placeholder={`Frames Per Second (default: ${this.state.recordSettings.videoSettings.fps}) `}
+            marginBottom={20}
+            width="100%" 
+            height={48}
+            disabled={this.props.service.state["recording"]}
+            onChange={e => 
+              this.setState({recordSettings: {...this.state.recordSettings, 
+                videoSettings: {...this.state.recordSettings["videoSettings"], fps: e.target.value}
+              }})
+          }
+          />
+
+          <Pane display="flex" flex={1} flexDirection="row" alignItems="center">
+            <Pane display="flex" flex={1}>
+              <Button 
+                iconBefore="mobile-video" 
+                marginRight={12}
+                intent={this.props.service.state["recording"] ? "danger" : "success"}
+                disabled={!this.props.service.state["connected"]}
+                onClick={this.toggleRecording}    
+                >
+                {this.props.service.state["recording"] ? "Stop" : "Start"} Recording
+              </Button>
+            </Pane>
+
+            <Pane display="flex">
+              <Link to={`/cameras/${this.props.service.id}/recordings`} style={{textDecoration: 'none'}}>
+                <Text>View recording history</Text>
+              </Link>
+            </Pane>
+          </Pane>
+      </React.Fragment>
+    )
+  }
+
+  renderRecording() {
+    return (
+      <React.Fragment>
+        <Button onClick={this.toggleRecording}>{this.props.service.state["recording"] ? "Stop Recording" : "Record"}</Button>
+        <Pane>
+          <Link to={`/cameras/${this.props.service.id}/recordings`}>List Recordings</Link>
+        </Pane>
+      </React.Fragment>
+    )
+  }
+
+  renderSubStatusbar() {
+    return (
+      <Pane display="flex" background="white" padding={10} border>
+        <Pane display="flex" alignItems="center">
+          <Icon icon="dot" color={this.props.service.state["connected"] ? "green" : "red"} />
+        </Pane>
+        <Pane display="flex" flex={1} alignItems="center">
+          <Text color="#b0b0b0" marginRight={6}>Camera:</Text> <Strong color="#080808" weight="bold">{this.props.service.name}</Strong>
+        </Pane>
+        <Pane>
+          {this.renderConnectButton()}
+        </Pane>
+      </Pane>
     )
   }
 
@@ -315,54 +457,15 @@ export class CameraView extends React.Component<Props, StateProps> {
         
         return (
           <Pane display="flex" flex={1} width="100%" padding={10}>
-            <Pane display="flex" >   
-              {this.renderVideo()}                         
+            <Pane display="flex" padding={20} background="white" border justifyContent="center">
+              {this.renderVideo()}
             </Pane>
-            <Pane display="flex" flex={1} padding={10} flexDirection="column" width="100%">
-              {this.renderState()}
-              <Label
-                htmlFor="timelapse"
-                marginBottom={4}
-                display="block"
-              >
-                Timelapse
-              </Label>
-              <TextInput 
-                name="timelapse" 
-                placeholder="Timelapse in seconds" 
+            <Pane display="flex" flex={1} padding={20} paddingTop={0} paddingRight={0} flexDirection="column" width="100%">
+              {this.renderSubStatusbar()}
 
-                marginBottom={4}
-                width="100%" 
-                height={48}
-                onChange={e => 
-                  this.setState({
-                    recordSettings: {...this.state.recordSettings, timelapse: e.target.value}
-                  })
-                }
-              />
-              <Label
-                htmlFor="fps"
-                marginBottom={4}
-                display="block"
-              >
-                Frames Per Second
-              </Label>
-              <TextInput 
-                name="fps" 
-                placeholder="Frames Per Second" 
-                marginBottom={4}
-                width="100%" 
-                height={48}
-                onChange={e => 
-                  this.setState({recordSettings: {...this.state.recordSettings, 
-                    videoSettings: {...this.state.recordSettings["videoSettings"], fps: e.target.value}
-                  }})
-                }
-              />
-              <Button onClick={this.toggleRecording}>{this.props.service.state["recording"] ? "Stop Recording" : "Record"}</Button>
-              <Pane>
-                <Link to={`/cameras/${this.props.service.id}/recordings`}>List Recordings</Link>
-              </Pane>
+              <br/>
+
+              {this.renderRecordSection()}
             </Pane>
           </Pane>
         )

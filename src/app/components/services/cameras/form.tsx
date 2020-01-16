@@ -13,6 +13,7 @@ import {
   TextInput,
   Label,
   Button,
+  Text,
   toaster
 } from 'evergreen-ui'
 
@@ -137,7 +138,8 @@ export default class Form extends React.Component<Props> {
   render() {
     return (
       <Pane display="flex" flex={1} flexDirection="column" paddingBottom={40}>
-        <Pane marginBottom={20}>
+        <Pane display="flex" flexDirection="column" marginBottom={20}>
+          <Label htmlFor="url">Camera name</Label>
           <TextInput 
             name="name" 
             placeholder="Camera name" 
@@ -159,7 +161,9 @@ export default class Form extends React.Component<Props> {
           />
         </Pane>
 
-        <Pane marginBottom={20}>
+        <Pane display="flex" flexDirection="column" marginBottom={20}>
+          <Label htmlFor="url">Camera Endpoint</Label>
+          
           <TextInput 
             name="url" 
             placeholder="Camera endpoint" 
@@ -179,6 +183,15 @@ export default class Form extends React.Component<Props> {
               }
             }
             />
+        </Pane>
+        
+        <Pane marginBottom={20} alignItems="center" justifyContent="center">
+          <Text color="muted">
+            Built in camera's will have an endpoint of 0. <br/>
+            A camera plugged in to USB will be a number,<br/> 
+            like 1, 2, etc. Depending on the order it was<br/> 
+            plugged in. Or a url to an IP based camera.
+          </Text>
         </Pane>
 
         <Pane marginBottom={20}>

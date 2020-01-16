@@ -81,8 +81,9 @@ export class CameraNew extends React.Component<Props> {
 
   onSave(response) {
     console.log("response on save", response)
-    this.props.addCamera(this.props.node, response.data.camera) 
-  
+
+    this.props.addCamera(this.props.node, response.data.camera)
+    this.props.history.push(`/cameras/${response.data.camera.id}`)
   }
 
   onError(error) {
@@ -127,7 +128,7 @@ export class CameraNew extends React.Component<Props> {
 
   selectCamera(item) {
     let url = `/cameras/${item.id}`
-    this.props.history.push(`${url}`);    
+    this.props.history.push(`${url}`)
   }
 
   setupCamera() {

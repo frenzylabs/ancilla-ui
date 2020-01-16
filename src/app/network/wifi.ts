@@ -18,7 +18,7 @@ export const WifiHandler = {
   },
 
   connect: (node, data, options= {}) => {
-      return Request.post(`http://${node.hostname}:8080/connect`, data, options)
+      return Request.post(`${node.apiUrl}/wifi`, data, options)
   },
 
   // get: (node, options= {}) => {

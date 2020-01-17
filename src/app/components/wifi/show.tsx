@@ -13,12 +13,14 @@ import Dayjs from 'dayjs'
 
 import {
   Pane,
+  Icon,
   TabNavigation,
   Tab,
   IconButton,
   Button,
   Dialog,
   Text,
+  Strong,
   Heading,
   Paragraph,
   Position,
@@ -29,7 +31,7 @@ import {
 } from 'evergreen-ui'
 
 import CameraRequest 	from '../../network/camera'
-import { ServiceHandler } 	from '../../network'
+import { WifiHandler } 	from '../../network'
 import { PaginatedList } from '../utils/pagination'
 
 import ErrorModal from '../modal/error'
@@ -53,7 +55,8 @@ type StateProps = {
   loading: boolean,
   cameraRecording: any,
   redirectTo: any,
-  parentMatch: any    
+  parentMatch: any,
+  wifi: any
 }
 
 
@@ -71,7 +74,8 @@ export class WifiShow extends React.Component<Props, StateProps> {
       loading: true,
       cameraRecording: null,
       redirectTo: null,
-      parentMatch: null      
+      parentMatch: null,
+      wifi: null    
     }
 
     // this.onChangePage       = this.onChangePage.bind(this)
@@ -87,54 +91,39 @@ export class WifiShow extends React.Component<Props, StateProps> {
     // this.renderTopBar		= this.renderTopBar.bind(this)
     // this.renderSection	= this.renderSection.bind(this)
 
-    this.cancelRequest = CameraRequest.cancelSource();
+    this.networkStatus = this.networkStatus.bind(this)
+    this.cancelRequest = WifiHandler.cancelSource()
 
     
   }
 
   componentDidMount() {
-    
+    this.networkStatus()
     // }
   }
 
   componentWillUnmount() {
     if (this.cancelRequest)
-      this.cancelRequest.cancel("Left Wifi Page");
+      this.cancelRequest.cancel("Left Wifi Page")
   }
 
   componentDidUpdate(prevProps, prevState) {
   }
 
+  networkStatus() {
+    WifiHandler.status(this.props.node, { cancelToken: this.cancelRequest.token })
+    .then((response) => {
+        if (response.data && response.data.data) {
+          this.setState({wifi: response.data.data.payload})
+        }
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+  }
 
   
   
-  renderDelete() {
-    return (
-      <Pane display="flex" borderTop paddingTop={20}>
-        <Pane display="flex" flex={1} padding={20} marginBottom={20} className="danger-zone" alignItems="center" flexDirection="row">
-          <Pane>
-            <Button appearance="primary" intent="danger" height={40} onClick={() => this.deleteRecording()}> Delete </Button>
-          </Pane>
-        </Pane>
-      </Pane>
-    )
-  }
-
-
-  renderDialog() {
-    // return (<Dialog
-    //   isShown={!!this.state.printerCommand}
-    //   title={this.state.printerCommand && this.state.printerCommand.command}
-    //   confirmLabel="OK"
-    //   onCloseComplete={() => this.setState({printerCommand: null})}
-    //   hasCancel={false}
-    // >
-    //     <Pane >{this.state.printerCommand && this.renderCommandResponse(this.state.printerCommand.response)}</Pane>
-
-    // </Dialog>)
-  }
-
-
 
   renderHeaderLinks() {
     if (!this.state.cameraRecording) return null
@@ -159,13 +148,36 @@ export class WifiShow extends React.Component<Props, StateProps> {
       </React.Fragment>
     )
   }
+  renderCurrentStatus() {
+    if (this.state.wifi) {
+      var color = "red"
+      if (this.state.wifi.wpa_state == "COMPLETED") {
+        color = "green"
+      }
+      return (
+        <Pane background="#122330" height={42} width="100%" display="flex" paddingLeft={20} paddingRight={20}>
+          <Pane flex={1} alignItems="center" display="flex">
+            <Icon icon="dot" size={22} color={color}/>
+            <Strong color="rgba(255.0, 255.0, 255.0, 0.8)">{this.state.wifi.ssid}  &nbsp;  &nbsp;</Strong>
+            <Text color="muted">
+              {this.state.wifi.ip_address || "" }
+              
+            </Text>
+          </Pane>
+        </Pane>        
+      )
+    }
+    return null
+  }
   // <Link to={"/cameras/" + this.props.service.id}>{this.props.service.name}</Link>&nbsp; / &nbsp;
   //             <Link to={"/cameras/" + this.props.service.id + "/recordings"}>Recordings</Link>&nbsp; / &nbsp;
   render() {
 
     return ( 
       <Pane padding={40}>
+        {this.renderCurrentStatus()}
         <Pane display="flex" is="section" justifyContent="center" background="white" borderRadius={3} border>
+          
           <Pane  padding={30} paddingBottom={0}>
             <Pane alignItems="center" display="flex" marginBottom={20}>
               <Heading size={700}>Add Wifi Connection</Heading>

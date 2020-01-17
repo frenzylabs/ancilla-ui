@@ -105,7 +105,7 @@ export default class Nav extends React.Component<Props> {
           title="Settings" 
           onCloseComplete={() => this.setState({isSettingsShowing: false})}
           confirmLabel="Save"
-          width={"650px"}
+          width={"750px"}
           hasFooter={false}
         >
           {({ close }) => (

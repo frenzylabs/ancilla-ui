@@ -274,7 +274,7 @@ export class Autocomplete extends PureComponent<autoProps> {
                 if (item && (typeof item) === "object" && item.hasOwnProperty("key")){
                   return item["key"]
                 } else {
-                  return itemString
+                  return itemToString(item)
                 }
               }
               return renderItem(

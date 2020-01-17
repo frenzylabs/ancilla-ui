@@ -21,9 +21,13 @@ export const WifiHandler = {
       return Request.post(`${node.apiUrl}/wifi`, data, options)
   },
 
-  // get: (node, options= {}) => {
-  //   return Request.get(`${node.apiUrl}/node`, options)
-  // },
+  status: (node, options= {}) => {
+    return Request.get(`${node.apiUrl}/wifi/status`, options)
+  },
+
+  networks: (node, options= {}) => {
+    return Request.get(`${node.apiUrl}/wifi/scan`, options)
+  },
 
   // update: (node, data, options = {}) => {    
   //   return Request.patch(`${node.apiUrl}/node`, data, options)

@@ -12,11 +12,12 @@ import {
   Pane,
   TextInput,
   Label,
-  Combobox,
   Checkbox,
   Button,
   toaster
 } from 'evergreen-ui'
+
+import Combobox from '../utils/combobox'
 
 import { WifiHandler } from '../../network'
 import { NodeState, PrinterState }  from '../../store/state'
@@ -35,14 +36,47 @@ export default class Form extends React.Component<Props> {
       ssid:     '',
       psk: ''
     },
-    loading: false
+    loading: false,
+    selectedNetwork: null,
+    networks: [],
+    networksLoading: false
+
   }
+  cancelRequest = null
 
   constructor(props:any) {
     super(props)
 
     this.connectToWifi = this.connectToWifi.bind(this)
+    this.cancelRequest = WifiHandler.cancelSource();
     // this.saveNode = this.savePrinter.bind(this)
+  }
+
+  componentWillUnmount() {
+    if (this.cancelRequest) 
+      this.cancelRequest.cancel("Left wifi form")
+  }
+
+  componentDidMount() {
+    this.loadNetworks()
+  }
+
+
+
+  loadNetworks() {
+    this.setState({networksLoading: true})
+    WifiHandler.networks(this.props.node, { cancelToken: this.cancelRequest.token })
+    .then((response) => {
+        var networks = []
+        if (response.data.data && response.data.data.payload) {
+          networks = Object.values(response.data.data.payload)
+        }
+        this.setState({networksLoading: false, networks: networks})
+    })
+    .catch((error) => {
+        console.log(error)
+        this.setState({networksLoading: false})
+    })
   }
 
   // get values():{name?:string, port:string, baudrate:string} {
@@ -79,7 +113,7 @@ export default class Form extends React.Component<Props> {
     WifiHandler.connect(this.props.node, this.state.wifiAttrs)
     .then((response) => {
       console.log(response.data)
-      // toaster.success(`Wifi ${response.data.node.name} has been successfully saved`)
+      toaster.success(`Wifi has been added`)
       this.setState({
         loading: false
       })
@@ -98,7 +132,7 @@ export default class Form extends React.Component<Props> {
         }
 
         toaster.danger(
-          `Unable to save node ${name}`, 
+          `Unable to save wifi connection`, 
           {description: errors}
         )
       }
@@ -107,118 +141,7 @@ export default class Form extends React.Component<Props> {
       })
     })
   }
-  // savePrinter() {
 
-  //   this.setState({
-  //     ...this.state,
-  //     loading: true
-  //   })
-
-  //   var req;
-  //   if (this.props.data && this.props.data.id) {
-  //     req = request.update(this.props.node, this.props.data.id, this.state.newPrinter)
-  //   } else {
-  //     req = request.create(this.props.node, this.state.newPrinter)
-  //   }
-
-  //   req.then((response) => {
-  //     this.setState({
-  //       loading: false
-  //     })
-  //     if (this.props.onSave) {
-  //       this.props.onSave(response)
-  //     }
-  //     toaster.success(`Printer ${name} has been successfully saved`)
-  //   })
-  //   .catch((error) => {
-  //     console.log(error)
-  //     if (this.props.onError) {
-  //       this.props.onError(error)
-  //     }
-  //     else {
-  //       var errors = [""]
-  //       if (error.response.data && error.response.data.errors) {
-  //           errors = Object.keys(error.response.data.errors).map((key, index) => {
-  //             return  `${key} : ${error.response.data.errors[key]}\n`
-  //           })
-  //       }
-
-  //       toaster.danger(
-  //         `Unable to save printer ${name}`, 
-  //         {description: errors}
-  //       )
-  //     }
-  //     this.setState({
-  //       loading: false
-  //     })
-  //   })
-  // }
-
-  // save() {
-  //   // if(this.props.save  == undefined) {
-  //   //   // alert("No save function given")
-  //   //   this.savePrinter()
-  //   //   // return
-  //   // } else {
-  //     this.setState({
-  //       loading: true
-  //     })
-  //   this.props.save(this.props.node, this.state.nodeAttrs)
-  //   .then((response) => {
-  //     toaster.success(`Node ${response.data.node.name} has been successfully saved`)
-  //     this.setState({
-  //       loading: false
-  //     })
-  //   })
-  //   .catch((error) => {
-  //     console.log(error)
-  //     if (this.props.onError) {
-  //       this.props.onError(error)
-  //     }
-  //     else {
-  //       var errors = [""]
-  //       if (error.response.data && error.response.data.errors) {
-  //           errors = Object.keys(error.response.data.errors).map((key, index) => {
-  //             return  `${key} : ${error.response.data.errors[key]}\n`
-  //           })
-  //       }
-
-  //       toaster.danger(
-  //         `Unable to save node ${name}`, 
-  //         {description: errors}
-  //       )
-  //     }
-  //     this.setState({
-  //       loading: false
-  //     })
-  //   })
-  //   // }
-  // }
-
-  // updateSettings(key, val) {
-  //   this.setState({
-  //     nodeAttrs: {...this.state.nodeAttrs, settings:
-  //       {...this.state.nodeAttrs.settings, [key]: val}
-  //     }
-  //   })
-  // }
-
-  // renderDiscoverable() {
-  //   if (!this.state.nodeAttrs.settings["discovery"]) return null
-  //   return (
-  //       <Pane display="flex" marginLeft={10} marginTop={5}>
-  //         <Pane display="flex" flex={1}>
-  //           <Checkbox
-  //               label="Make Node Discoverable"
-  //               checked={this.state.nodeAttrs.settings["discoverable"]}
-  //               onChange={e => 
-  //                 this.updateSettings("discoverable", e.target.checked)                
-  //               }
-  //             />
-  //         </Pane>
-  //       </Pane>
-  //   )
-  // }
 
   render() {
     return (
@@ -230,22 +153,51 @@ export default class Form extends React.Component<Props> {
           >
             Wifi SSID
           </Label>
-        <TextInput 
-          name="ssid" 
-          placeholder="SSID Name" 
+          <Combobox 
+          openOnFocus 
+          items={this.state.networks} 
+          itemToString={item => item ? `${item.ssid}` : ''}
+          selectedItem={this.state.selectedNetwork ? this.state.selectedNetwork : ''}
+          placeholder={this.state.networks.length > 0? "SSID" : "No Networks Found"} 
+          inputProps={{
+            onChange: (e) => {
+              var val = e.target.value.trim()
+              var sn = null
+              if (val) {
+                sn = {ssid: val}
+              }
+              this.setState({
+                selectedNetwork: sn,
+                wifiAttrs: {
+                  ...this.state.wifiAttrs,
+                  ssid: val
+                }
+              })
+            }
+          }}
+          // autocompleteProps={{
+          //   renderItem: this.renderItem.bind(this)
+          // }}
+          marginTop={4} 
           marginBottom={4}  
           width="100%" 
           height={48}
-          value={this.state.wifiAttrs.ssid}
-          onChange={e => 
-            this.setState({
-              wifiAttrs: {
-                ...this.state.wifiAttrs,
-                ssid: e.target.value     
-              }
-            })
+          isLoading={this.state.networksLoading}
+          // disabled={this.state.networks.length < 1}
+          onChange={selected => {
+            if (selected) {
+              this.setState({
+                selectedNetwork: selected,
+                wifiAttrs: {
+                  ...this.state.wifiAttrs,
+                  ssid: (selected && selected.ssid)
+                }
+              })
+            }
+          }
           }
         />
+        
         <Label
             htmlFor="Passphrase"
             marginBottom={4}
@@ -271,7 +223,7 @@ export default class Form extends React.Component<Props> {
         />
 
         
-        <Pane paddingTop={6}>
+        <Pane padding={15}>
             <Button isLoading={this.state.loading} appearance="primary" onClick={this.connectToWifi}>Connect</Button>
           </Pane>
       </Pane>

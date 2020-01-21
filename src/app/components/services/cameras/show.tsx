@@ -119,9 +119,9 @@ export class CameraView extends React.Component<Props, StateProps> {
       // console.log("Camera MODEL HAS BEEN UPDATED")
       this.setupCamera()      
     }
-    // if (this.props.service && this.props.service.state)
-    // this.setVideoUrl()
-    
+    if (prevProps.node.name != this.props.node.name) {
+      this.setupSubscription()
+    }
   }
 
   setVideoUrl() {
@@ -137,24 +137,26 @@ export class CameraView extends React.Component<Props, StateProps> {
 
   setupCamera() {
     if (this.props.service) {
-      // console.log("SETUP CAMERA")
       this.props.getState(this.props.node, this.props.service)
       PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.connection"])
       PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.recording"])
 
-      
-      this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
-      this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events`
-      // console.log("Cam SHOW EVENT TOPIC = ", this.eventTopic)
-      if (this.pubsubRequestToken) {
-        PubSub.unsubscribe(this.pubsubRequestToken)
-      }
-      if (this.pubsubToken) {
-        PubSub.unsubscribe(this.pubsubToken)
-      }
-      this.pubsubRequestToken = PubSub.subscribe(this.requestTopic, this.receiveRequest);
-      this.pubsubToken = PubSub.subscribe(this.eventTopic, this.receiveEvent);
+      this.setupSubscription()
     }
+  }
+
+  setupSubscription() {
+    this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
+    this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events`
+    // console.log("Cam SHOW EVENT TOPIC = ", this.eventTopic)
+    if (this.pubsubRequestToken) {
+      PubSub.unsubscribe(this.pubsubRequestToken)
+    }
+    if (this.pubsubToken) {
+      PubSub.unsubscribe(this.pubsubToken)
+    }
+    this.pubsubRequestToken = PubSub.subscribe(this.requestTopic, this.receiveRequest);
+    this.pubsubToken = PubSub.subscribe(this.eventTopic, this.receiveEvent);
   }
 
   receiveRequest(msg, data) {

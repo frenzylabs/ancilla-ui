@@ -103,7 +103,7 @@ export class App extends React.Component<AppProps, stateProps> {
     else if (prevNode.name != this.props.activeNode.name) {
       // this.setState({connection: new Connection({node: this.props.activeNode})})
       this.state.connection.node = this.props.activeNode
-      PubSub.unsubscribe(this.pubsubToken)
+      // PubSub.unsubscribe(this.pubsubToken)
       this.pubsubToken = PubSub.subscribe(this.props.activeNode.name + ".request", this.sendData);
       this.setupNotification()
     }

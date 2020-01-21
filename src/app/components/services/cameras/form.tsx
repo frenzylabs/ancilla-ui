@@ -187,10 +187,10 @@ export default class Form extends React.Component<Props> {
         
         <Pane marginBottom={20} alignItems="center" justifyContent="center">
           <Text color="muted">
-            Built in camera's will have an endpoint of 0. <br/>
-            A camera plugged in to USB will be a number,<br/> 
-            like 1, 2, etc. Depending on the order it was<br/> 
-            plugged in. Or a url to an IP based camera.
+            Built-in and USB connected cameras will have a numerical <br/>
+            endpoint. Depending on the order the USB cameras were <br/>
+            plugged in, it could be 0, 1, 2, etc. <br />
+            It can also be a ur to an IP based camera.            
           </Text>
         </Pane>
 

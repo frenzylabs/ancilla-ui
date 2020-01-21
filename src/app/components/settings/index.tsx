@@ -22,7 +22,7 @@ type Props = {
   node: NodeState, 
   service: any,
   forms: any,
-  title?: string
+  title?: any
 }
 
 type StateProps = {

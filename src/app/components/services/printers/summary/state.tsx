@@ -8,6 +8,7 @@
 
 import React from 'react'
 import { Link } from 'react-router-dom'
+import Dayjs from 'dayjs'
 
 import {
   Pane,
@@ -123,6 +124,7 @@ export default class State extends React.Component<Props> {
       </Pane>
     )
   }
+
   getProgress() {
     var curprnt = this.props.service.currentPrint.model
     if (curprnt && curprnt.state) {
@@ -135,11 +137,12 @@ export default class State extends React.Component<Props> {
   renderLastPrint() {    
     var curprnt = this.props.service.currentPrint.model
     if (curprnt && curprnt.name && curprnt.status != "running") {
+      var created_at = Dayjs.unix(curprnt.created_at).format('MM.d.YYYY - hh:mm:ss a')
       return (
         <div>
           {this.renderRow("Last Print", <Link to={`/printers/${this.props.service.id}/prints/${curprnt.id}`}>{curprnt.name}</Link>)}
           {this.renderRow("Status", curprnt.status)}
-          {this.renderRow("Started On", `${curprnt.created_at}`)}          
+          {this.renderRow("Started On", `${created_at}`)}
           {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice["name"]) || "")}
           {this.renderRow("Duration", String(curprnt.updated_at - curprnt.created_at))}
         </div>
@@ -150,11 +153,12 @@ export default class State extends React.Component<Props> {
   renderCurrentPrint() {    
     var curprnt = this.props.service.currentPrint.model
     if (curprnt && curprnt.status == "running") {
+      var created_at = Dayjs.unix(curprnt.created_at).format('MM.d.YYYY - hh:mm:ss a')
       return (
         <div>
           {this.renderRow("Current Print", curprnt.name)}
           {this.renderRow("Status", curprnt.status)}
-          {this.renderRow("Started On", `${curprnt.created_at}`)}
+          {this.renderRow("Started On", `${created_at}`)}
           {/* {this.renderRow("Filament", "14.41m")}
           {this.renderRow("Est Time", "12.4 hours")}
           {this.renderRow("Time left", "00:00:00")} */}

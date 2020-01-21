@@ -8,6 +8,7 @@
 
 import React      from 'react'
 import {connect}  from 'react-redux'
+import { Link }   from 'react-router-dom'
 
 import {
   Switch,
@@ -74,11 +75,11 @@ export class CameraIndex extends React.Component<Props, StateProps> {
       }
     }
 
-    this.receiveRequest = this.receiveRequest.bind(this)
-    this.receiveEvent     = this.receiveEvent.bind(this)
-    this.setupCamera      = this.setupCamera.bind(this)
-    this.toggleRecording  = this.toggleRecording.bind(this)
-
+    this.receiveRequest    = this.receiveRequest.bind(this)
+    this.receiveEvent      = this.receiveEvent.bind(this)
+    this.setupCamera       = this.setupCamera.bind(this)
+    this.toggleRecording   = this.toggleRecording.bind(this)
+    this.setupSubscription = this.setupSubscription.bind(this)
     
     
   }
@@ -100,6 +101,9 @@ export class CameraIndex extends React.Component<Props, StateProps> {
       // console.log("PRINTER MODEL HAS BEEN UPDATED")
       this.setupCamera()      
     }
+    if (prevProps.node.name != this.props.node.name) {
+      this.setupSubscription()
+    }
   }
 
   setupCamera() {
@@ -107,17 +111,21 @@ export class CameraIndex extends React.Component<Props, StateProps> {
       this.props.getState(this.props.node, this.props.service)
       PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.connection"])
 
-      this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
-      this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events`
-      if (this.pubsubRequestToken) {
-        PubSub.unsubscribe(this.pubsubRequestToken)
-      }
-      if (this.pubsubToken) {
-        PubSub.unsubscribe(this.pubsubToken)
-      }
-      this.pubsubRequestToken = PubSub.subscribe(this.requestTopic, this.receiveRequest);
-      this.pubsubToken = PubSub.subscribe(this.eventTopic, this.receiveEvent);
+      this.setupSubscription()
     }
+  }
+
+  setupSubscription() {
+    this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
+    this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events`
+    if (this.pubsubRequestToken) {
+      PubSub.unsubscribe(this.pubsubRequestToken)
+    }
+    if (this.pubsubToken) {
+      PubSub.unsubscribe(this.pubsubToken)
+    }
+    this.pubsubRequestToken = PubSub.subscribe(this.requestTopic, this.receiveRequest);
+    this.pubsubToken = PubSub.subscribe(this.eventTopic, this.receiveEvent);
   }
 
   receiveRequest(msg, data) {
@@ -184,6 +192,7 @@ export class CameraIndex extends React.Component<Props, StateProps> {
   cameraSaved(resp) {
     // console.log("printer saved", resp)
     this.props.cameraUpdated(this.props.node, resp.data.service_model)
+    this.props.history.push(this.props.match.url)    
   }
 
   saveFailed(error) {
@@ -238,7 +247,14 @@ export class CameraIndex extends React.Component<Props, StateProps> {
     )
   }
 
-  
+  settingsTitle() {
+    return (
+      <Pane>
+        <Link to={this.props.match.url}>{this.props.service.name}</Link> &nbsp; / &nbsp;
+        Settings
+      </Pane>
+    )
+  }
 
   render() {
     var params = this.props.match.params;
@@ -252,7 +268,7 @@ export class CameraIndex extends React.Component<Props, StateProps> {
                 <Recordings {...this.props} {...props}  /> 
               }/> 
               <Route path={`${this.props.match.path}/settings`} render={ props => 
-                <Settings {...this.props} {...props} forms={[
+                <Settings {...this.props} {...props} title={this.settingsTitle()} forms={[
                   <CameraForm onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />,
                   this.deleteComponent()
                 ]}/> 

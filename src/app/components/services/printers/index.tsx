@@ -2,12 +2,14 @@
 //  index.tsx
 //  ancilla
 // 
-//  Created by Wess Cope (wess@frenzylabs.com) on 12/06/19
+//  Created by Kevin Musselman (kevin@frenzylabs.com) on 01/08/20
 //  Copyright 2019 FrenzyLabs, LLC.
 //
 
+
 import React      from 'react'
 import {connect}  from 'react-redux'
+import { Link }   from 'react-router-dom'
 
 import {
   Switch,
@@ -204,6 +206,15 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
     )
   }
 
+  settingsTitle() {
+    return (
+      <Pane>
+        <Link to={this.props.match.url}>{this.props.service.name}</Link> &nbsp; / &nbsp;
+        Settings
+      </Pane>
+    )
+  }
+
   render() {
     var params = this.props.match["params"];
     return (
@@ -225,7 +236,7 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
                 <Prints {...this.props} {...props}  /> 
               }/>
               <Route path={`${this.props.match.path}/settings`} render={ props => 
-                <Settings {...this.props} {...props} forms={[
+                <Settings {...this.props} {...props} title={this.settingsTitle()} forms={[
                   <PrinterForm onSave={this.printerSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props}/>, 
                   this.deleteComponent()
                 ]} /> 

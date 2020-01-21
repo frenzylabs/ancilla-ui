@@ -1,16 +1,17 @@
 //
-//  printer.ts
+//  camera.ts
 //  ancilla
 // 
-//  Created by Wess Cope (me@wess.io) on 11/05/19
-//  Copyright 2019 Wess Cope
+//  Created by Kevin Musselman (kevin@frenzylabs.com) on 01/08/20
+//  Copyright 2019 FrenzyLabs, LLC.
 //
+
 
 import {Request, CancelToken} from './request'
 import Connection from '../components/services/printers/summary/connection';
 
-// import {default as QS } from 'qs'
-const QS = require('qs');
+import {default as QS } from 'qs'
+// const QS = require('qs');
 
 export const Camera = {
   cancelSource: () => {

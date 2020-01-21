@@ -1,10 +1,11 @@
 //
-//  printers.tsx
+//  new.tsx
 //  ancilla
 // 
-//  Created by Wess Cope (me@wess.io) on 11/08/19
-//  Copyright 2019 Wess Cope
+//  Created by Kevin Musselman (kevin@frenzylabs.com) on 01/15/20
+//  Copyright 2019 FrenzyLabs, LLC.
 //
+
 
 import React from 'react'
 import { Link, Redirect }       from 'react-router-dom';

@@ -184,7 +184,7 @@ export class WifiShow extends React.Component<Props, StateProps> {
             </Pane>
           
             <Pane alignItems="center" display="flex">
-              <Form ref={frm => this.form = frm} node={this.props.node} />        
+              <Form node={this.props.node} onSave={this.networkStatus}/>
             </Pane>
           </Pane>         
         </Pane>

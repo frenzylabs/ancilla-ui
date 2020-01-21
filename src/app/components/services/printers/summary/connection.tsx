@@ -174,20 +174,29 @@ export default class Connection extends React.Component<Props> {
     return null
   }
   renderPausePrint() {
+    var disabled = true
     if (this.props.service.state["printing"]) {
-      return (
-          <Pane display="flex" marginBottom={6}>
-            <Button onClick={() => this.pausePrint()} minWidth={180} iconBefore="application" >Pause Print</Button>
-          </Pane>
-      )
+      disabled = false
+      // return (
+      //     <Pane display="flex" marginBottom={6}>
+      //       <Button onClick={() => this.pausePrint()} minWidth={180} iconBefore="application" >Pause Print</Button>
+      //     </Pane>
+      // )
     } else if (this.props.service.currentPrint) {
-      return (
-        <Pane display="flex" marginBottom={6}>
-          <Button onClick={() => this.resumePrint()} minWidth={180} iconBefore="application" >Resume Print</Button>
-        </Pane>
-    )
+      if (this.props.service.currentPrint.status == "paused") {
+        return (
+          <Pane display="flex" marginBottom={6}>
+            <Button onClick={() => this.resumePrint()} minWidth={180} iconBefore="application" >Resume Print</Button>
+          </Pane>
+        )
+      }
     }
-    return null
+
+    return (
+      <Pane display="flex" marginBottom={6}>
+        <Button disabled={disabled} onClick={() => this.pausePrint()} minWidth={180} iconBefore="application" >Pause Print</Button>
+      </Pane>
+    )    
   }
 
   renderPrintAction() {

@@ -69,7 +69,8 @@ export default class Form extends React.Component<Props> {
     .then((response) => {
         var networks = []
         if (response.data.data && response.data.data.payload) {
-          networks = Object.values(response.data.data.payload)
+          var payload = response.data.data.payload
+          networks = Object.keys(payload).map(key => payload[key]);          
         }
         this.setState({networksLoading: false, networks: networks})
     })
@@ -117,6 +118,9 @@ export default class Form extends React.Component<Props> {
       this.setState({
         loading: false
       })
+      if (this.props.onSave) {
+        this.props.onSave()
+      }
     })
     .catch((error) => {
       console.log(error)

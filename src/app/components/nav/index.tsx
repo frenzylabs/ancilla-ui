@@ -31,6 +31,7 @@ import {
 import { string } from 'prop-types'
 
 import { WifiShow } from '../wifi/show'
+import SystemSettings from '../settings/system'
 
 import { NodeState } from '../../store/state'
 
@@ -39,12 +40,17 @@ type Props = {
   node: NodeState
 }
 
+class SystemForm extends React.Component<Props> {
+
+}
+
 export default class Nav extends React.Component<Props> {
   state = {
     isSettingsShowing: false,
     isShown: false,
     tabs: [
-      {"key": "Wifi", "component": WifiShow }
+      {"key": "Wifi", "component": WifiShow },
+      {"key": "System", "component": SystemSettings }
     ],
     selectedSettingsIndex: 0
   }

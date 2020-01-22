@@ -45,8 +45,6 @@ import { NodeState, ServiceState, AttachmentModel }  from '../../store/state'
 type Props = {  
   node: NodeState, 
   service?: ServiceState,
-  location: any,
-  match: any,
   previousUrl?: any,
   listUrl?: any
 }

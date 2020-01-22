@@ -13,3 +13,4 @@ export { default as CameraHandler }     from './camera';
 export { default as LayerKeepHandler }  from './layerkeep';
 export { default as NodeHandler }       from './node';
 export { default as WifiHandler }       from './wifi';
+export { default as SystemHandler }     from './system';

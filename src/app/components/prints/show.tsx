@@ -302,7 +302,7 @@ export class PrintShow extends React.Component<Props, StateProps> {
           renderSectionHeader={() => this.renderSectionHeader("Commands")}
           node={this.props.node} 
           service={this.props.service} 
-          printId={this.props.match.params.print_id}
+          printId={this.props.match.params.printId}
         />
       </Pane>)
   }

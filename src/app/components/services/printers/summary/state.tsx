@@ -138,13 +138,14 @@ export default class State extends React.Component<Props> {
     var curprnt = this.props.service.currentPrint.model
     if (curprnt && curprnt.name && curprnt.status != "running") {
       var created_at = Dayjs.unix(curprnt.created_at).format('MM.d.YYYY - hh:mm:ss a')
+      var duration = (curprnt.updated_at - curprnt.created_at).toFixed(2)
       return (
         <div>
           {this.renderRow("Last Print", <Link to={`/printers/${this.props.service.id}/prints/${curprnt.id}`}>{curprnt.name}</Link>)}
           {this.renderRow("Status", curprnt.status)}
           {this.renderRow("Started On", `${created_at}`)}
           {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice["name"]) || "")}
-          {this.renderRow("Duration", String(curprnt.updated_at - curprnt.created_at))}
+          {this.renderRow("Duration", `${duration}`)}
         </div>
       )
     }
@@ -154,6 +155,7 @@ export default class State extends React.Component<Props> {
     var curprnt = this.props.service.currentPrint.model
     if (curprnt && curprnt.status == "running") {
       var created_at = Dayjs.unix(curprnt.created_at).format('MM.d.YYYY - hh:mm:ss a')
+      var duration = (curprnt.updated_at - curprnt.created_at).toFixed(2)
       return (
         <div>
           {this.renderRow("Current Print", curprnt.name)}
@@ -163,7 +165,7 @@ export default class State extends React.Component<Props> {
           {this.renderRow("Est Time", "12.4 hours")}
           {this.renderRow("Time left", "00:00:00")} */}
           {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice["name"]) || "")}
-          {this.renderRow("Duration", String(curprnt.updated_at - curprnt.created_at))}
+          {this.renderRow("Duration", `${duration}`)}
           {this.renderRow("Progress", this.getProgress())}
         </div>
       )

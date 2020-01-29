@@ -40,6 +40,8 @@ import ErrorModal     from '../../modal/error'
 import NodeAction  from '../../../store/actions/node'
 import ServiceAction  from '../../../store/actions/services'
 
+import { HtmlPreview } from '../../utils/iframe'
+
 import { NodeState, ServiceState }  from '../../../store/state'
 
 
@@ -93,7 +95,7 @@ export class CameraView extends React.Component<Props, StateProps> {
 
   componentDidMount() {
     // this.setupCamera()
-    // this.setVideoUrl()
+    this.setVideoUrl()
     this.setupCamera()
   }
 
@@ -105,7 +107,7 @@ export class CameraView extends React.Component<Props, StateProps> {
     // setTimeout(function() {
     //       React.unmountAtNode(this.videoRef)
     // }), 0);
-    // this.setState({videoUrl: ''})
+    this.setState({videoUrl: ''})
     // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "UNSUB", "events.camera.connection"])
     // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "UNSUB", "events.camera.recording"])
     if (this.pubsubToken) 
@@ -115,9 +117,13 @@ export class CameraView extends React.Component<Props, StateProps> {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (prevProps.service.state != this.props.service.state) {
+      this.setVideoUrl()
+    }
     if (prevProps.service.model != this.props.service.model) {
-      // console.log("Camera MODEL HAS BEEN UPDATED")
-      this.setupCamera()      
+      console.log("Camera MODEL HAS BEEN UPDATED")
+      this.setupCamera()
+      this.setVideoUrl()
     }
     if (prevProps.node.name != this.props.node.name) {
       this.setupSubscription()
@@ -126,13 +132,14 @@ export class CameraView extends React.Component<Props, StateProps> {
 
   setVideoUrl() {
     var videoUrl = ''
+    console.log(this.props.service)
     if (this.props.service && this.props.service.state["connected"]) {
       let url = this.props.node.apiUrl
       videoUrl = `${url}/webcam/${this.props.service.name}`
     }
-    // console.log("Video URL", videoUrl)
-    // if (this.state.videoUrl != videoUrl)
-    //   this.setState({videoUrl: videoUrl})
+    console.log("Video URL", videoUrl)
+    if (this.state.videoUrl != videoUrl)
+      this.setState({videoUrl: videoUrl})
   }
 
   setupCamera() {
@@ -142,6 +149,7 @@ export class CameraView extends React.Component<Props, StateProps> {
       PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.recording"])
 
       this.setupSubscription()
+      this.setVideoUrl()
     }
   }
 
@@ -296,7 +304,7 @@ export class CameraView extends React.Component<Props, StateProps> {
     return (
       <IconButton 
         icon="mobile-video" 
-        disabled={!this.props.service.state["connected"]}
+        // disabled={!this.props.service.state["connected"]}
         intent={this.props.service.state["recording"] ? "danger" : "success"}
         onClick={this.toggleRecording}
       />
@@ -357,11 +365,12 @@ export class CameraView extends React.Component<Props, StateProps> {
   renderVideo() {
     if (this.props.service.state["connected"]) {
       // let url = this.props.node.apiUrl
-      let url = this.props.node.apiUrl
-      var videoUrl = `${url}/webcam/${this.props.service.name}`
+      // let url = this.props.node.apiUrl
+      // var videoUrl = `${url}/webcam/${this.props.service.name}`
       return (
-        // <img width={640} ref={fp => this.videoRef = fp} src={`${videoUrl}`} />        
-        <iframe id="image" width={640} style={{minHeight: "480px", border: '1px solid #c0c0c0'}} height={"100%"} ref={fp => this.videoRef = fp} src={`${videoUrl}`}  seamless={false} >
+        // <HtmlPreview src={`${this.state.videoUrl}`} body={`<body><img width="640" src="${this.state.videoUrl}" /></body>`}></HtmlPreview>
+        // <img width={640} ref={fp => this.videoRef = fp} src={`${videoUrl}`} />
+        <iframe key={this.state.videoUrl} id="image" width={640} style={{minHeight: "480px", border: '1px solid #c0c0c0'}} height={"100%"} ref={fp => this.videoRef = fp} src={`${this.state.videoUrl}`}  seamless={false} >
           <p>Your browser does not support iframes.</p>          
         </iframe>
       )

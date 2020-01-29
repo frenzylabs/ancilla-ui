@@ -129,7 +129,7 @@ export class PrinterShow extends React.Component<PrinterProps, StateProps> {
     if (this.props.service) {
       this.props.getState(this.props.node, this.props.service)
       // this.props.dispatch(ServiceActions.getState(this.props.service))
-      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", ""])
+      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events"])      
       // PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "REQUEST.get_state"])
       // console.log("Has printer")
       this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`

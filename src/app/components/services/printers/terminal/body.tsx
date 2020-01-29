@@ -72,13 +72,15 @@ export default class Body extends React.Component<Props> {
   }
   
   componentWillUnmount() {
+    PubSub.make_request(this.props.node, [this.props.service.name, "UNSUB", "data"])
     if (this.pubsubToken)
       PubSub.unsubscribe(this.pubsubToken)
   }
 
   componentDidMount() {
     if (this.props.service) {
-      this.topic = `${this.props.node.name}.${this.props.service.name}.events.printer.data_received`
+      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "data"])
+      this.topic = `${this.props.node.name}.${this.props.service.name}.data.printer.data_received`
       this.pubsubToken = PubSub.subscribe(this.topic, this.receiveData);
     }
   }
@@ -87,7 +89,7 @@ export default class Body extends React.Component<Props> {
     if (this.props.service.model && prevProps.service.model != this.props.service.model) {
       if (this.pubsubToken)
         PubSub.unsubscribe(this.pubsubToken)
-      this.topic = `${this.props.node.name}.${this.props.service.name}.events.printer.data_received`
+      this.topic = `${this.props.node.name}.${this.props.service.name}.data.printer.data_received`
       this.pubsubToken = PubSub.subscribe(this.topic, this.receiveData);
     }
     if (prevProps.service.logs.length != this.props.service.logs.length) {

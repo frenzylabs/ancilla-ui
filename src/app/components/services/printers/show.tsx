@@ -155,7 +155,6 @@ export class PrinterShow extends React.Component<PrinterProps, StateProps> {
       console.log("get STATE", data)
       this.props.updateState(this.props.node, this.props.service, data["resp"])
       // this.props.dispatch(PrinterActions.updateState(this.props.service, data["resp"]))
-
       // this.setState({printerState: data["resp"]})
     }
     // else if (data["action"] == "connect") {

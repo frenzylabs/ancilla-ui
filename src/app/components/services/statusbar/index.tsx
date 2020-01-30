@@ -22,7 +22,8 @@ type Props = {
   service: ServiceState,
   status: string,
   powerAction?: Function,
-  settingsAction?: Function
+  settingsAction?: Function,
+  renderTitle?: Function
 }
 
 
@@ -40,6 +41,13 @@ export default class Statusbar extends React.Component<Props> {
     )
   }
 
+  renderTitle() {
+    if (this.props.renderTitle) {
+      return this.props.renderTitle()
+    } else {
+      return this.props.service.name
+    }
+  }
   render() {
     return (
       <Pane background="#122330" height={42} width="100%" display="flex" paddingLeft={20} paddingRight={20}>
@@ -47,7 +55,7 @@ export default class Statusbar extends React.Component<Props> {
           <Icon icon="dot" size={22} color={this.props.status || "red"}/>
           <Text color="muted">
             {this.props.service.kind.charAt(0).toUpperCase() + this.props.service.kind.slice(1) }: &nbsp;
-            <Strong color="rgba(255.0, 255.0, 255.0, 0.8)">{this.props.service.name}</Strong>
+            <Strong color="rgba(255.0, 255.0, 255.0, 0.8)">{this.renderTitle()}</Strong>
           </Text>
         </Pane>
 

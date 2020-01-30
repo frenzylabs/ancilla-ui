@@ -256,11 +256,15 @@ export class CameraIndex extends React.Component<Props, StateProps> {
     )
   }
 
+  statusBarTitle() {
+    return `${this.props.service.name}: ${this.props.service.model.model.endpoint}`
+  }
+
   render() {
     var params = this.props.match.params;
     return (
       <div className="flex-wrapper">
-        <Statusbar {...this.props} status={this.getColorState()} powerAction={this.power.bind(this)} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
+        <Statusbar {...this.props} renderTitle={this.statusBarTitle.bind(this)} status={this.getColorState()} powerAction={this.power.bind(this)} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
 
         <div className="scrollable-content">
           <Switch>                 

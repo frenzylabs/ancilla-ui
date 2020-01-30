@@ -132,12 +132,11 @@ export class CameraView extends React.Component<Props, StateProps> {
 
   setVideoUrl() {
     var videoUrl = ''
-    console.log(this.props.service)
     if (this.props.service && this.props.service.state["connected"]) {
       let url = this.props.node.apiUrl
       videoUrl = `${url}/webcam/${this.props.service.name}`
     }
-    console.log("Video URL", videoUrl)
+    // console.log("Video URL", videoUrl)
     if (this.state.videoUrl != videoUrl)
       this.setState({videoUrl: videoUrl})
   }
@@ -454,7 +453,9 @@ export class CameraView extends React.Component<Props, StateProps> {
           <Icon icon="dot" color={this.props.service.state["connected"] ? "green" : "red"} />
         </Pane>
         <Pane display="flex" flex={1} alignItems="center">
-          <Text color="#b0b0b0" marginRight={6}>Camera:</Text> <Strong color="#080808" weight="bold">{this.props.service.name}</Strong>
+          <Text color="#b0b0b0" marginRight={6}>Camera:</Text> 
+          <Strong color="#080808" weight="bold" marginRight={6}>{this.props.service.name}: </Strong>
+          <Text color="#b0b0b0" >{this.props.service.model.model.endpoint}</Text> 
         </Pane>
         <Pane>
           {this.renderConnectButton()}

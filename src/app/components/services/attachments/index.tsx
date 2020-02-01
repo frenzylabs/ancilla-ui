@@ -91,32 +91,6 @@ export class ServiceAttachment extends React.Component<AttachmentProps, StatePro
     }
   }
   
-  // getAttachments() {
-  //   if (this.props.service) {
-  //     this.setState({isLoading: true})
-  //     ServiceHandler.attachments(this.props.node, this.props.service, {cancelToken: this.cancelRequest.token})
-  //     .then((response) => {
-  //       var currentAttachmentIds = response.data.attachments.map((a) => a.attachment.id)
-  //       this.setState({isLoading: false, attachments: response.data.attachments, currentAttachmentIds: currentAttachmentIds})
-  //     }).catch((err) => {
-  //       console.log(err)
-  //       this.setState({isLoading: false})
-  //     })
-  //     // PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "SUB", "events.connection"])
-  //     // PubSub.publishSync(this.props.node.name + ".request", [this.props.camera.name, "REQUEST.get_state"])
-  //     // // console.log("Has printer")
-  //     // this.requestTopic = `${this.props.node.name}.${this.props.camera.name}.request`
-  //     // this.eventTopic = `${this.props.node.name}.${this.props.camera.name}.events`
-  //     // if (this.pubsubRequestToken) {
-  //     //   PubSub.unsubscribe(this.pubsubRequestToken)
-  //     // }
-  //     // if (this.pubsubToken) {
-  //     //   PubSub.unsubscribe(this.pubsubToken)
-  //     // }
-  //     // this.pubsubRequestToken = PubSub.subscribe(this.requestTopic, this.receiveRequest);
-  //     // this.pubsubToken = PubSub.subscribe(this.eventTopic, this.receiveEvent);
-  //   }
-  // }
 
   saveAttachment(closeDialog) {
     this.setState({

@@ -53,6 +53,11 @@ type StateProps = {
 }
 
 export class AttachmentView extends React.Component<Props, StateProps> {
+  requestTopic       = ""
+  eventTopic         = ""
+  pubsubToken        = null
+  pubsubRequestToken = null
+
   constructor(props:any) {
     super(props)
 
@@ -187,7 +192,7 @@ export class AttachmentView extends React.Component<Props, StateProps> {
   }
 
   getColorState() {
-    if (this.props.service.state.open) {
+    if (this.props.service.state["open"]) {
       return 'success'
     } else {
       return 'danger'
@@ -214,7 +219,7 @@ export class AttachmentView extends React.Component<Props, StateProps> {
   }
 
   power(){
-    if (this.props.service.state.open) {
+    if (this.props.service.state["open"]) {
       CameraHandler.disconnect(this.props.node, this.props.service)
       .then((response) => {
         console.log("disconnected", response)
@@ -244,7 +249,7 @@ export class AttachmentView extends React.Component<Props, StateProps> {
         </div>
 
         <div className="card-content">
-          <Button onClick={() => { this.power() }}>{this.props.service.state.open ?  'Disconnect' : 'Connect Camera'}</Button>
+          <Button onClick={() => { this.power() }}>{this.props.service.state["open"] ?  'Disconnect' : 'Connect Camera'}</Button>
           <br/>
           <Paragraph>{JSON.stringify(this.props.service.state)}</Paragraph>
         </div>
@@ -253,7 +258,7 @@ export class AttachmentView extends React.Component<Props, StateProps> {
   }
 
   renderVideo() {
-    if (this.props.service.state.open) {
+    if (this.props.service.state["open"]) {
       let url = this.props.node.apiUrl
       return (
         <img width={640} src={`${url}/webcam/${this.props.service.name}`} />

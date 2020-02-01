@@ -15,9 +15,11 @@ import {
   Checkbox,
   Button,
   SelectMenu,
+  Dialog,
   Tooltip,
   Icon,
   Paragraph,
+  IconButton,
   toaster
 } from 'evergreen-ui'
 
@@ -30,12 +32,15 @@ import FileHandler from '../../network/files'
 import CameraHandler from '../../network/camera'
 import PrinterHandler from '../../network/printer'
 
-
+import FileForm from '../files/sections/local/file_form'
 
 import { NodeState, ServiceState }  from '../../store/state'
 
 import PropTypes from 'prop-types'
 import Loader from '../loader'
+
+import Modal from '../modal/index'
+import AuthForm from '../services/layerkeep/form'
 
 const optionPropTypes = {    
   // node: PropTypes.object,
@@ -58,10 +63,12 @@ const statePropTypes = {
       layerkeep_sync: PropTypes.bool
   }),
   selectedFile: PropTypes.any,
+  showingAddFile: PropTypes.bool,
   // files: PropTypes.array,
   // printers: PropTypes.shape(ServiceState),
   // cameras: PropTypes.array,
-  filesLoading: PropTypes.bool
+  filesLoading: PropTypes.bool,
+  showAuth: PropTypes.bool
 }
 
 type PrintProps = PropTypes.InferProps<typeof optionPropTypes> & { 
@@ -87,12 +94,17 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
       
       layerkeep_sync: false
     },
+    showAuth: false,
+    showingAddFile: false,
+    savingFile: false,
     selectedFile: null,
     files: Array(),
     cameras: Array(),
     printers: Array(),
     filesLoading: true
   }
+
+  addForm = null
 
   getFiles() {
     this.setState({filesLoading: true})
@@ -138,8 +150,6 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
     // this.props.save(this.values)
   }
 
-
-
   toggleCamera(cam, checked) {
     var cameras = this.state.newPrint.settings.cameras
 
@@ -158,6 +168,46 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
     var res = (this.state.newPrint.settings.cameras && this.state.newPrint.settings.cameras[cam.id])
     return res
       
+  }
+
+  onFileSave(file) {
+    var files = this.state.files
+    files.unshift({key: file.id, name: file.name, id: file.id, description: file.description})
+    
+    this.setState({
+      files: files,
+      showingAddFile: false,
+      selectedFile: files[0],
+      newPrint: {
+        ...this.state.newPrint,
+        file_id: (files[0].id)
+      }
+    })
+
+  }
+
+  onFileError(err) {
+    // console.log("file Error", err)
+  }
+
+  renderAuth() {
+    return(
+      <Modal
+          component={AuthForm}
+          node={this.props.node}
+          // requestError={this.state.requestError}
+          isActive={this.state.showAuth}
+          dismissAction={() => this.setState({showAuth: false}) }
+          onAuthenticated={(res) => {
+            this.setState({
+              ...this.state,
+              showAuth: false
+            })
+
+            toaster.success('Succssfully signed in to LayerKeep.com')
+          }}
+        />
+    )
   }
 
   renderPrinter() {
@@ -263,14 +313,52 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
     }
   }
 
+  renderAddFile() {
+    return (
+      <React.Fragment>
+        <Dialog
+          isShown={this.state.showingAddFile}
+          title="Add File"
+          isConfirmLoading={this.state.savingFile}
+          confirmLabel={this.state.savingFile ? "Saving..." : "Save"}
+          onCloseComplete={() => this.setState({...this.state, showingAddFile: false})}
+          onConfirm={() => this.addForm.save()}
+        >
+          <FileForm
+            ref={f => this.addForm = f}
+            // printSlice={this.state.printSlice}
+            loading={this.state.savingFile}
+            node={this.props.node}
+            onSave={this.onFileSave.bind(this)}
+            onError={this.onFileError.bind(this)}
+            onAuthError={(err) => this.setState({showAuth: true})}
+
+          />
+        </Dialog>
+
+        <IconButton appearance='minimal' icon="add" onClick={() => {this.setState({...this.state, showingAddFile: true})}}/>
+      </React.Fragment>
+    )
+  }
+
   render() {
     if (this.props.loading) {
       return (<Loader />)
+    }
+    
+    if (this.state.showingAddFile) {
+      return (
+        <Pane>
+          {this.renderAuth()}
+          {this.renderAddFile()}
+        </Pane>
+      )
     }
     return (
       <Pane>
         {this.renderPrinter()}
 
+        <Pane display="flex" flex={1}>
         <Combobox 
           openOnFocus 
           items={this.state.files} 
@@ -282,6 +370,7 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
           }}
           marginTop={4} 
           marginBottom={4}  
+          marginRight={10}  
           width="100%" 
           height={48}
           isLoading={this.state.filesLoading}
@@ -297,6 +386,10 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
           }
           }
         />
+        <Pane display="flex" marginLeft={10} style={{"whiteSpace": "nowrap", "alignItems": "center"}}>
+          <Button width="100%" display="block" onClick={() => this.setState({...this.state, showingAddFile: true})} >Upload File</Button>
+        </Pane>
+      </Pane>
 
         <TextInput 
           name="name" 

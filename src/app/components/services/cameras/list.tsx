@@ -115,11 +115,10 @@ export class CameraList extends React.Component<Props> {
     // console.log("EVENT KIND", kind)
     switch(kind) {
       case 'camera.recording.started':
-          console.log("Camera Recording started", data)
           this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
           break
       case 'camera.recording.changed':
-          console.log("Camera Recording STate", data)
+          // console.log("Camera Recording STate", data)
           this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
           break
       case 'camera.connection.closed':

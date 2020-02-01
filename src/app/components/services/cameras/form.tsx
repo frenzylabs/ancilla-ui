@@ -35,6 +35,7 @@ type Props = {
   node: NodeState,
   save?:Function, 
   data?: any, 
+  kind?: string,
   onSave?: Function, 
   onError?: Function,
   onUpdate?: Function
@@ -44,7 +45,12 @@ export default class Form extends React.Component<Props> {
   state = {
     newCamera: {
       name:     '',
-      endpoint:     ''
+      endpoint:     '',
+      settings: {}
+    },
+    record: {
+      timelapse: 2,
+      frames_per_second: 10
     }    
   }
 
@@ -59,19 +65,24 @@ export default class Form extends React.Component<Props> {
   componentDidMount() {
     if (this.props.data) {
       var data = this.props.data.model || {}      
-      this.setState({newCamera: {...this.state.newCamera, ...data}})
+      this.setState({
+        newCamera: {...this.state.newCamera, ...data},
+        record: {...this.state.record, ...(data.settings["record"] || {})}
+      })
     }
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.data && prevProps.data != this.props.data) {
       var data = this.props.data.model || {}
-      this.setState({newCamera: {...this.state.newCamera, ...data}})
+      this.setState({
+        newCamera: {...this.state.newCamera, ...data},
+        record: {...this.state.record, ...(data.settings["record"] || {})}
+      })
     }
   }
 
   saveCamera() {
-
     this.setState({
       ...this.state,
       loading: true
@@ -85,15 +96,12 @@ export default class Form extends React.Component<Props> {
     }
 
     req.then((response) => {
-      console.log(response)
-
       this.setState({
         loading: false
       })
       if (this.props.onSave) {
         this.props.onSave(response)
       }
-      // this.props.addPrinter(this.props.node, response.data.printer)
       toaster.success(`Camera ${name} has been successfully saved`)
     })
     .catch((error) => {
@@ -127,17 +135,73 @@ export default class Form extends React.Component<Props> {
 
   save() {
     if(this.props.save  == undefined) {
-      // alert("No save function given")
       this.saveCamera()
-      // return
     } else {
       this.props.save(this.state.newCamera)
     }
   }
 
-  render() {
+  renderRecordingForm() {
+    var rset = (this.state.newCamera.settings["record"] || {"timelapse": 2, "frames_per_second": 10})
     return (
-      <Pane display="flex" flex={1} flexDirection="column" paddingBottom={40}>
+      <React.Fragment>
+        <Label htmlFor="timelapse">Timelapse</Label>
+        <TextInput 
+          name="timelapse" 
+          placeholder={`Timelapse in seconds (default: 2)`}
+          marginBottom={10}
+          width="100%" 
+          height={48}
+          value={this.state.record.timelapse}
+          onChange={e => {
+            var cam = this.state.newCamera
+            var rset = (cam.settings["record"] || {})
+            rset["timelapse"] = parseInt(e.target.value) || 2
+            var timelapse = parseInt(e.target.value) || ""
+            this.setState({   
+              record: {...this.state.record, timelapse: timelapse},
+              newCamera: {
+                ...cam,
+                settings: {...cam.settings, record: rset}
+              }
+            })
+           }
+          }
+        />
+
+        <Label htmlFor="fps">Frames Per Second</Label>
+        <TextInput 
+          name="fps" 
+          placeholder={`Frames Per Second (default: 10) `}
+          marginBottom={20}
+          width="100%" 
+          height={48}
+          value={this.state.record.frames_per_second}
+          onChange={e => {
+            var cam = this.state.newCamera
+            var rset = (cam.settings["record"] || {})
+            rset["frames_per_second"] = parseInt(e.target.value) || 10
+            var frames_per_second = parseInt(e.target.value) || ""
+            this.setState({
+              record: {...this.state.record, frames_per_second: frames_per_second},
+              newCamera: {
+                ...cam,
+                settings: {...cam.settings, record: rset}
+              }
+            })
+          }
+        }
+        />
+
+ 
+    </React.Fragment>
+    )
+  }
+
+
+  renderGeneral() {
+    return (
+      <React.Fragment>
         <Pane display="flex" flexDirection="column" marginBottom={20}>
           <Label htmlFor="url">Camera name</Label>
           <TextInput 
@@ -193,6 +257,23 @@ export default class Form extends React.Component<Props> {
             It can also be a ur to an IP based camera.            
           </Text>
         </Pane>
+      </React.Fragment>
+    )
+  }
+
+  renderForm() {
+    switch (this.props.kind) {
+      case 'record':
+        return this.renderRecordingForm()
+        break;
+      default:
+        return this.renderGeneral()
+    }
+  }
+  render() {
+    return (
+      <Pane display="flex" flex={1} flexDirection="column" paddingBottom={40}>
+        {this.renderForm()}
 
         <Pane marginBottom={20}>
           <Button appearance="primary" onClick={this.save}>Save</Button>

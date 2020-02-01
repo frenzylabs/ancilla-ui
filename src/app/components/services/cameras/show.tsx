@@ -56,7 +56,7 @@ type Props = {
 }
 
 type StateProps = {
-  recordSettings: object,
+  recordSettings: any,
   videoUrl: any
 }
 
@@ -75,10 +75,11 @@ export class CameraView extends React.Component<Props, StateProps> {
     this.state = {
       videoUrl: null,
       recordSettings: {
-        videoSettings: {
-          fps: 10
-        },
-        timelapse: 2
+        // videoSettings: {
+        //   fps: 10
+        // },
+        frames_per_second: 5,
+        timelapse: 1
       }
     }
 
@@ -146,7 +147,9 @@ export class CameraView extends React.Component<Props, StateProps> {
       this.props.getState(this.props.node, this.props.service)
       PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.connection"])
       PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.recording"])
-
+      
+      if (this.props.service.model.model)
+        this.setState({recordSettings: {...(this.props.service.model.model.settings["record"] || {})}})
       this.setupSubscription()
       this.setVideoUrl()
     }
@@ -400,15 +403,18 @@ export class CameraView extends React.Component<Props, StateProps> {
 
           <TextInput 
             name="fps" 
-            placeholder={`Frames Per Second (default: ${this.state.recordSettings.videoSettings.fps}) `}
+            placeholder={`Frames Per Second (default: ${this.state.recordSettings.frames_per_second}) `}
             marginBottom={20}
             width="100%" 
             height={48}
             disabled={this.props.service.state["recording"]}
             onChange={e => 
-              this.setState({recordSettings: {...this.state.recordSettings, 
-                videoSettings: {...this.state.recordSettings["videoSettings"], fps: e.target.value}
-              }})
+              this.setState({
+                recordSettings: {...this.state.recordSettings, frames_per_second: e.target.value}
+              })
+              // this.setState({recordSettings: {...this.state.recordSettings, 
+              //   videoSettings: {...this.state.recordSettings["videoSettings"], fps: e.target.value}
+              // }})
           }
           />
 
@@ -447,6 +453,7 @@ export class CameraView extends React.Component<Props, StateProps> {
   }
 
   renderSubStatusbar() {
+    var endpoint = this.props.service.model.model ? this.props.service.model.model.endpoint : ""
     return (
       <Pane display="flex" background="white" padding={10} border>
         <Pane display="flex" alignItems="center">
@@ -455,7 +462,7 @@ export class CameraView extends React.Component<Props, StateProps> {
         <Pane display="flex" flex={1} alignItems="center">
           <Text color="#b0b0b0" marginRight={6}>Camera:</Text> 
           <Strong color="#080808" weight="bold" marginRight={6}>{this.props.service.name}: </Strong>
-          <Text color="#b0b0b0" >{this.props.service.model.model.endpoint}</Text> 
+          <Text color="#b0b0b0" >{endpoint}</Text> 
         </Pane>
         <Pane>
           {this.renderConnectButton()}

@@ -201,7 +201,7 @@ export class NewPrint extends React.Component<PrintProps, PrintStateProps> {
     }
     var event_listeners = cservice.model.event_listeners
     Object.keys(camEvents).forEach(key => {
-      var val = camEvents[key]      
+      var val = camEvents[key]
       var pkey = this.props.printerService.name + ".events." + key
       if (pkey in event_listeners) {
         if (!(event_listeners[pkey].find((x) => x["action"] == val["action"]))) {

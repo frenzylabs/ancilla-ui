@@ -155,7 +155,7 @@ export class CameraIndex extends React.Component<Props, StateProps> {
     // console.log("EVENT KIND", kind)
     switch(kind) {
       case 'camera.recording.started':
-          console.log("Camera Recording started", data)
+          // console.log("Camera Recording started", data)
           this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, recording: true})
           // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
           break
@@ -237,7 +237,7 @@ export class CameraIndex extends React.Component<Props, StateProps> {
 
   deleteComponent() {
     return (
-      <Pane display="flex" borderTop paddingTop={20}>
+      <Pane key="delete" display="flex" borderTop paddingTop={20}>
         <Pane display="flex" flex={1} padding={20} marginBottom={20} className="danger-zone" alignItems="center" flexDirection="row">
           <Pane>
             <Button appearance="primary" intent="danger" height={40} onClick={() => this.deleteCamera()}> Delete </Button>
@@ -257,7 +257,8 @@ export class CameraIndex extends React.Component<Props, StateProps> {
   }
 
   statusBarTitle() {
-    return `${this.props.service.name}: ${this.props.service.model.model.endpoint}`
+    var endpoint = this.props.service.model.model ? this.props.service.model.model.endpoint : ""
+    return `${this.props.service.name}: ${endpoint}`
   }
 
   render() {
@@ -273,8 +274,15 @@ export class CameraIndex extends React.Component<Props, StateProps> {
               }/> 
               <Route path={`${this.props.match.path}/settings`} render={ props => 
                 <Settings {...this.props} {...props} title={this.settingsTitle()} forms={[
-                  <CameraForm onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />,
-                  this.deleteComponent()
+                {"key": "General", "component": 
+                  [<CameraForm key="record" onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />,
+                    this.deleteComponent()
+                  ]},
+                  {
+                    "key": "Record", "component": 
+                    <CameraForm kind="record" onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />
+                  }
+                  
                 ]}/> 
               }/>
 

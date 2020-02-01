@@ -18,7 +18,8 @@ export type ServiceModel = {
   attachments: Array<AttachmentModel>,
   event_listeners: object
   created_at: number,
-  updated_at: number
+  updated_at: number,
+  model: any
 }
 
 export type ServiceState = {

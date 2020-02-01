@@ -173,20 +173,17 @@ export default class Connection extends React.Component<Props> {
     }
     return null
   }
+
   renderPausePrint() {
     var disabled = true
     if (this.props.service.state["printing"]) {
       disabled = false
-      // return (
-      //     <Pane display="flex" marginBottom={6}>
-      //       <Button onClick={() => this.pausePrint()} minWidth={180} iconBefore="application" >Pause Print</Button>
-      //     </Pane>
-      // )
-    } else if (this.props.service.currentPrint) {
-      if (this.props.service.state["connected"]) {
-        disabled = false
-      }
+    } else if (this.props.service.currentPrint && this.props.service.currentPrint.id) {
+      
       if (this.props.service.currentPrint.status == "paused") {
+        if (this.props.service.state["connected"]) {
+          disabled = false
+        }
         return (
           <Pane display="flex" marginBottom={6}>
             <Button disabled={disabled} onClick={() => this.resumePrint()} minWidth={180} iconBefore="application" >Resume Print</Button>

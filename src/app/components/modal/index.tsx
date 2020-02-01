@@ -23,7 +23,8 @@ import ErrorModal         from './error';
 type Props = {
   component: any, //React.Component<{dismissAction, parentStyles}>,
   dismissAction?: Function,
-  isActive: boolean
+  isActive: boolean,
+  node?: any
 }
 
 export default class Modal extends React.Component<Props> {

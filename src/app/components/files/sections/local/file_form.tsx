@@ -16,6 +16,7 @@ import {
   Checkbox,
   FilePicker,
   Spinner,
+  toaster
 } from 'evergreen-ui'
 
 // import FileDrop from 'react-file-drop'
@@ -26,12 +27,19 @@ import {
   LayerKeepHandler,
 } from '../../../../network'
 
+import {
+  FileHandler
+} from '../../../../network'
+
 import { NodeState }  from '../../../../store/state'
 
 type Props = {
   node: NodeState,
-  printSlice: object,
-  loading: boolean
+  printSlice?: object,
+  loading: boolean,
+  onSave?: Function,
+  onError?: Function,
+  onAuthError?: Function
 }
 
 export default class FileForm extends React.Component<Props> {
@@ -46,6 +54,7 @@ export default class FileForm extends React.Component<Props> {
       id:             null
     },
     filename: null,
+    saving: false
   }
 
   cancelRequest = LayerKeepHandler.cancelSource()
@@ -136,6 +145,54 @@ export default class FileForm extends React.Component<Props> {
     })
   }
 
+  save() {
+    this.setState({saving: true})
+
+    let request = this.state.newFile.id ?
+      FileHandler.update(this.props.node, this.state.newFile.id, this.state.newFile, {cancelToken: this.cancelRequest.token}) 
+    : FileHandler.create(this.props.node, this.state.newFile, {cancelToken: this.cancelRequest.token}) 
+
+    request.then((res) => {      
+      this.setState({saving: false})
+      if (this.props.onSave) {
+        this.props.onSave(res.data.file)
+      }
+
+      toaster.success(`File ${res.data.file.name} has been successfully added`)
+    })
+    .catch((error) => {
+      this.setState({
+        ...this.state,
+        saving: false
+      })
+      if(error.response && error.response.status == 401) {
+
+        if (this.props.onAuthError) {
+          this.props.onAuthError(error)
+          return
+        }
+      }
+      if (this.props.onError) {
+        this.props.onError(error)
+      }
+      var errors = [""]
+      if (error.response.data){
+        if (error.response.data.errors) {
+          errors = Object.keys(error.response.data.errors).map((key, index) => {
+            return  `${key} : ${error.response.data.errors[key]}\n`
+          })
+        } else if (error.response.data.error) {
+          errors = [error.response.data.error]
+        }
+      }
+
+      toaster.danger(
+        `Unable to save file ${this.state.newFile.name}`, 
+        {description: errors}
+      )
+    })
+  }
+  
   renderFileDrop() {
     if(this.state.newFile.id) { return }
 
@@ -198,7 +255,7 @@ export default class FileForm extends React.Component<Props> {
   }
 
   render() {
-    if(this.props['loading']) {
+    if(this.props['loading'] || this.state.saving) {
       return (
         <Spinner/>
       )

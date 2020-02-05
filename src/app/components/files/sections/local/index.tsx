@@ -54,6 +54,7 @@ export default class Local extends React.Component<Props> {
     showingAddFile: false,
     loading:        false,
     saving:         false,
+    syncing: [],
     data:          {
       data: [],
       meta: {
@@ -71,13 +72,15 @@ export default class Local extends React.Component<Props> {
     printSlice:     null,
     deleteRemote: false,
     confirmDelete: null,
-    deleting: false
+    deleting: false,
+    editFile: false    
   }
 
   addForm: FileForm       =  null
   cancelRequest = FileHandler.cancelSource()
   pubsubToken  = null
   eventTopic   = ""
+  timer:number  = null
 
   constructor(props:any) {
     super(props)
@@ -90,6 +93,7 @@ export default class Local extends React.Component<Props> {
     this.setupListeners = this.setupListeners.bind(this)
     this.receiveEvent  = this.receiveEvent.bind(this)
     
+    this.handleFilterChange  = this.handleFilterChange.bind(this)
     this.renderLayerkeepSync = this.renderLayerkeepSync.bind(this)
   }
 
@@ -258,6 +262,7 @@ export default class Local extends React.Component<Props> {
     if (!this.props.authenticated) {
       return this.props.showAuth()
     }
+    this.setState({syncing: this.state.syncing.concat(row.id)})
     FileHandler.syncToLayerkeep(this.props.node, row)
     .then((res) => {
       // this.listLocal()
@@ -269,9 +274,15 @@ export default class Local extends React.Component<Props> {
         }
         return f
       })
-      this.setState({data: {...this.state.data, data: files}})
+      this.setState({
+        data: {...this.state.data, data: files},
+        syncing: this.state.syncing.filter(function(prid) { return prid !== row.id})
+      })
     })
     .catch((error) => {
+      this.setState({
+        syncing: this.state.syncing.filter(function(prid) { return prid !== row.id})
+      })
       if (error.response && error.response.status == 401) {
         this.props.showAuth()        
       }
@@ -301,17 +312,47 @@ export default class Local extends React.Component<Props> {
     this.setState({ search: {...this.state.search, page: page }});    
   }
 
+  onDelete(row) {
+    if (this.props.authenticated && row.layerkeep_id) {
+      this.setState({confirmDelete: row})
+    } else {
+      this.delete(row)
+    }
+  }
+
+  editFile(row) {
+    this.setState({showingAddFile: true, printSlice: row})
+  }
+
+  filterList() {
+    if (this.state.loading && this.cancelRequest) {
+      this.cancelRequest.cancel()
+    }
+    var search = this.state.search
+    this.setState({ search: {...search, page: 1, q: {...search.q, ...this.state.filter} }})
+  }
+
+  handleFilterChange(val) {
+    // console.log("filter change", val)
+    if (this.timer) {
+      clearTimeout(this.timer)
+    }
+    this.timer = setTimeout(this.filterList.bind(this), 500);
+    this.setState({ filter: {...this.state.filter, name: val}})
+  }
+
+
   renderAdd() {
     return (
       <React.Fragment>
         <Dialog
           isShown={this.state.showingAddFile}
-          title="Add File"
+          title={(this.state.printSlice && this.state.printSlice.id ? "Edit File" : "Add File")}
           isConfirmLoading={this.state.saving}
           confirmLabel={this.state.saving ? "Saving..." : "Save"}
-          onCloseComplete={() => this.setState({...this.state, showingAddFile: false})}
+          onCloseComplete={() => this.setState({...this.state, printSlice: null, showingAddFile: false})}
           onConfirm={this.save}
-        >
+        >          
           <FileForm
             ref={f => this.addForm = f}
             printSlice={this.state.printSlice}
@@ -326,18 +367,15 @@ export default class Local extends React.Component<Props> {
   }
 
   renderLayerkeepSync = (row) => {
-    if (row.layerkeep_id) {
-      return (<Menu.Item onSelect={() => this.unsyncFile(row)}>UnSync from Layerkeep...</Menu.Item>)
-    } else {
-      return (<Menu.Item onSelect={() => this.syncFile(row)}>Sync to Layerkeep...</Menu.Item>)
+    if (this.state.syncing.find((rid) => rid == row.id)) {
+      return (
+        <Menu.Item >Syncing to Layerkeep...</Menu.Item>
+      )
     }
-  }
-
-  onDelete(row) {
-    if (this.props.authenticated && row.layerkeep_id) {
-      this.setState({confirmDelete: row})
+    else if (row.layerkeep_id) {
+      return (<Menu.Item onSelect={() => this.unsyncFile(row)}>UnSync from Layerkeep</Menu.Item>)
     } else {
-      this.delete(row)
+      return (<Menu.Item onSelect={() => this.syncFile(row)}>Sync to Layerkeep</Menu.Item>)
     }
   }
 
@@ -379,6 +417,8 @@ export default class Local extends React.Component<Props> {
         content={() => (
           <Menu>
             <Menu.Group>
+              
+              <Menu.Item secondaryText="" onSelect={() => this.editFile(row)}>Edit</Menu.Item>
               {this.renderLayerkeepSync(row)}
               <Menu.Item secondaryText="" onSelect={() => this.download(row.id)}>Download</Menu.Item>
             </Menu.Group>
@@ -414,7 +454,10 @@ export default class Local extends React.Component<Props> {
   renderTableHeader() {
     return (
         <Table.Head>
-          <Table.SearchHeaderCell />
+          <Table.SearchHeaderCell 
+            onChange={this.handleFilterChange}
+            value={this.state.filter.name}
+          />
           <Table.TextHeaderCell >
             Description:
           </Table.TextHeaderCell>

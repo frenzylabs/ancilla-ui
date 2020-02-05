@@ -194,18 +194,21 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
     return(
       <Modal
           component={AuthForm}
-          node={this.props.node}
+          componentProps={{
+            node: this.props.node,
+            onAuthenticated: (res) => {
+              this.setState({
+                ...this.state,
+                showAuth: false
+              })
+  
+              toaster.success('Succssfully signed in to LayerKeep.com')
+            }
+          }}
+
           // requestError={this.state.requestError}
           isActive={this.state.showAuth}
           dismissAction={() => this.setState({showAuth: false}) }
-          onAuthenticated={(res) => {
-            this.setState({
-              ...this.state,
-              showAuth: false
-            })
-
-            toaster.success('Succssfully signed in to LayerKeep.com')
-          }}
         />
     )
   }
@@ -426,7 +429,7 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
           {this.state.newPrint.settings.record_print ? this.renderCameraOptions() : null}
         </Pane>
 
-        <Pane display="flex" marginTop={10}>
+        {/* <Pane display="flex" marginTop={10}>
           <Pane display="flex" flex={1}>
             <Checkbox
               label="Sync To LayerKeep"
@@ -441,7 +444,7 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
               }
             />
           </Pane>
-        </Pane>
+        </Pane> */}
       </Pane>
     )
   }

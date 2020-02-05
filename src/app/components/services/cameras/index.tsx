@@ -78,7 +78,6 @@ export class CameraIndex extends React.Component<Props, StateProps> {
     this.receiveRequest    = this.receiveRequest.bind(this)
     this.receiveEvent      = this.receiveEvent.bind(this)
     this.setupCamera       = this.setupCamera.bind(this)
-    this.toggleRecording   = this.toggleRecording.bind(this)
     this.setupSubscription = this.setupSubscription.bind(this)
     
     
@@ -152,17 +151,8 @@ export class CameraIndex extends React.Component<Props, StateProps> {
     // console.log("PV Received Event here2", data)
     // console.log(typeof(data))
     var [to, kind] = msg.split("events.")
-    // console.log("EVENT KIND", kind)
+    // console.log("CAMINDEX EVENT KIND", kind)
     switch(kind) {
-      case 'camera.recording.started':
-          // console.log("Camera Recording started", data)
-          this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, recording: true})
-          // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
-          break
-      case 'camera.recording.changed':
-          // console.log("Camera Recording STate", data)
-          // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: true}))
-          break
       case 'camera.connection.closed':
           this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, connected: false})
           // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
@@ -175,17 +165,6 @@ export class CameraIndex extends React.Component<Props, StateProps> {
           break      
       default:
         break
-    }    
-  }
-
-    
-
-
-  toggleRecording() {
-    if (this.props.service.state["recording"]) {
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.stop_recording", this.state.recordSettings])
-    } else {
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "REQUEST.start_recording", this.state.recordSettings])
     }
   }
 

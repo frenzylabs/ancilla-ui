@@ -126,11 +126,14 @@ export class PrinterNew extends React.Component<Props> {
           
         <Modal
             component={AuthForm}
-            node={this.props.node}
+            componentProps={{
+              node: this.props.node,
+              onAuthenticated: this.authenticated.bind(this)
+            }}
             // requestError={this.state.requestError}
             isActive={this.state.showing}
             dismissAction={this.authenticated.bind(this)}
-            onAuthenticated={this.authenticated.bind(this)}
+            
           />
       </Pane>
     )

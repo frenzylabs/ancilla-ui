@@ -53,6 +53,7 @@ export default class LayerKeep extends React.Component<Props> {
     loading:        false,
     saving:         false,
     authenticated:   false,
+    syncing: [],
     data:          {
       data: [],
       meta: {}
@@ -147,17 +148,24 @@ export default class LayerKeep extends React.Component<Props> {
   syncLocally(lkslice) {
     // let lkslice  = e.currentTarget.getAttribute('data-row')
     
-
+    this.setState({syncing: this.state.syncing.concat(lkslice.id)})
     FileHandler.syncFromLayerkeep(this.props.node, lkslice).then((res) => {
-
-
+      this.setState({
+        syncing: this.state.syncing.filter(function(prid) { return prid !== lkslice.id})
+      })
       toaster.success(`${lkslice.attributes.name} has been successfully synced.`)
     }).catch((error) => {
+      
       if (error.response && error.response.status == 401) {
         this.props.showAuth()
         this.setState({
           ...this.state,
-          authenticated: false
+          authenticated: false,
+          syncing: this.state.syncing.filter(function(prid) { return prid !== lkslice.id})
+        })
+      } else {
+        this.setState({
+          syncing: this.state.syncing.filter(function(prid) { return prid !== lkslice.id})
         })
       }
     })
@@ -218,11 +226,21 @@ export default class LayerKeep extends React.Component<Props> {
     )
   }
 
+  renderSyncMenu(row) {
+    if (this.state.syncing.find((rid) => rid == row.id)) {
+      return (
+        <Menu.Item >Syncing to Local Node...</Menu.Item>
+      )
+    } else {
+      return (<Menu.Item onSelect={() => this.syncLocally(row)}>Sync to Local Node</Menu.Item>)
+    }
+  }
+
   renderRowMenu = (row) => {
     return (
       <Menu>
         <Menu.Group>
-          <Menu.Item onSelect={() => this.syncLocally(row)}>Sync to Local Node...</Menu.Item>
+          {this.renderSyncMenu(row)}
         </Menu.Group>
         <Menu.Divider />
         <Menu.Group>
@@ -290,7 +308,7 @@ export default class LayerKeep extends React.Component<Props> {
       <Pane display="flex">
         <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={10} border="default">
           <Pane display="flex">
-            <Pane display="flex" flex={1}>LayerKeep</Pane>
+            <Pane display="flex" flex={1} paddingBottom={10}>LayerKeep</Pane>
           </Pane>
 
           <Pane borderBottom borderLeft borderRight>

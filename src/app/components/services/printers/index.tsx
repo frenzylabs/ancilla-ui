@@ -192,7 +192,7 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
         <Pane display="flex" flex={1} padding={20} marginBottom={20} className="danger-zone" alignItems="center" flexDirection="row">
           <Pane display="flex" flex={1} marginRight={50}>
             <p>
-              Delete the current printer and if "Sync On LayerKeep" is checked, 
+              Delete the current printer and prints.  If "Sync On LayerKeep" is checked, 
               this printer will also be deleted on Layerkeep.com; to prevent this
               uncheck "Sync On LayerKeep" and save before deleting.
             </p>
@@ -249,11 +249,15 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
         </div>
         <Modal
           component={AuthForm}
-          node={this.props.node}
+          componentProps={{
+            node: this.props.node,
+            onAuthenticated: this.authenticated.bind(this)
+          }}
+          
           // requestError={this.state.requestError}
           isActive={this.state.showing}
           dismissAction={this.authenticated.bind(this)}
-          onAuthenticated={this.authenticated.bind(this)}
+          
         />
       </div>
     );

@@ -259,8 +259,8 @@ export class RecordingShow extends React.Component<Props, StateProps> {
 
   renderDelete() {
     return (
-      <Pane display="flex" borderTop paddingTop={20}>
-        <Pane display="flex" flex={1} padding={20} marginBottom={20} className="danger-zone" alignItems="center" flexDirection="row">
+      <Pane display="flex" borderTop >
+        <Pane display="flex" flex={1} padding={20} marginBottom={20} className="" alignItems="center" flexDirection="row">
           <Pane>
             <Button appearance="primary" intent="danger" height={40} onClick={() => this.deleteRecording()}> Delete </Button>
           </Pane>
@@ -336,7 +336,7 @@ export class RecordingShow extends React.Component<Props, StateProps> {
             {this.renderDelete()}
 
           </Pane>
-          <Pane display="flex" flex={1}>
+          <Pane display="flex" flex={1} style={{"flexWrap": "wrap"}}>
             <Pane margin={20}>
               {this.renderVideo()}
               

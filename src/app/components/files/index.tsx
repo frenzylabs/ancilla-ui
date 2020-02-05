@@ -104,19 +104,23 @@ export default class Files extends React.Component<Props> {
         </Pane>
         <Modal
           component={AuthForm}
-          node={this.props.node}
+          componentProps={{
+            node: this.props.node,
+            onAuthenticated: (res) => {
+              this.setState({
+                ...this.state,
+                showingAuth: false,
+                authenticated: true
+              })
+  
+              toaster.success('Succssfully signed in to LayerKeep.com')
+            }
+          }}
+          
           // requestError={this.state.requestError}
           isActive={this.state.showingAuth}
           dismissAction={() => this.showingAuth = false}
-          onAuthenticated={(res) => {
-            this.setState({
-              ...this.state,
-              showingAuth: false,
-              authenticated: true
-            })
-
-            toaster.success('Succssfully signed in to LayerKeep.com')
-          }}
+          
         />
         
       </Pane>

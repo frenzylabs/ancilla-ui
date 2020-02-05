@@ -1,6 +1,16 @@
 
 import { ServiceModel, ServiceState, serviceState } from './service'
 
+
+export type CameraRecordingModel = {  
+  id: number,
+  task_name: string,
+  settings: object,
+  status: string,
+  created_at: number,
+  updated_at: number
+}
+
 export type CameraModel = {  
   id: number,
   name: string,
@@ -15,7 +25,7 @@ export type CameraServiceModel = ServiceModel & { model: CameraModel}
 
 export type CameraState = ServiceState & {
   model: CameraServiceModel,
-  currentRecording?: object
+  currentRecording?: CameraRecordingModel
 }
 
 

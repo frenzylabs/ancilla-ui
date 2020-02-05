@@ -12,6 +12,7 @@ import { NodeState, serviceState, printerState, cameraState } from '../state'
 // const initialState = NodeState();
 
 export function nodeReducer(state: NodeState = initialState.activeNode, action) {
+  // console.log("NODE REDUCER", action.type);
   switch(action.type) {
   case 'SERVICE_DELETED': {
       let services = state.services.filter((svc) => svc.id != action.data.id)
@@ -100,16 +101,16 @@ export function nodeReducer(state: NodeState = initialState.activeNode, action) 
     })
     return {...state, services: services}
   }
-  case 'CAMERA_UPDATED': {
-    var services = state.services.map((item) => {
-      if (item.id == action.data.id) {
-        var st = cameraState(action.data)
-        return {...item, ...st}
-      }
-      return item
-    })
-    return {...state, services: services}
-  }
+  // case 'CAMERA_UPDATED': {
+  //   var services = state.services.map((item) => {
+  //     if (item.id == action.data.id) {
+  //       var st = cameraState(action.data)
+  //       return {...item, ...st}
+  //     }
+  //     return item
+  //   })
+  //   return {...state, services: services}
+  // }
   default: {
     if (action.type.startsWith("SERVICE")) {
       var s = state.services.map((item) => {
@@ -121,16 +122,16 @@ export function nodeReducer(state: NodeState = initialState.activeNode, action) 
       return {...state, services: s}
 
     } else if (action.type.startsWith("PRINTER")) {
-      var services = state.services.map((item) => {
+      var printerservices = state.services.map((item) => {
         if (item.id == action.printer.id) {
           return printerReducer(item, action)
         }
         return item
       })
-      return {...state, services: services}
+      return {...state, services: printerservices}
     } else if (action.type.startsWith("CAMERA")) {
       var services = state.services.map((item) => {
-        if (item.id == action.camera.id) {
+        if (item.id == action.service.id) {
           return cameraReducer(item, action)
         }
         return item

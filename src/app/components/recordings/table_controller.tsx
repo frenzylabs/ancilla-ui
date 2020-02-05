@@ -204,7 +204,6 @@ export class RecordingsController extends React.Component<TableProps, TableState
   }
 
   onChangePage(page) {
-    console.log("recordings tc page change", page)
     this.setState({ search: {...this.state.search, page: page }});    
   }
 
@@ -239,8 +238,13 @@ export class RecordingsController extends React.Component<TableProps, TableState
     return (
       <Table.Row key={row.id} >
         <Table.TextCell>
+          <Link to={{pathname: `/cameras/${row.camera.service.id}` , state: {parentMatch: this.props.match, cameraRecording: row}}} >
+            {row.camera.name}
+          </Link>
+        </Table.TextCell>
+        <Table.TextCell>
           <Link to={{pathname: url , state: {parentMatch: this.props.match, cameraRecording: row}}} >
-          {row.name}
+          {row.task_name}
           </Link>
         </Table.TextCell>
         <Table.TextCell>{row.status}</Table.TextCell>
@@ -267,10 +271,12 @@ export class RecordingsController extends React.Component<TableProps, TableState
   renderTableHeader() {
     return (
         <Table.Head>
-          <Table.SearchHeaderCell 
-            onChange={this.handleFilterChange}
-            value={this.state.filter.name}
-          />
+          <Table.TextHeaderCell >
+            Camera Name:
+          </Table.TextHeaderCell>
+          <Table.TextHeaderCell>
+            Name:
+          </Table.TextHeaderCell>          
           <Table.TextHeaderCell >
             Status:
           </Table.TextHeaderCell>

@@ -49,12 +49,12 @@ export const Camera = {
     return Request.get(`${node.apiUrl}/services/camera/${cameraService.id}/recordings/${recordingId}`, options)
   },
 
-  record: (node, cameraService, params = {}, options = {}) => {
+  startRecording: (node, cameraService, params = {}, options = {}) => {
     return Request.post(`${node.apiUrl}/services/camera/${cameraService.id}/record`, params, options)
   },
 
-  stopRecording: (node, cameraService, params = {}, options = {}) => {
-    return Request.post(`${node.apiUrl}/services/camera/${cameraService.id}/record`, params, options)
+  stopRecording: (node, cameraService, recordingId, params = {}, options = {}) => {
+    return Request.post(`${node.apiUrl}/services/camera/${cameraService.id}/recordings/${recordingId}/stop`, params, options)
   },
 
   deleteRecording: (node, cameraService, recordingId, options = {}) => {

@@ -37,7 +37,8 @@ const optionPropTypes = {
   service: PropTypes.object,
   match: PropTypes.object,
   height: PropTypes.number,
-  printId: PropTypes.number
+  printId: PropTypes.number,
+  reload: PropTypes.any
 }
 
 const statePropTypes = {
@@ -67,12 +68,12 @@ export class CommandsController extends React.Component<TableProps, TableStatePr
       loading: true,
       redirectTo: null,
       filter: {
-        name: ""
+        command: ""
       },
       search: {
         page: 1, 
         per_page: 5, //parseInt(qparams["per_page"] || 20), 
-        q: {name: ""} //qparams["q"] || {}
+        q: {command: ""} //qparams["q"] || {}
       },
       data: {
         data: [],
@@ -101,6 +102,9 @@ export class CommandsController extends React.Component<TableProps, TableStatePr
   componentDidUpdate(prevProps, prevState) {
     if (JSON.stringify(this.state.search) != JSON.stringify(prevState.search)) {
       this.getData();
+    }
+    else if (prevProps.reload != this.props.reload) {
+      this.getData()
     }
   }
 
@@ -152,7 +156,7 @@ export class CommandsController extends React.Component<TableProps, TableStatePr
       clearTimeout(this.timer)
     }
     this.timer = setTimeout(this.filterList.bind(this), 500);
-    this.setState({ filter: {...this.state.filter, name: val}})
+    this.setState({ filter: {...this.state.filter, command: val}})
   }
 
   onChangePage(page) {
@@ -180,7 +184,7 @@ export class CommandsController extends React.Component<TableProps, TableStatePr
       <Table.Head>
           <Table.SearchHeaderCell 
             onChange={this.handleFilterChange}
-            value={this.state.filter.name}
+            value={this.state.filter.command}
           />
           <Table.TextHeaderCell >
             Status:

@@ -26,9 +26,7 @@ import {
   toaster
 } from 'evergreen-ui'
 
-// import Form 				from './form'
-import CameraRequest 	from '../../network/camera'
-import { ServiceHandler } 	from '../../network'
+import { ServiceHandler, CameraHandler } 	from '../../network'
 import Layerkeep 	from '../../network/layerkeep'
 import Modal from '../modal/index'
 import AuthForm from '../services/layerkeep/form'
@@ -129,7 +127,7 @@ export class RecordingList extends React.Component<Props, StateProps> {
     // this.renderTopBar		= this.renderTopBar.bind(this)
     // this.renderSection	= this.renderSection.bind(this)
 
-    this.cancelRequest = CameraRequest.cancelSource();
+    this.cancelRequest = CameraHandler.cancelSource();
   }
 
   componentDidMount() {
@@ -151,15 +149,16 @@ export class RecordingList extends React.Component<Props, StateProps> {
   listRecordings(search = {}) {
     // this.setState({loading: true, search: search})
     if (this.props.service.kind == 'camera' && this.props.service.model["model"]) {
-      if (!search['q']) search['q'] = {}
-      search['q']["camera_id"] = this.props.service.model["model"]["id"]
+      return CameraHandler.recordings(this.props.node, this.props.service, {qs: search, cancelToken: this.cancelRequest.token})
+      // if (!search['q']) search['q'] = {}
+      // search['q']["camera_id"] = this.props.service.model["model"]["id"]
     }
     return ServiceHandler.recordings(this.props.node, {qs: search, cancelToken: this.cancelRequest.token})
   }
 
   deleteRecording(row) {
     console.log("delete recording", row)
-    CameraRequest.deleteRecording(this.props.node, this.props.service, row.id)
+    CameraHandler.deleteRecording(this.props.node, this.props.service, row.id)
     .then((res) => {
       this.listRecordings(this.state.search)
       

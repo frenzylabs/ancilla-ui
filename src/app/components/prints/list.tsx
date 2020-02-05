@@ -16,9 +16,9 @@ import {
   TabNavigation,
   Tab,
   IconButton,
-  Button,
+  Checkbox,
   Dialog,
-  Text,
+  Paragraph,
   Position,
   Table,
   Menu,
@@ -37,20 +37,42 @@ import ErrorModal from '../modal/error'
 import List from '../table/list'
 // const qs = require('qs');
 
-export class PrintList extends React.Component {
+import { NodeState, ServiceState, AttachmentModel }  from '../../store/state'
+
+
+type Props = {  
+  node: NodeState, 
+  service: ServiceState,
+  location: any,
+  match: any
+}
+
+type StateProps = {
+  loading: boolean,
+  printerPrint: any,
+  redirectTo: any    
+}
+
+
+
+export class PrintList extends React.Component<Props> {
 
   state = {    
     redirectTo: null,
     loading: true,
     showAuth: false,
+    deleteRemote: false,
+    confirmDelete: null,
+    deleting: false,
+    syncing: [],
     projects: [],
     profiles: [],
     filter: {
       name: ""
     },
     search: {
-      page: Number, 
-      per_page: Number, 
+      page: 1, 
+      per_page: 20, 
       q: {name: undefined}
     },
     list: {
@@ -67,22 +89,27 @@ export class PrintList extends React.Component {
     super(props)
     // var qparams = qs.parse(this.props.location.search, { ignoreQueryPrefix: true })
 
-    this.state = {    
-      redirectTo: null,
-      loading: true,
-      filter: {
-        name: ""
-      },
-      search: {
-        page: 1, //parseInt(qparams["page"] || 1), 
-        per_page: 20, //parseInt(qparams["per_page"] || 20), 
-        q: {name: ""} //qparams["q"] || {}
-      },
-      list: {
-        data: [], 
-        meta: {}
-      }
-    }
+    // this.state = {    
+    //   redirectTo: null,
+    //   loading: true,
+    //   showAuth: false,
+    //   deleteRemote: false,
+    //   confirmDelete: null,
+    //   deleting: false,
+    //   syncing: [],
+    //   filter: {
+    //     name: ""
+    //   },
+    //   search: {
+    //     page: 1, //parseInt(qparams["page"] || 1), 
+    //     per_page: 20, //parseInt(qparams["per_page"] || 20), 
+    //     q: {name: ""} //qparams["q"] || {}
+    //   },
+    //   list: {
+    //     data: [], 
+    //     meta: {}
+    //   }
+    // }
     this.listPrints         = this.listPrints.bind(this)
     this.renderSectionHeader = this.renderSectionHeader.bind(this)
     this.renderTableHeader   = this.renderTableHeader.bind(this)
@@ -156,6 +183,7 @@ export class PrintList extends React.Component {
 
   syncToLayerkeep(row) {
     // let lkslice  = e.currentTarget.getAttribute('data-row')
+    this.setState({syncing: this.state.syncing.concat(row.id)})
     PrinterRequest.syncPrintToLayerkeep(this.props.node, this.props.service, row.id)
     .then((res) => {
       // this.listLocal()
@@ -166,12 +194,31 @@ export class PrintList extends React.Component {
         return v
       })
       this.setState({
-        list: {...this.state.list, data: prints}
+        list: {...this.state.list, data: prints},
+        syncing: this.state.syncing.filter(function(prid) { return prid !== row.id})
       })
 
       toaster.success(`${row.name} has been successfully synced.`)
     })
-    .catch((_err) => {})
+    .catch((error) => {
+      if (error.response && error.response.status == 401) {
+        console.log("Unauthorized")
+        // this.setState({showAuth: true, loading: false})
+        this.setState({
+          loading: false,
+          showAuth: true,
+          syncing: this.state.syncing.filter(function(prid) { return prid !== row.id})
+        })
+      } else {
+        // this.setState({requestError: error})
+        // toaster.danger(<ErrorModal requestError={error} />)
+        this.setState({
+          loading: false,
+          syncing: this.state.syncing.filter(function(prid) { return prid !== row.id})
+        })
+      }
+      toaster.danger(<ErrorModal requestError={error} />)
+    })
   }
 
 
@@ -189,9 +236,11 @@ export class PrintList extends React.Component {
         list: {...this.state.list, data: prints}
       })
 
-      toaster.success(`${row.name} has been successfully synced.`)
+      toaster.success(`${row.name} has been successfully unsynced.`)
     })
-    .catch((_err) => {})
+    .catch((error) => {
+      toaster.danger(<ErrorModal requestError={error} />)
+    })
   }
 
 
@@ -224,13 +273,29 @@ export class PrintList extends React.Component {
   }
 
   renderLKMenu(row) {
-    if (row.layerkeep_id) {
+    if (this.state.syncing.find((rid) => rid == row.id)) {
       return (
-        <Menu.Item onSelect={() => this.unsyncFromLayerkeep(row)}>UnSync from Layerkeep...</Menu.Item>
+        <Menu.Item >Syncing to Layerkeep...</Menu.Item>
+      )
+    }
+    else if (row.layerkeep_id) {
+      return (
+        <Menu.Item onSelect={() => this.unsyncFromLayerkeep(row)}>UnSync from Layerkeep</Menu.Item>
       )
     } else {
       return (
-          <Menu.Item onSelect={() => this.syncToLayerkeep(row)}>Sync to Layerkeep...</Menu.Item>
+          <Menu.Item onSelect={() => this.syncToLayerkeep(row)}>Sync to Layerkeep</Menu.Item>
+      )
+    }
+  }
+
+  renderDeleteMenu(row) {
+    if (this.state.confirmDelete && this.state.confirmDelete.id == row.id) {
+      return (<Menu.Item intent="danger"  data-id={row.id} data-name={row.name}>Deleting</Menu.Item>)
+    } else {
+      return (<Menu.Item intent="danger"  data-id={row.id} data-name={row.name} onSelect={() => this.onDelete(row)}>
+        Delete
+        </Menu.Item>
       )
     }
   }
@@ -243,9 +308,7 @@ export class PrintList extends React.Component {
         </Menu.Group>
         <Menu.Divider />
         <Menu.Group>
-          <Menu.Item intent="danger"  data-id={row.id} data-name={row.name} onSelect={() => this.deletePrint(row)}>
-            Delete... 
-          </Menu.Item>
+          {this.renderDeleteMenu(row)}          
         </Menu.Group>
       </Menu>
     )
@@ -312,11 +375,62 @@ export class PrintList extends React.Component {
       </Pane>
     )
   }
+
+  onDelete(row) {
+    this.setState({confirmDelete: row})
+  }
+
+  renderConfirmLayerkeepDelete() {
+    if (this.state.confirmDelete.layerkeep_id) {
+      return (
+        <Pane>
+                <Paragraph>Your print is currently synced with LayerKeep.</Paragraph>
+                <Checkbox
+                  label="Check this box to delete from LayerKeep as well"
+                  checked={this.state.deleteRemote}
+                  onChange={e => {
+                    this.setState({deleteRemote: e.target.checked})
+                  }}
+              />
+            </Pane>
+      )
+    } else {
+      return (
+        <Pane>
+        <Paragraph>Are you sure you want to delete this print?</Paragraph>
+        </Pane>
+      )
+    }
+  }
+  
+  renderConfirmDelete() {
+    if (!this.state.confirmDelete) return
+      return (
+        <React.Fragment>
+          <Dialog
+            isShown={this.state.confirmDelete ? true : false}
+            title="Delete Print?"
+            isConfirmLoading={this.state.deleting}
+            confirmLabel={this.state.deleting ? "Deleting..." : "Delete"}
+            onCloseComplete={() => this.setState({...this.state, deleteRemote: false, confirmDelete: null})}
+            onConfirm={() => this.deletePrint(this.state.confirmDelete)}
+          >
+
+          {({ close }) => (
+              this.renderConfirmLayerkeepDelete()
+        )}
+
+        </Dialog>
+      </React.Fragment>
+    )
+  }
+
   render() {
     return (
       <React.Fragment>
         <Pane display="flex" key={"prints"}>
           <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={20} >
+            {this.renderConfirmDelete()}
             {this.renderSectionHeader()}
             <List 
               renderHeader={this.renderTableHeader}              
@@ -330,11 +444,21 @@ export class PrintList extends React.Component {
         </Pane>
         <Modal
           component={AuthForm}
-          node={this.props.node}
+          componentProps={{
+            node: this.props.node,
+            onAuthenticated: (res) => {
+              this.setState({
+                ...this.state,
+                showAuth: false
+              })
+  
+              toaster.success('Succssfully signed in to LayerKeep.com')
+            }
+          }}
           // requestError={this.state.requestError}
           isActive={this.state.showAuth}
-          // dismissAction={this.authenticated.bind(this)}
-          // onAuthenticated={this.authenticated.bind(this)}
+          dismissAction={() => this.setState({showAuth: false}) }
+          
         />
       </React.Fragment>
     )

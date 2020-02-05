@@ -24,7 +24,8 @@ type Props = {
   component: any, //React.Component<{dismissAction, parentStyles}>,
   dismissAction?: Function,
   isActive: boolean,
-  node?: any
+  node?: any,
+  componentProps?: any
 }
 
 export default class Modal extends React.Component<Props> {
@@ -50,7 +51,7 @@ export default class Modal extends React.Component<Props> {
       
     >
       {({ close }) => (
-        <Comp dismissAction={this.props.dismissAction} {...this.props} />
+        <Comp dismissAction={this.props.dismissAction} {...(this.props.componentProps || {})} />
     )}
 
     </Dialog>

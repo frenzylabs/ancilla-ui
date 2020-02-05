@@ -49,6 +49,20 @@ export const Printer = {
   deletePrint: (node, printerService, printId, options = {}) => { 
     return Request.delete(`${node.apiUrl}/services/printer/${printerService.id}/prints/${printId}`, options)
   },
+  
+  updatePrint: (node, printerService, printId, params = {}, options = {}) => {
+    // console.log(file)
+    var data = new FormData();
+    // data.append(`file`, file);
+
+    for ( var key in params ) {
+      if (params[key]) {
+        data.append(`${key}`, params[key]);
+      }
+    }
+
+    return Request.patch(`${node.apiUrl}/services/printer/${printerService.id}/prints/${printId}`, data, {headers: {'Content-Type' : 'multipart/form-data'}})
+  },
 
   getPrinterCommands: (node, printerService, options = {}) => {
     // options["params"] = {print_id: x, per_page, page}
@@ -57,6 +71,15 @@ export const Printer = {
     delete options["qs"]
     var path = `${node.apiUrl}/services/printer/${printerService.id}/commands` + QS.stringify(qs, { addQueryPrefix: true }) 
     return Request.get(path, options)
+  },
+
+  deletePrinterCommands: (node, printerService, options = {}) => {
+    // options["params"] = {print_id: x, per_page, page}
+    // QS.stringify(qs, { addQueryPrefix: true }
+    var qs = options["qs"]
+    delete options["qs"]
+    var path = `${node.apiUrl}/services/printer/${printerService.id}/commands` + QS.stringify(qs, { addQueryPrefix: true }) 
+    return Request.delete(path, options)
   },
 
   lastPrint: (node, printerService, options = {}) => {

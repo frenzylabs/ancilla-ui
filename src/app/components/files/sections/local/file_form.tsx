@@ -75,17 +75,6 @@ export default class FileForm extends React.Component<Props> {
     this.renderForm               = this.renderForm.bind(this)
   }
 
-  detectPrintSlice() {
-    let _printSlice = this.props['printSlice'] || {}
-
-    this.setState({
-      ...this.state.newFile,
-      id:             _printSlice['id']           || null,
-      layerkeep_sync: _printSlice['layerkeep_id'] || null,
-      name:           _printSlice['name']         || "",
-      description:    _printSlice['description']  || ""
-    })
-  }
 
   componentDidMount() {
     this.detectPrintSlice()
@@ -96,6 +85,22 @@ export default class FileForm extends React.Component<Props> {
 
     this.detectPrintSlice()
   }
+
+  detectPrintSlice() {
+    let _printSlice = this.props['printSlice'] || {}
+    console.log("PRINT SLICE= ", _printSlice)
+    this.setState({
+      ...this.state,
+      newFile: {
+        ...this.state.newFile,
+        id:             _printSlice['id']           || null,
+        layerkeep_sync: (_printSlice['layerkeep_id'] ? true : false),
+        name:           _printSlice['name']         || "",
+        description:    _printSlice['description']  || ""
+      }
+    })
+  }
+
 
   handleDrop(files, event) {
     this.setState({

@@ -1,10 +1,11 @@
 //
-//  printer.js
+//  cameras.ts
 //  ancilla
 // 
-//  Created by Kevin Musselman (kmussel@gmail.com) on 11/12/19
-//  Copyright 2019 Frenzylabs, LLC
+//  Created by Kevin Musselman (kevin@frenzylabs.com) on 01/08/20
+//  Copyright 2019 FrenzyLabs, LLC.
 //
+
 
 import types from './types'
 import Camera from '../../network/camera'
@@ -24,6 +25,28 @@ export const CameraAction = {
       }
     }
   },
+
+  startRecording: (node, serviceState, params) => {
+    return (dispatch, getState) => {
+      // let activeNode = getState().activeNode
+      var cancelRequest    = Camera.cancelSource();  
+      // dispatch(requestFeatures(username, cancelRequest))
+      if (serviceState.id) {
+        return Camera.startRecording(node, serviceState.id, params, {cancelToken: cancelRequest.token})
+            .then((response) => {
+              dispatch(CameraAction.serviceUpdated(node, serviceState, response.data.service_model))
+              return response
+            })
+      }
+    }
+  },
+
+  updateCurrentRecording: (node, service, recording) => ({
+    type: 'CAMERA_RECEIVED_RECORDING',
+    node: node,
+    service: service,
+    data: recording
+  }),
 
   updateRecordings: (service, recordings) => ({
     type: 'CAMERA_RECEIVED_RECORDINGS',

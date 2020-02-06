@@ -161,8 +161,6 @@ export class PrintList extends React.Component<Props> {
         this.setState({loading: false})
       }
       this.cancelRequest = PrinterRequest.cancelSource();
-
-      
     })
   }
 
@@ -170,7 +168,7 @@ export class PrintList extends React.Component<Props> {
     console.log("delete print", row)
     PrinterRequest.deletePrint(this.props.node, this.props.service, row.id)
     .then((res) => {
-      // this.listLocal()
+      this.listPrints()
       
       // this.setState({redirectTo: `/printers/${this.props.service.id}/prints`})
       toaster.success(`${row.name} has been successfully deleted.`)

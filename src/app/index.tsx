@@ -64,32 +64,38 @@ export class App extends React.Component<AppProps, stateProps> {
   pubsubToken = null
   notificationToken = null
 
+  sendQueue = []
   constructor(props:any) {
     super(props)    
 
-    // this.toggleDialog = this.toggleDialog.bind(this)
-    // this.savePrinter  = this.savePrinter.bind(this)
-    // this.getPrinters  = this.getPrinters.bind(this)
-    // console.log("APP CONSTUCTOR", this.props.activeNode)
-    // this.props.activeNode
+    // this.state = {
+    //   connection: null
+    // }
     this.state = {
       connection: new Connection({node: this.props.activeNode})
     }
     this.sendData  = this.sendData.bind(this)
+
     this.receivedNotification = this.receivedNotification.bind(this)
-    // window.app = this
-    this.pubsubToken = PubSub.subscribe(this.props.activeNode.name + ".request", this.sendData);
+    this.pubsubToken          = PubSub.subscribe(this.props.activeNode.name + ".request", this.sendData);
   }
 
     
 
   componentDidMount() {
-    // this.getPrinters()
+    // document.title = this.props.activeNode.name
     this.props.getNode(this.props.activeNode)
-    this.props.listNodes()
+    // this.props.listNodes()
     
     this.setupNotification()
+    // setTimeout(this.setupConn.bind(this), 1000)
   }
+
+  // setupConn() {
+  //   this.setState({
+  //     connection: new Connection({node: this.props.activeNode})
+  //   })
+  // }
 
   componentDidUpdate(prevProps, prevState) {
     let prevNode = prevProps.activeNode
@@ -101,6 +107,7 @@ export class App extends React.Component<AppProps, stateProps> {
       this.setupNotification()
     }
     else if (prevNode.name != this.props.activeNode.name) {
+      document.title = this.props.activeNode.name
       // this.setState({connection: new Connection({node: this.props.activeNode})})
       this.state.connection.node = this.props.activeNode
       // PubSub.unsubscribe(this.pubsubToken)
@@ -123,10 +130,12 @@ export class App extends React.Component<AppProps, stateProps> {
   }
 
   sendData(msg, data) {
-    if (this.state.connection.connected) {
+    // console.log("Send Data", msg, data)
+    if (this.state.connection && this.state.connection.connected) {
       this.state.connection.send(JSON.stringify(data))
     } else {
-      console.log("Not connected yet", data)
+      // console.log("Not connected yet", data)
+      this.sendQueue.push(data)
     }
   }
 
@@ -135,6 +144,12 @@ export class App extends React.Component<AppProps, stateProps> {
     var [to, kind] = topic.split("notifications.")
     if (kind == "nodes_changed") {
       this.props.listNodes()
+    } else if (kind == "connected") {
+      // console.log("SEND QUEUE", this.sendQueue)
+      while(this.sendQueue.length > 0) {
+        var data = this.sendQueue.shift()
+        this.sendData("request", data)
+      }
     }
   }
 

@@ -52,6 +52,7 @@ export const Printer = {
   
   updatePrint: (node, printerService, printId, params = {}, options = {}) => {
     // console.log(file)
+    return Request.patch(`${node.apiUrl}/services/printer/${printerService.id}/prints/${printId}`, params, {headers: {'Content-Type' : 'application/json'}})
     var data = new FormData();
     // data.append(`file`, file);
 

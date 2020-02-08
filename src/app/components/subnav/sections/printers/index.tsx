@@ -10,26 +10,20 @@ import React from 'react'
 import {connect}  from 'react-redux'
 
 import {
-  Dialog,
-  toaster
-} from 'evergreen-ui'
-
-import {
   Printer
 } from '../../../../models'
 
 import Tree from '../../../tree'
 import { NodeAction } from '../../../../store/actions/node'
 
-import {Form as AuthForm } from '../../../services/layerkeep/form'
-import printer, {default as request} from '../../../../network/printer'
-import { PrinterState }  from '../../../../store/state'
+import { NodeState, PrinterState }  from '../../../../store/state'
 
 
 type Props = {
-  node: object,
+  node: NodeState,
   printer: PrinterState,
-  listPrinters: Function
+  listPrinters: Function,
+  history: any
 }
 
 export class Printers extends React.Component<Props> {  
@@ -40,7 +34,6 @@ export class Printers extends React.Component<Props> {
     auth_showing: false,
     printerParams: {}
   }
-  form: Form = null
 
   constructor(props:any) {
     super(props)    
@@ -50,55 +43,7 @@ export class Printers extends React.Component<Props> {
   }
 
   componentDidMount() {
-    // this.props.listPrinters()
-    // this.getPrinters()
   }
-
-  // componentDidUpdate(op, os) {
-  //   console.log("did update porps", op)
-  //   console.log("did update stae", os)
-  // }
-
-  // savePrinter(closeDialog) {
-
-  //   this.setState({
-  //     ...this.state,
-  //     loading: true
-  //   })
-
-  //   var printerParams = this.form.state.newPrinter
-  //   request.create(this.props.node, this.form.state.newPrinter)
-  //   .then((response) => {
-  //     console.log(response)
-
-  //     this.setState({
-  //       loading: false
-  //     })
-  //     this.props.addPrinter(this.props.node, response.data.printer)
-  //     closeDialog()
-  //     toaster.success(`Printer ${name} has been successfully added`)
-  //   })
-  //   .catch((error) => {
-  //     console.log(error)
-
-  //     if (error.response.status == 401) {
-  //       console.log("Unauthorized")
-  //       this.setState({auth_showing: true, showing: false, printerParams: printerParams})
-  //     }
-  //     let errors = Object.keys(error.response.data.errors).map((key, index) => {
-  //       return  `${key} : ${error.response.data.errors[key]}\n`
-  //     })
-
-  //     this.setState({
-  //       loading: false
-  //     })
-
-  //     toaster.danger(
-  //       `Unable to save printer ${name}`, 
-  //       {description: errors}
-  //     )
-  //   })
-  // }
 
   addPrinter() {
     let url = `/printers/new`
@@ -106,11 +51,15 @@ export class Printers extends React.Component<Props> {
   }
 
   selectPrinter(item) {
-    let url = `/printers/${item.id}`
-    this.props.history.push(`${url}`);    
+    if (item && item.id) {
+      let url = `/printers/${item.id}`
+      this.props.history.push(`${url}`);    
+    } else {
+      this.addPrinter()
+    }
   }
+
   authenticated(res, closeDialog) {
-    console.log("Authenticated", res)
     this.setState({auth_showing: false, showing: true})
     
   }
@@ -122,8 +71,6 @@ export class Printers extends React.Component<Props> {
     
     return ( 
       <React.Fragment key="printers">
-        
-
         <Tree.Node name="Printers" key="printers" children={items} addAction={() => this.addPrinter()} selectItem={this.selectPrinter.bind(this)} />
       </React.Fragment>
     )
@@ -132,7 +79,6 @@ export class Printers extends React.Component<Props> {
 
 
 const mapStateToProps = (state) => {
-  // return state
   return {
     printers: state.activeNode.printers
   }
@@ -143,6 +89,5 @@ const mapDispatchToProps = (dispatch) => {
     listPrinters: () => dispatch(NodeAction.listPrinters())
   }
 }
-
 
 export default connect(mapStateToProps, mapDispatchToProps)(Printers)

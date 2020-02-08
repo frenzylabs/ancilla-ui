@@ -21,7 +21,7 @@ import { NodeState, ServiceState, AttachmentModel }  from '../../store/state'
 type Props = {
   name:string, 
   
-  item: any,
+  item?: any,
   key?:string, 
   icon?:string,   
   children?:Array<{}>, 

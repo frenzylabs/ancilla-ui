@@ -165,13 +165,13 @@ export class PrintList extends React.Component<Props> {
   }
 
   deletePrint(row) {
-    console.log("delete print", row)
     PrinterRequest.deletePrint(this.props.node, this.props.service, row.id)
     .then((res) => {
       this.listPrints()
       
       // this.setState({redirectTo: `/printers/${this.props.service.id}/prints`})
       toaster.success(`${row.name} has been successfully deleted.`)
+      this.setState({deleteRemote: false, confirmDelete: null})
     })
     .catch((error) => {
       toaster.danger(<ErrorModal requestError={error} />)
@@ -322,6 +322,7 @@ export class PrintList extends React.Component<Props> {
         </Table.TextCell>
         <Table.TextCell>{row.status}</Table.TextCell>
         <Table.TextCell>{Dayjs.unix(row.created_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
+        <Table.TextCell>{Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
         <Table.TextCell>{(row.updated_at - row.created_at)}</Table.TextCell>
         <Table.TextCell>
           <Link to={{pathname: this.props.match.url + "/" + row.id, state: {printerPrint: row}}} >
@@ -353,6 +354,9 @@ export class PrintList extends React.Component<Props> {
           </Table.TextHeaderCell>
           <Table.TextHeaderCell>
             Created At:
+          </Table.TextHeaderCell>
+          <Table.TextHeaderCell>
+            Update At:
           </Table.TextHeaderCell>
           <Table.TextHeaderCell>
             Duration:

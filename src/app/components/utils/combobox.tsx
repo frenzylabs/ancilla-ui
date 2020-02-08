@@ -165,7 +165,7 @@ export default class Combobox extends PureComponent {
                 },
                 onChange: e => {
                   console.log("CHANGE ", inputProps)
-                  if (inputProps.onChange) {
+                  if (inputProps && inputProps.onChange) {
                     inputProps.onChange(e)
                   }
                   if (this.state.isOpenedByButton) {

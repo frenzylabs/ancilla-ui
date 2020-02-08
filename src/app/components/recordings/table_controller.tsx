@@ -51,7 +51,8 @@ const optionPropTypes = {
   node: PropTypes.object,
   service: PropTypes.object,
   match: PropTypes.any,
-  height: PropTypes.number
+  height: PropTypes.number,
+  reload: PropTypes.any
 }
 
 const statePropTypes = {
@@ -134,7 +135,8 @@ export class RecordingsController extends React.Component<TableProps, TableState
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (JSON.stringify(this.state.search) != JSON.stringify(prevState.search)) {
+    if (JSON.stringify(this.state.search) != JSON.stringify(prevState.search) || 
+        prevProps.reload != this.props.reload) {
       // var url = qs.stringify(this.state.search, { addQueryPrefix: true });      
       this.getData();
     }
@@ -173,8 +175,17 @@ export class RecordingsController extends React.Component<TableProps, TableState
 
 
   deleteRecording(row) {
-    console.log("delete recording", row)
-    CameraRequest.deleteRecording(this.props.node, this.props.service, row.id)
+    // console.log("delete recording", row)
+    var camservice;
+    if (this.props.service)
+      camservice = this.props.service
+    else if (row.camera.service)
+      camservice = row.camera.service
+    else {
+      toaster.danger(`${row.name} could not be deleted.`)
+    }
+
+    CameraRequest.deleteRecording(this.props.node, camservice, row.id)
     .then((res) => {
       this.getData(this.state.search)
       

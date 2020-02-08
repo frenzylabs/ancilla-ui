@@ -235,11 +235,6 @@ export class PrinterShow extends React.Component<PrinterProps, StateProps> {
     })
   }
 
-  attachmentAdded(attachment) {
-    // this.setState({reloadTime: Date.now()})
-  }
-
-  
 
   renderCreatePrint() {
     if (this.state.createPrint) {

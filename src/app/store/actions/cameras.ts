@@ -20,7 +20,7 @@ export const CameraAction = {
       if (serviceState.model) {
         return Camera.recordings(activeNode, serviceState.model, {cancelToken: cancelRequest.token})
             .then((response) => {
-              dispatch(CameraAction.updateRecordings(serviceState, response.data.recordings || []))
+              dispatch(CameraAction.updateRecordings(activeNode, serviceState, response.data.recordings || []))
             })
       }
     }
@@ -34,7 +34,7 @@ export const CameraAction = {
       if (serviceState.id) {
         return Camera.startRecording(node, serviceState.id, params, {cancelToken: cancelRequest.token})
             .then((response) => {
-              dispatch(CameraAction.serviceUpdated(node, serviceState, response.data.service_model))
+              dispatch(CameraAction.updateRecordings(node, serviceState, response.data.service_model))
               return response
             })
       }
@@ -48,8 +48,9 @@ export const CameraAction = {
     data: recording
   }),
 
-  updateRecordings: (service, recordings) => ({
+  updateRecordings: (node, service, recordings) => ({    
     type: 'CAMERA_RECEIVED_RECORDINGS',
+    node: node,
     service: service,
     data: recordings
   }),

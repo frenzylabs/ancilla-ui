@@ -44,6 +44,7 @@ import CommandsController from './commands_controller'
 import RecordingsController from '../recordings/table_controller'
 // const qs = require('qs');
 
+import AttachRecordingForm from './attach_recording_form'
 
 
 import { NodeState, ServiceState, AttachmentModel }  from '../../store/state'
@@ -67,7 +68,10 @@ type StateProps = {
   printerPrint: any,
   redirectTo: any,
   reload: number,
-  editPrint: any
+  reloadRecordings: number,
+  editPrint: any,
+  editing: boolean,
+  attachRecording: boolean
 }
 
 
@@ -76,7 +80,7 @@ export class PrintShow extends React.Component<Props, StateProps> {
   
 
   cancelRequest = null
-  
+  form = null
   constructor(props:any) {
     super(props)
     // var qparams = qs.parse(this.props.location.search, { ignoreQueryPrefix: true })
@@ -92,7 +96,10 @@ export class PrintShow extends React.Component<Props, StateProps> {
       printerPrint: null,
       redirectTo: null,
       reload: 0,
-      editPrint: null
+      reloadRecordings: 0,
+      editing: false,
+      editPrint: null,
+      attachRecording: false
     }
     this.getPrint         = this.getPrint.bind(this)
     this.syncToLayerkeep    = this.syncToLayerkeep.bind(this)
@@ -141,12 +148,14 @@ export class PrintShow extends React.Component<Props, StateProps> {
 
   updatePrint() {
     this.setState({saving: true})
-    PrinterRequest.updatePrint(this.props.node, this.props.service, this.state.printerPrint.id, this.state.editPrint, {cancelToken: this.cancelRequest.token})
+    return PrinterRequest.updatePrint(this.props.node, this.props.service, this.state.printerPrint.id, this.state.editPrint, {cancelToken: this.cancelRequest.token})
     .then((res) => {
       console.log("SAVE res = ", res)
       this.setState({
         printerPrint: res.data.data,
         editPrint: null,
+        editing: false,
+        attachRecording: false,
         saving: false
       })
     })
@@ -250,69 +259,48 @@ export class PrintShow extends React.Component<Props, StateProps> {
 
   editPrint() {
     console.log("edit print")
-    this.setState({editPrint: {name: this.state.printerPrint.name, description: this.state.printerPrint.description}})
+    this.setState({editing: true, editPrint: {name: this.state.printerPrint.name, description: this.state.printerPrint.description || ""}})
   }
 
-  renderEditPrint() {
-      return (
-        <React.Fragment>
-          <Dialog
-            isShown={this.state.editPrint ? true : false}
-            title="Update Print"
-            isConfirmLoading={this.state.saving}
-            confirmLabel={this.state.saving ? "Saving..." : "Save"}
-            onCloseComplete={() => this.setState({editPrint: null})}
-            onConfirm={() => this.updatePrint()}
-          >
-
-          {({ close }) => {
-            if (!this.state.editPrint) return
-            return (
-              <Pane>
-                <Label htmlFor="name" marginBottom={4} display="block">Name</Label>
-                <TextInput 
-                  name="name" 
-                  placeholder="Print Name" 
-                  marginBottom={4}  
-                  width="100%" 
-                  height={48}
-                  value={this.state.editPrint.name}
-                  onChange={e => 
-                    this.setState({
-                      editPrint: {
-                        ...this.state.editPrint,
-                        name: e.target.value     
-                      }
-                    })
-                  }
-                />
-                <Label htmlFor="description" marginBottom={4} display="block">Description</Label>
-                <Textarea 
-                  name="description" 
-                  placeholder="Print Description" 
-                  marginBottom={4}  
-                  width="100%" 
-                  height={48}
-                  value={this.state.editPrint.description}
-                  onChange={e => 
-                    this.setState({
-                      editPrint: {
-                        ...this.state.editPrint,
-                        description: e.target.value     
-                      }
-                    })
-                  }
-                />
-                </Pane>
-            )
-          }
-              
-        }
-
-        </Dialog>
-        <IconButton appearance='minimal' icon="edit" onClick={this.editPrint.bind(this)}/>
-      </React.Fragment>
+  renderDelete() {
+    return (
+      <Pane display="flex" borderTop >
+        <Pane display="flex" flex={1} padding={20} marginBottom={20} className="" alignItems="center" flexDirection="row">
+          <Pane>
+            <Button appearance="primary" intent="danger" height={40} onClick={() => this.onDelete()}> Delete </Button>
+          </Pane>
+        </Pane>
+      </Pane>
     )
+  }
+
+  renderLayerkeep() {
+    if (!this.state.printerPrint) return
+    var disabled = false
+    if (this.state.syncing) {
+      disabled = true
+    }
+    if (this.state.printerPrint.layerkeep_id) {
+      return (
+        <Pane display="flex" >
+          <Pane display="flex" flex={1} padding={20} marginBottom={20} className="" alignItems="center" flexDirection="row">
+            <Pane>
+              <Button disabled={disabled} appearance="primary" intent="none" height={40} onClick={() => this.unsyncFromLayerkeep()}> {this.state.syncing ? "Unsyncing..." : "UnSync From Layerkeep"} </Button>
+            </Pane>
+          </Pane>
+        </Pane>
+      )
+    } else {
+      return (
+          <Pane display="flex" >
+            <Pane display="flex" flex={1} padding={20} marginBottom={20} className="" alignItems="center" flexDirection="row">
+              <Pane>
+                <Button disabled={disabled} appearance="primary" intent="none" height={40} onClick={() => this.syncToLayerkeep()}> {this.state.syncing ? "Syncing..." : "Sync To Layerkeep"} </Button>
+              </Pane>
+            </Pane>
+          </Pane>
+        )
+    }
   }
 
   renderConfirmLayerkeepDelete() {
@@ -360,38 +348,6 @@ export class PrintShow extends React.Component<Props, StateProps> {
     )
   }
 
-  
-  renderPrinterDetails() {
-    if (!this.state.printerPrint || !this.state.printerPrint.printer) 
-      return null;
-    
-      
-    return (
-        <Pane
-              is="section"
-              background="tint2"
-              border="default"
-              marginLeft={12}
-              marginY={24}
-              // paddingTop={12}
-              
-              // width={120}
-              // height={120}
-              // cursor="help"
-              // onClick={() => alert('Works just like expected')}
-            >
-              <Pane display="flex" flexDirection="column" width="100%" background="#fff" paddingY={10} paddingX={15} margin={0} borderBottom="default">
-                <Heading>Printer</Heading>
-              </Pane>
-              <Pane padding={20}>
-                <Paragraph>Name: {this.state.printerPrint.printer.name}</Paragraph>
-                <Paragraph>Model: {this.state.printerPrint.printer.model}</Paragraph>
-                <Paragraph>Description: {this.state.printerPrint.printer.description}</Paragraph>
-              </Pane>
-          </Pane>
-    )
-  }
-
   renderPrintDetails() {
     if (!this.state.printerPrint) 
       return null;
@@ -430,47 +386,99 @@ export class PrintShow extends React.Component<Props, StateProps> {
     )
   }
 
-  renderDelete() {
+  renderEditPrint() {
     return (
-      <Pane display="flex" borderTop >
-        <Pane display="flex" flex={1} padding={20} marginBottom={20} className="" alignItems="center" flexDirection="row">
-          <Pane>
-            <Button appearance="primary" intent="danger" height={40} onClick={() => this.onDelete()}> Delete </Button>
-          </Pane>
-        </Pane>
-      </Pane>
+      <React.Fragment>
+        <Dialog
+          isShown={this.state.editing ? true : false}
+          title="Update Print"
+          isConfirmLoading={this.state.saving}
+          confirmLabel={this.state.saving ? "Saving..." : "Save"}
+          onCloseComplete={() => this.setState({editing: false, editPrint: null})}
+          onConfirm={() => this.updatePrint()}
+        >
+
+        {({ close }) => {
+          if (!this.state.editPrint) return
+          return (
+            <Pane>
+              <Label htmlFor="name" marginBottom={4} display="block">Name</Label>
+              <TextInput 
+                name="name" 
+                placeholder="Print Name" 
+                marginBottom={4}  
+                width="100%" 
+                height={48}
+                value={this.state.editPrint.name}
+                onChange={e => 
+                  this.setState({
+                    editPrint: {
+                      ...this.state.editPrint,
+                      name: e.target.value     
+                    }
+                  })
+                }
+              />
+              <Label htmlFor="description" marginBottom={4} display="block">Description</Label>
+              <Textarea 
+                name="description" 
+                placeholder="Print Description" 
+                marginBottom={4}  
+                width="100%" 
+                height={48}
+                value={this.state.editPrint.description}
+                onChange={e => 
+                  this.setState({
+                    editPrint: {
+                      ...this.state.editPrint,
+                      description: e.target.value     
+                    }
+                  })
+                }
+              />
+              </Pane>
+          )
+        }}
+
+        </Dialog>
+        <IconButton appearance='minimal' icon="edit" onClick={this.editPrint.bind(this)}/>
+      </React.Fragment>
     )
   }
 
-  renderLayerkeep() {
-    if (!this.state.printerPrint) return
-    var disabled = false
-    if (this.state.syncing) {
-      disabled = true
-    }
-    if (this.state.printerPrint.layerkeep_id) {
-      return (
-        <Pane display="flex" >
-          <Pane display="flex" flex={1} padding={20} marginBottom={20} className="" alignItems="center" flexDirection="row">
-            <Pane>
-              <Button disabled={disabled} appearance="primary" intent="none" height={40} onClick={() => this.unsyncFromLayerkeep()}> {this.state.syncing ? "Unsyncing..." : "UnSync From Layerkeep"} </Button>
-            </Pane>
-          </Pane>
-        </Pane>
-      )
-    } else {
-      return (
-          <Pane display="flex" >
-            <Pane display="flex" flex={1} padding={20} marginBottom={20} className="" alignItems="center" flexDirection="row">
-              <Pane>
-                <Button disabled={disabled} appearance="primary" intent="none" height={40} onClick={() => this.syncToLayerkeep()}> {this.state.syncing ? "Syncing..." : "Sync To Layerkeep"} </Button>
+  
+  renderPrinterDetails() {
+    if (!this.state.printerPrint || !this.state.printerPrint.printer) 
+      return null;
+    
+      
+    return (
+        <Pane
+              is="section"
+              background="tint2"
+              border="default"
+              marginLeft={12}
+              marginY={24}
+              // paddingTop={12}
+              
+              // width={120}
+              // height={120}
+              // cursor="help"
+              // onClick={() => alert('Works just like expected')}
+            >
+              <Pane display="flex" flexDirection="column" width="100%" background="#fff" paddingY={10} paddingX={15} margin={0} borderBottom="default">
+                <Heading>Printer</Heading>
               </Pane>
-            </Pane>
+              <Pane padding={20}>
+                <Paragraph>Name: {this.state.printerPrint.printer.name}</Paragraph>
+                <Paragraph>Model: {this.state.printerPrint.printer.model}</Paragraph>
+                <Paragraph>Description: {this.state.printerPrint.printer.description}</Paragraph>
+              </Pane>
           </Pane>
-        )
-    }
+    )
   }
 
+  
 
 
   renderSectionHeader(title) {
@@ -492,6 +500,53 @@ export class PrintShow extends React.Component<Props, StateProps> {
     )
   }
 
+  renderRecordingsSectionHeader() {
+    return (
+      <Pane display="flex" flexDirection="row" width="100%" background="#fff" paddingY={10} paddingX={15} margin={0} borderBottom="default">
+        <Pane display="flex" flex={1}>Recordings</Pane>
+        <Pane>
+          <IconButton appearance='minimal' icon="add" onClick={() => this.setState({attachRecording: true})} />            
+        </Pane>
+      </Pane>
+    )
+  }
+
+  addPrintRecording(recording) {
+    console.log("REcroding = ", recording)
+    if (recording && recording.recording_id != "") {
+      this.state.editPrint = {recording: recording}
+      // this.setState({editPrint: {recording: recording}})
+      this.updatePrint().then((res) => {
+        this.setState({reloadRecordings: Date.now()})
+      })
+    }
+  }
+
+  renderRecordingAttachments() {
+    return (
+      <React.Fragment>
+        <Dialog
+          isShown={this.state.attachRecording ? true : false}
+          title="Attach Recording"
+          isConfirmLoading={this.state.saving}
+          confirmLabel={this.state.saving ? "Saving..." : "Save"}
+          onCloseComplete={() => this.setState({attachRecording: false})}
+          onConfirm={() => this.addPrintRecording(this.form.state.newAttachment)}
+        >
+
+        {({ close }) => {
+          return (
+            <AttachRecordingForm 
+              ref={f => this.form = f}
+              {...this.props}>
+            </AttachRecordingForm>            
+          )
+        }}
+
+        </Dialog>
+      </React.Fragment>
+    )
+  }
   renderRecordings() {
     return (
       <Pane
@@ -502,10 +557,13 @@ export class PrintShow extends React.Component<Props, StateProps> {
       marginLeft={12}
       marginY={24}
     > 
+    {this.renderRecordingAttachments()}
     <RecordingsController 
-      renderSectionHeader={() => this.renderSectionHeader("Recordings")}
+      node={this.props.node} 
+      renderSectionHeader={() => this.renderRecordingsSectionHeader()}      
       listData={this.getPrintRecordings.bind(this)}
       match={this.props.match}
+      reload={this.state.reloadRecordings}
     />
     
     </Pane>)

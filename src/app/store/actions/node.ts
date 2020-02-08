@@ -115,10 +115,10 @@ export const NodeAction = {
     data: service
   }),
 
-  cameraUpdated: (node, service) => ({
+  cameraUpdated: (node, service_model) => ({
     type: 'CAMERA_UPDATED',
     node: node,
-    service: service
+    service: service_model
   }),
 
   

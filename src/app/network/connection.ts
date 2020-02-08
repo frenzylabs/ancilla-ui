@@ -60,7 +60,7 @@ export default class Connection {
     // this.socket.binaryType = 'arraybuffer';
 
     this.socket.onopen = (e) => {
-      console.log("ON OPEN")
+      // console.log("ON OPEN")
       this.onConnect(e)
     }
 
@@ -97,17 +97,10 @@ export default class Connection {
   }
 
   onConnect(event) {
-    console.log("ON CONNECT", event)
+    console.log("WS Connected")
     this.connected = true
 
-    // msg = ["", "connect"]
-    // let message = JSON.stringify({
-    //   action:   'connect',
-    //   port:     this.path,
-    //   baudrate: this.baudrate
-    // })
-
-    // this.send(message)
+    PubSub.publish(this.node.name + ".notifications.connected", {})
   }
 
   onDisconnect(event) {
@@ -131,8 +124,6 @@ export default class Connection {
       let topic = msg[0]
       // console.log("TOPIC: ", topic)
       let payload = msg[1]
-      // let payload = JSON.parse(msg[1])
-      // console.log("pyalod parse = ", payload)
       PubSub.publish(this.node.name + "." + topic, payload)
     } catch (error) {
       console.log("ERROR", error)

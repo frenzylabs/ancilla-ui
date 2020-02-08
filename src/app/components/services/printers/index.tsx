@@ -130,20 +130,27 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
 
 
   power(){
-    if (this.props.service.state["connected"]) {
+    this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, togglingPower: true}))
+    if (this.props.service.state["connected"]) {      
       PrinterHandler.disconnect(this.props.node, this.props.service)
       .then((response) => {
-        this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
+        this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: false, togglingPower: false}))
+      })
+      .catch((error) => {
+        console.log(error)
+        this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, togglingPower: false}))
+        toaster.danger(<ErrorModal requestError={error} />)
       })
     } else {
       PrinterHandler.connect(this.props.node, this.props.service)
       .then((response) => {
         // console.log("CONNECT resp ", response)
-        this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: true}))
+        this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: true, togglingPower: false}))
         toaster.success(`Connected to ${this.props.service.name}`)
       })
       .catch((error) => {
         console.log(error)
+        this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, togglingPower: false}))
         toaster.danger(<ErrorModal requestError={error} />)
       })
     }
@@ -216,10 +223,14 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
   }
 
   render() {
+    var powerOption = {
+      state: (this.props.service.state["togglingPower"] == true ? "waiting" : "active"),
+      action: this.power.bind(this)
+    }
     var params = this.props.match["params"];
     return (
       <div className="flex-wrapper">
-        <Statusbar {...this.props} status={this.getColorState()} powerAction={this.power.bind(this)} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
+        <Statusbar {...this.props} status={this.getColorState()} powerOption={powerOption} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
 
         <div className="scrollable-content">
           <Switch>

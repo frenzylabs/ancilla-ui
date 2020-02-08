@@ -20,7 +20,14 @@ import { NodeAction } from '../../../../store/actions/node'
 
 import {default as request} from '../../../../network/camera'
 
-export class Cameras extends React.Component {
+import { NodeState, PrinterState }  from '../../../../store/state'
+
+type props = {
+  history: any,
+  node: NodeState
+}
+
+export class Cameras extends React.Component<props> {
   state = {
     showing: false,
     loading: false,
@@ -48,8 +55,12 @@ export class Cameras extends React.Component {
   }
 
   selectCamera(item) {
-    let url = `/cameras/${item.id}`
-    this.props.history.push(`${url}`);
+    if (item && item.id) {
+      let url = `/cameras/${item.id}`
+      this.props.history.push(`${url}`);
+    } else {
+      this.addCamera()
+    }
   }
 
 

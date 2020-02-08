@@ -14,6 +14,7 @@ import {
   Pane,
   Heading,
   Text,
+  Paragraph,
   Strong,
 } from 'evergreen-ui'
 
@@ -117,10 +118,16 @@ export default class State extends React.Component<Props> {
   }
 
   renderRow(key:string, value:any) {
+    var valcomp
+    if (typeof(value) == 'string') {
+      valcomp = (<Text size={400}>{value}</Text>)
+    } else {
+      valcomp = value
+    }
     return (
       <Pane display="flex" marginBottom={6}>
         <Heading size={500} display="flex" flex={1} marginRight={8}>{key}</Heading>
-        <Text size={400}>{value}</Text>
+        {valcomp}
       </Pane>
     )
   }
@@ -130,6 +137,29 @@ export default class State extends React.Component<Props> {
     if (curprnt && curprnt.state) {
       let pg = (curprnt.state["pos"] / (curprnt.state["end_pos"] || 1) * 100).toFixed(2)
       return `${pg}%` 
+    }
+    return ``
+  }
+
+  getPrintTemp() {
+    var curprnt = this.props.service.currentPrint.model
+    if (curprnt && curprnt.state) {
+      const r = /([T|B|C]\d*):([^\s\/]+)\s*\/([^\s]+)/g
+      var temp = curprnt.state["temp"] || ""
+      var matches = [...temp.matchAll(r)]
+
+      var alltemps = matches.map((t) => {
+        if (t.length < 4) return ""
+        return (
+          <Paragraph key={t[1]}>
+            <Text>{t[1]}:&nbsp;</Text>
+            <Text>{t[2]} / {t[3]}</Text>
+          </Paragraph>
+        )
+      })
+      return (<Pane>
+        {alltemps}
+      </Pane>)
     }
     return ``
   }
@@ -167,6 +197,7 @@ export default class State extends React.Component<Props> {
           {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice["name"]) || "")}
           {this.renderRow("Duration", `${duration}`)}
           {this.renderRow("Progress", this.getProgress())}
+          {this.renderRow("Printer Temp", this.getPrintTemp())}
         </div>
       )
     }

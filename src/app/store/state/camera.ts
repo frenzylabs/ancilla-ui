@@ -29,7 +29,7 @@ export type CameraState = ServiceState & {
 }
 
 
-export function cameraState(model: CameraModel, state: {} = {}, logs: [] = [], currentRecording = {}, config = {}, settings = {}) {
+export function cameraState(model: CameraServiceModel, state: {} = {}, logs: [] = [], currentRecording = {}, config = {}, settings = {}) {
   var res = serviceState.call(this, ...arguments)  
   res["currentRecording"] = currentRecording
   return res

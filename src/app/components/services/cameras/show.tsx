@@ -19,7 +19,7 @@ import {
   Pane,
   TextInput,
   Button,
-  Paragraph,
+  Spinner,
   Icon,
   IconButton,
   Heading,
@@ -60,7 +60,9 @@ type Props = {
 
 type StateProps = {
   recordSettings: any,
-  videoUrl: any
+  videoUrl: any,
+  togglingPower: boolean,
+  togglingRecording: boolean
 }
 
 export class CameraView extends React.Component<Props, StateProps> {
@@ -77,6 +79,8 @@ export class CameraView extends React.Component<Props, StateProps> {
     
     this.state = {
       videoUrl: null,
+      togglingPower: false,
+      togglingRecording: false,
       recordSettings: {
         // videoSettings: {
         //   fps: 10
@@ -162,6 +166,7 @@ export class CameraView extends React.Component<Props, StateProps> {
   setupCamera() {
     if (this.props.service) {
       this.props.getState(this.props.node, this.props.service)
+      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.state.changed"])
       PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.connection"])
       PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.recording"])
       
@@ -191,8 +196,13 @@ export class CameraView extends React.Component<Props, StateProps> {
     // console.log("PV Received Event here1", msg)    
     // console.log("PV Received Event here2", data)
     var [to, kind] = msg.split("events.")
-    console.log("CAM SHOW EVENT KIND", kind)
+    // console.log("CAM SHOW EVENT KIND", kind)
     switch(kind) {
+      case 'camera.state.changed':
+        this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, ...data})
+        // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, connected: false}))
+        // this.setState({...this.state, serviceState: {...this.state.serviceState, open: false}})
+        break
       case 'camera.recording.state.changed':
           // console.log("Camera Recording state changed", data)
           // if (data.status != "recording")
@@ -222,22 +232,29 @@ export class CameraView extends React.Component<Props, StateProps> {
 
 
   toggleRecording() {
+    this.setState({togglingRecording: true})
+    
+    
     if (this.props.service.state["recording"]) {
       if (this.props.service.currentRecording && this.props.service.currentRecording.id) {
         CameraHandler.stopRecording(this.props.node, this.props.service, this.props.service.currentRecording.id)
         .then((res) => {
           // console.log("StopRecoding Resp", res)
+          this.setState({togglingRecording: false})
         })
         .catch((error) => {
+          this.setState({togglingRecording: false})
           // console.log("StopRecoding Error", error)
         })
       }
     } else {
       CameraHandler.startRecording(this.props.node, this.props.service, {"settings": this.state.recordSettings})
       .then((res) => {
+        this.setState({togglingRecording: false})
         // console.log("StartRecoding Resp", res)
       })
       .catch((error) => {
+        this.setState({togglingRecording: false})
         // console.log("StartRecoding Error", error)
       })
     }
@@ -280,27 +297,35 @@ export class CameraView extends React.Component<Props, StateProps> {
   }
 
   power(){
+    this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, togglingPower: true})
     if (this.props.service.state["connected"]) {
       CameraHandler.disconnect(this.props.node, this.props.service)
       .then((response) => {
-        console.log("disconnected", response)
+        this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, connected: false, togglingPower: false})
       }).catch((error) => {
         console.log(error)
+        this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, togglingPower: false})
         toaster.danger(<ErrorModal requestError={error} />)
       })
     } else {
       CameraHandler.connect(this.props.node, this.props.service)
       .then((response) => {
+        this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, connected: true, togglingPower: false})
         toaster.success(`Connected to ${this.props.service.name}`)
       })
       .catch((error) => {
         console.log(error)
+        this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, togglingPower: false})
         toaster.danger(<ErrorModal requestError={error} />)
       })
     }
   }
 
+
   renderConnectButton() {
+    if (this.props.service.state["togglingPower"]) {
+      return (<Button appearance="minimal" intent="none"><Spinner size={16}/></Button>)
+    }
     return (
       <IconButton 
         marginLeft={10}
@@ -313,6 +338,9 @@ export class CameraView extends React.Component<Props, StateProps> {
   }
 
   renderRecordButton() {
+    if (this.state.togglingRecording) {
+      return (<Button appearance="minimal" intent="none"><Spinner size={16}/></Button>)
+    }
     return (
       <IconButton 
         icon="mobile-video" 
@@ -367,6 +395,23 @@ export class CameraView extends React.Component<Props, StateProps> {
   }
 
   renderTimeLapse() {
+    var recbtn
+    if (this.state.togglingRecording) {
+       recbtn = (<Button appearance="minimal" intent="none"><Spinner size={16}/></Button>)
+    } else {
+      recbtn = (
+              <Button 
+                iconBefore="mobile-video" 
+                marginRight={12}
+                intent={this.props.service.state["recording"] ? "danger" : "success"}
+                disabled={!this.props.service.state["connected"]}
+                onClick={this.toggleRecording}    
+                >
+                {this.props.service.state["recording"] ? "Stop" : "Start"} Recording
+              </Button>
+      )
+    }
+
     return (
         <React.Fragment>
           <TextInput 
@@ -402,15 +447,7 @@ export class CameraView extends React.Component<Props, StateProps> {
 
           <Pane display="flex" flex={1} flexDirection="row" alignItems="center">
             <Pane display="flex" flex={1}>
-              <Button 
-                iconBefore="mobile-video" 
-                marginRight={12}
-                intent={this.props.service.state["recording"] ? "danger" : "success"}
-                disabled={!this.props.service.state["connected"]}
-                onClick={this.toggleRecording}    
-                >
-                {this.props.service.state["recording"] ? "Stop" : "Start"} Recording
-              </Button>
+              {recbtn}
             </Pane>
 
             <Pane display="flex">
@@ -419,17 +456,6 @@ export class CameraView extends React.Component<Props, StateProps> {
               </Link>
             </Pane>
           </Pane>
-      </React.Fragment>
-    )
-  }
-
-  renderRecording() {
-    return (
-      <React.Fragment>
-        <Button onClick={this.toggleRecording}>{this.props.service.state["recording"] ? "Stop Recording" : "Record"}</Button>
-        <Pane>
-          <Link to={`/cameras/${this.props.service.id}/recordings`}>List Recordings</Link>
-        </Pane>
       </React.Fragment>
     )
   }

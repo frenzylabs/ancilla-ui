@@ -15,7 +15,7 @@ import {
   Popover,
   Position,
   Menu,
-  Button,
+  IconButton,
   Icon,
   Dialog,
   TextInput,
@@ -69,8 +69,19 @@ export default class SubNav extends React.Component<Props> {
 	
 	filesSelected() {
 		this.props.history.push('/files')
-	}
+  }
+  
+  
   renderCurrentNode() {
+    return (
+      <Pane  height={42} width="100%" display="flex" padding={10} color={"white"} borderBottom={"default"} borderWidth={2} borderColor={"#234361"}>
+          <Pane  flex={1}>{this.props.node.name}</Pane> 
+          
+          <Link to={`/node/settings`} color={"white"} ><Icon color={"white"} icon="cog"></Icon></Link>
+        </Pane>
+    )
+  }
+  renderCurrentNodeDrop() {
     return (
       <Popover
         position={Position.BOTTOM_LEFT}

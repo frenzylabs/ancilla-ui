@@ -53,7 +53,8 @@ type Props = {
 }
 
 type StateProps = {
-  recordSettings: any
+  recordSettings: any,
+  togglingPower: boolean
 }
 
 export class CameraIndex extends React.Component<Props, StateProps> {
@@ -67,6 +68,7 @@ export class CameraIndex extends React.Component<Props, StateProps> {
 
     
     this.state = {
+      togglingPower: false,
       recordSettings: {
         videoSettings: {
           fps: 10
@@ -179,21 +181,25 @@ export class CameraIndex extends React.Component<Props, StateProps> {
   }
 
   power(){
+    this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, togglingPower: true})
     if (this.props.service.state["connected"]) {
       CameraHandler.disconnect(this.props.node, this.props.service)
       .then((response) => {
-        console.log("disconnected", response)
+        this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, connected: false, togglingPower: false})
       }).catch((error) => {
         console.log(error)
+        this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, togglingPower: false})
         toaster.danger(<ErrorModal requestError={error} />)
       })
     } else {
       CameraHandler.connect(this.props.node, this.props.service)
       .then((response) => {
+        this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, connected: true, togglingPower: false})
         toaster.success(`Connected to ${this.props.service.name}`)
       })
       .catch((error) => {
         console.log(error)
+        this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, togglingPower: false})
         toaster.danger(<ErrorModal requestError={error} />)
       })
     }
@@ -241,10 +247,14 @@ export class CameraIndex extends React.Component<Props, StateProps> {
   }
 
   render() {
+    var powerOption = {
+      state: (this.props.service.state["togglingPower"] == true ? "waiting" : "active"),
+      action: this.power.bind(this)
+    }
     var params = this.props.match.params;
     return (
       <div className="flex-wrapper">
-        <Statusbar {...this.props} renderTitle={this.statusBarTitle.bind(this)} status={this.getColorState()} powerAction={this.power.bind(this)} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
+        <Statusbar {...this.props} renderTitle={this.statusBarTitle.bind(this)} status={this.getColorState()} powerOption={powerOption} settingsAction={() => this.props.history.push(`${this.props.match.url}/settings`) } />
 
         <div className="scrollable-content">
           <Switch>                 

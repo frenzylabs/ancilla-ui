@@ -25,6 +25,10 @@ export const SystemHandler = {
     return Request.post(`${node.apiUrl}/system/reboot`, data, options)
   },
 
+  getConfig: (node, options= {}) => {
+    return Request.get(`${node.apiUrl}/system/`, options)
+  },
+
   
 
 }

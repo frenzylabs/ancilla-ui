@@ -1,4 +1,4 @@
-import { CameraModel, CameraState, ServiceState } from '../state'
+import { CameraModel, CameraState, cameraState, ServiceState } from '../state'
 
 
 
@@ -13,8 +13,9 @@ export function cameraReducer(camState: CameraState, action) {
       ...camState, currentRecording: action.data
     }
   case 'CAMERA_UPDATED':
+    var st = cameraState(action.service)
     return {
-      ...camState, ...action.data
+      ...camState, ...st
     }
   case 'RECEIVED_LOGS':
     return {

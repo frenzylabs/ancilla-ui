@@ -83,9 +83,9 @@ export class App extends React.Component<AppProps, stateProps> {
     
 
   componentDidMount() {
-    // document.title = this.props.activeNode.name
+    document.title = this.props.activeNode.name
     this.props.getNode(this.props.activeNode)
-    // this.props.listNodes()
+    this.props.listNodes()
     
     this.setupNotification()
     // setTimeout(this.setupConn.bind(this), 1000)
@@ -99,7 +99,7 @@ export class App extends React.Component<AppProps, stateProps> {
 
   componentDidUpdate(prevProps, prevState) {
     let prevNode = prevProps.activeNode
-    
+    document.title = this.props.activeNode.name
     if (this.props.activeNode && (!prevNode || prevNode.apiUrl != this.props.activeNode.apiUrl)) {
       PubSub.unsubscribe(this.pubsubToken)
       this.pubsubToken = PubSub.subscribe(this.props.activeNode.name + ".request", this.sendData);
@@ -107,7 +107,7 @@ export class App extends React.Component<AppProps, stateProps> {
       this.setupNotification()
     }
     else if (prevNode.name != this.props.activeNode.name) {
-      document.title = this.props.activeNode.name
+      
       // this.setState({connection: new Connection({node: this.props.activeNode})})
       this.state.connection.node = this.props.activeNode
       // PubSub.unsubscribe(this.pubsubToken)
@@ -172,7 +172,5 @@ const mapDispatchToProps = (dispatch) => {
     getNode: (node) => dispatch(NodeAction.getNode(node))
   }
 }
-
-
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(App))

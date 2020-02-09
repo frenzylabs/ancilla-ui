@@ -157,7 +157,6 @@ export class RecordingList extends React.Component<Props, StateProps> {
   }
 
   deleteRecording(row) {
-    console.log("delete recording", row)
     CameraHandler.deleteRecording(this.props.node, this.props.service, row.id)
     .then((res) => {
       this.listRecordings(this.state.search)

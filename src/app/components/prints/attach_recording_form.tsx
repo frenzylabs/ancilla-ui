@@ -54,9 +54,9 @@ export default class AttachmentForm extends React.Component<Props> {
       name: ""
     },
     search: {
-      page: 1, //parseInt(qparams["page"] || 1), 
-      per_page: 5, //parseInt(qparams["per_page"] || 20), 
-      q: {name: "", print_id: 0} //qparams["q"] || {}
+      page: 1, 
+      per_page: 5,
+      q: {name: "", print_id: 0} 
     },
     loading: false,
     camera: null,
@@ -70,7 +70,6 @@ export default class AttachmentForm extends React.Component<Props> {
   timer = null
   constructor(props:any) {
     super(props)
-    // this.
   
     this.setCameras = this.setCameras.bind(this)
 
@@ -79,7 +78,6 @@ export default class AttachmentForm extends React.Component<Props> {
 
   componentDidMount() {
     this.setCameras()
-    // console.log(this.props)
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -92,12 +90,6 @@ export default class AttachmentForm extends React.Component<Props> {
     }
     else if (JSON.stringify(this.state.search) != JSON.stringify(prevState.search)) {
       this.listRecordings()
-    }
-    else if (prevState.newAttachment.recording_id != this.state.newAttachment.recording_id) {
-      if (this.state.newAttachment.recording_id != '') {
-        
-        // this.setState({canSave: true})
-      }
     }
 
     
@@ -115,9 +107,6 @@ export default class AttachmentForm extends React.Component<Props> {
   }
 
   listRecordings() {
-    // var search = {q: {
-    // }}
-    console.log(this.state)
     if (!this.state.camera) return
     CameraHandler.recordings(this.props.node, this.state.camera, {qs: this.state.search, cancelToken: this.cancelRequest.token})
     .then((resp) => {
@@ -146,7 +135,6 @@ export default class AttachmentForm extends React.Component<Props> {
   }
 
   handleFilterChange(val) {
-    console.log("filter change", val)
     if (this.timer) {
       clearTimeout(this.timer)
     }
@@ -166,9 +154,9 @@ export default class AttachmentForm extends React.Component<Props> {
         {item.status} 
       </Pane>
       <Pane display="flex" flex={1}>
-        {Dayjs(item.updated_at).format('MM.d.YYYY - hh:mm:ss a')}
+        {Dayjs.unix(item.created_at).format('MM.d.YYYY - hh:mm:ss a')}
       </Pane>
-      <Pane>
+      {/* <Pane>
         <Tooltip align="right"
           content={
             <Paragraph margin={10}>{item.description}</Paragraph>
@@ -177,7 +165,7 @@ export default class AttachmentForm extends React.Component<Props> {
         >
           <Icon size={12} marginLeft={4} icon="help" />
         </Tooltip>
-      </Pane>
+      </Pane> */}
    </Pane>} />
   }
 
@@ -188,21 +176,6 @@ export default class AttachmentForm extends React.Component<Props> {
   render() {
     return (
       <Pane>
-        {/* <TextInput 
-          name="name" 
-          placeholder="Service Name" 
-          marginBottom={4}  
-          width="100%" 
-          height={48}
-          onChange={e => 
-            this.setState({
-              newAttachment: {
-                ...this.state.newAttachment,
-                name: e.target.value     
-              }
-            })
-          }
-        /> */}
 
         <Combobox 
           openOnFocus 

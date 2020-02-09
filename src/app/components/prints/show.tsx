@@ -249,7 +249,6 @@ export class PrintShow extends React.Component<Props, StateProps> {
     .catch((error) => {
       this.setState({deleting: false, deleteRemote: false, confirmDelete: false})
       toaster.danger(<ErrorModal requestError={error} />)
-      // toaster.danger(`${this.state.printer_print.name} could not be deleted.`)
     })
   }
   
@@ -258,7 +257,6 @@ export class PrintShow extends React.Component<Props, StateProps> {
   }
 
   editPrint() {
-    console.log("edit print")
     this.setState({editing: true, editPrint: {name: this.state.printerPrint.name, description: this.state.printerPrint.description || ""}})
   }
 
@@ -459,12 +457,6 @@ export class PrintShow extends React.Component<Props, StateProps> {
               border="default"
               marginLeft={12}
               marginY={24}
-              // paddingTop={12}
-              
-              // width={120}
-              // height={120}
-              // cursor="help"
-              // onClick={() => alert('Works just like expected')}
             >
               <Pane display="flex" flexDirection="column" width="100%" background="#fff" paddingY={10} paddingX={15} margin={0} borderBottom="default">
                 <Heading>Printer</Heading>
@@ -515,7 +507,6 @@ export class PrintShow extends React.Component<Props, StateProps> {
     console.log("REcroding = ", recording)
     if (recording && recording.recording_id != "") {
       this.state.editPrint = {recording: recording}
-      // this.setState({editPrint: {recording: recording}})
       this.updatePrint().then((res) => {
         this.setState({reloadRecordings: Date.now()})
       })

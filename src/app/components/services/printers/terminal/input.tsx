@@ -42,17 +42,14 @@ export default class Input extends React.Component<Props> {
     this.enterAction    = this.enterAction.bind(this)
     this.upAction       = this.upAction.bind(this)
     this.downAction     = this.downAction.bind(this)
-    this.inputAction    = this.inputAction.bind(this)
     this.keyAction      = this.keyAction.bind(this)
     this.setValue       = this.setValue.bind(this)
   }
 
   componentDidMount() {
-    document.addEventListener("keydown", this.keyAction, false)
   }
 
   componentWillUnmount() {
-    document.removeEventListener("keydown", this.keyAction, false)
   }
 
   sendAction() {
@@ -60,7 +57,9 @@ export default class Input extends React.Component<Props> {
       let cmd = [this.props.service.name, "send_command", { cmd: item.trim(), nowait: this.state.nowait, skip_queue: this.state.skipQueue}]
       PubSub.publish(this.props.node.name + ".request", cmd)
       return cmd
-    }).forEach((cmd) => { console.log("send: ", cmd)})
+    })
+    // .forEach((cmd) => { console.log("send: ", cmd)})
+    this.setState({entry: ""})
   }
 
   enterAction() {
@@ -76,9 +75,6 @@ export default class Input extends React.Component<Props> {
     this.sendAction()
 
     this.historyIndex = 0
-
-    let input   = (document.getElementById('terminal-input-field') as HTMLInputElement)
-    input.value = ""
   }
 
   upAction() {
@@ -129,26 +125,9 @@ export default class Input extends React.Component<Props> {
     }
   }
 
-  inputAction(e) {
-    let input = (e.target as HTMLInputElement)
-    let value = input.value
-
-    this.setState({
-      entry: value
-    })
-
-    input.value = value
-  }
 
   setValue(value) {
-    let input = (document.getElementById('terminal-input-field') as HTMLInputElement)
-
-    input.focus()
-    input.value = ""
-
-    setTimeout(() => {
-      input.value = value
-    }, 1)
+    this.setState({entry: value})
   }
 
   render() {
@@ -160,9 +139,13 @@ export default class Input extends React.Component<Props> {
               type="text"
               disabled={!this.props.service.state["connected"]}
               placeholder="Enter command..." 
-              // name="cmd"
+              value={this.state.entry}
+              onKeyDown={this.keyAction}
               id="terminal-input-field" 
-              onChange={this.inputAction}
+              onChange={(e) => {
+                this.setValue(e.target.value)
+                }
+              }
             />
           </Pane>
         </Pane>

@@ -469,7 +469,9 @@ export class CameraView extends React.Component<Props, StateProps> {
         </Pane>
         <Pane display="flex" flex={1} alignItems="center">
           <Text color="#b0b0b0" marginRight={6}>Camera:</Text> 
-          <Strong color="#080808" weight="bold" marginRight={6}>{this.props.service.name}: </Strong>
+          <Strong color="#080808" weight="bold" marginRight={6}>
+            <Link to={`/cameras/${this.props.service.id}`} style={{textDecoration: 'none'}}>{this.props.service.name}</Link>: 
+          </Strong>
           <Text color="#b0b0b0" >{endpoint}</Text> 
         </Pane>
         <Pane>

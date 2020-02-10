@@ -7,6 +7,7 @@ export type PrintModel = {
   state: object,
   printer_snapshot: object,
   print_slice: object,
+  duration: number,
   layerkeep_id?: number
 }
 

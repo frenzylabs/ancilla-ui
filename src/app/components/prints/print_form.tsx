@@ -78,7 +78,8 @@ type PrintProps = PropTypes.InferProps<typeof optionPropTypes> & {
 type PrintStateProps = PropTypes.InferProps<typeof statePropTypes> & {
   files: Array<ServiceState>,
   printers: Array<ServiceState>,
-  cameras: Array<ServiceState>
+  cameras: Array<ServiceState>,
+  attachedCams: object
 }
 
 export default class PrintForm extends React.Component<PrintProps, PrintStateProps> {
@@ -101,10 +102,33 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
     files: Array(),
     cameras: Array(),
     printers: Array(),
-    filesLoading: true
+    filesLoading: true,
+    attachedCams: {}
   }
 
   addForm = null
+
+  componentDidMount() {
+    this.getFiles()
+    this.getCameras()
+    this.getPrinters()
+    this.setupAttachedCameras()
+  }
+
+  setupAttachedCameras() {
+    var checkedCams = {}
+    var checkedCams = this.props.printerService.model.attachments.filter((att) => att.attachment.kind == "camera")
+                        .reduce((acc, item) => { acc[item.attachment.id] = true; return acc}, {})
+
+    var recordPrint = this.state.newPrint.settings.record_print
+    if (Object.keys(checkedCams).length > 0)  {
+      recordPrint = true
+    }
+
+    var newstate = {...this.state.newPrint, settings: {...this.state.newPrint.settings, 
+      cameras: checkedCams, record_print: recordPrint}}
+    this.setState({newPrint: newstate})
+  }
 
   getFiles() {
     this.setState({filesLoading: true})
@@ -140,11 +164,7 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
     this.setState({cameras: cameras})    
   }
 
-  componentDidMount() {
-    this.getFiles()
-    this.getCameras()
-    this.getPrinters()
-  }
+
 
   save() {
     // this.props.save(this.values)
@@ -164,6 +184,7 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
         cameras: cameras}}
     this.setState({newPrint: newstate})
   }
+
   cameraChecked(cam) {
     var res = (this.state.newPrint.settings.cameras && this.state.newPrint.settings.cameras[cam.id])
     return res

@@ -20,7 +20,7 @@ import { NodeAction } from '../../../../store/actions/node'
 
 import {default as request} from '../../../../network/camera'
 
-import { NodeState, PrinterState }  from '../../../../store/state'
+import { NodeState }  from '../../../../store/state'
 
 type props = {
   history: any,

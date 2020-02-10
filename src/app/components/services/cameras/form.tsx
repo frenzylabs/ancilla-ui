@@ -254,7 +254,7 @@ export default class Form extends React.Component<Props> {
             Built-in and USB connected cameras will have a numerical <br/>
             endpoint. Depending on the order the USB cameras were <br/>
             plugged in, it could be 0, 1, 2, etc. <br />
-            It can also be a ur to an IP based camera.            
+            It can also be a url to an IP based camera.
           </Text>
         </Pane>
       </React.Fragment>

@@ -174,7 +174,7 @@ export default class State extends React.Component<Props> {
           {this.renderRow("Status", curprnt.status)}
           {this.renderRow("Started On", `${created_at}`)}
           {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice["name"]) || "")}
-          {this.renderRow("Duration", `${curprnt.duration}`)}
+          {this.renderRow("Duration", `${Math.round(curprnt.duration)}`)}
         </div>
       )
     }
@@ -193,7 +193,7 @@ export default class State extends React.Component<Props> {
           {this.renderRow("Est Time", "12.4 hours")}
           {this.renderRow("Time left", "00:00:00")} */}
           {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice["name"]) || "")}
-          {this.renderRow("Duration", `${curprnt.duration}`)}
+          {this.renderRow("Duration", `${Math.round(curprnt.duration)}`)}
           {this.renderRow("Progress", this.getProgress())}
           {this.renderRow("Printer Temp", this.getPrintTemp())}
         </div>

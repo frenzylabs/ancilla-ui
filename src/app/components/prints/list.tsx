@@ -323,7 +323,7 @@ export class PrintList extends React.Component<Props> {
         <Table.TextCell>{row.status}</Table.TextCell>
         <Table.TextCell>{Dayjs.unix(row.created_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
         <Table.TextCell>{Dayjs.unix(row.updated_at).format('MM.d.YYYY - hh:mm:ss a')}</Table.TextCell>
-        <Table.TextCell>{(row.duration)}</Table.TextCell>
+        <Table.TextCell>{Math.round(row.duration)}</Table.TextCell>
         <Table.TextCell>
           <Link to={{pathname: this.props.match.url + "/" + row.id, state: {printerPrint: row}}} >
             View

@@ -75,6 +75,9 @@ export function createNodeState(networkModel: NodeNetworkModel, nodeModel: NodeM
   var url = document.location.protocol+ "//" + hostname  
 
   var networkUrl = document.location.protocol+ "//" + (networkModel.server ? networkModel.server : hostname)
+  if (!networkModel.ip && networkModel.addresses && networkModel.addresses.length > 0) {
+    networkModel.ip = networkModel.addresses[0]
+  }
   var ipUrl = networkModel.ip ? document.location.protocol+ "//" + networkModel.ip : null
   if (networkModel.port && `${networkModel.port}`.length > 1)
     url += `:${networkModel.port}`
@@ -89,7 +92,7 @@ export function createNodeState(networkModel: NodeNetworkModel, nodeModel: NodeM
     uuid: networkModel.uuid || "0",
     networkName: (networkModel.network_name ? networkModel.network_name : networkModel.name),
     networkUrl: networkUrl,
-    name: networkModel.name,
+    name: (networkModel.name ? networkModel.name : networkModel.network_name),
     port: networkModel.port,    
     hostname: hostname,
     url: url,

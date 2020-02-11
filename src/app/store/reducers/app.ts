@@ -32,7 +32,7 @@ const appReducer = (state = initialState, action) => {
       var activeNode = state.activeNode
       var nodes = (action.data.nodes || []).map((node) => {        
         // console.log("NodesActiveNode= ", activeNode)
-        // console.log("NodesNode= ", ns)
+        // console.log("NodesNode= ", node)
         if (activeNode.uuid == node.uuid) {
           node.hostname = activeNode.hostname
           var ns = createNodeState(node)

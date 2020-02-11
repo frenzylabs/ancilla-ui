@@ -31,7 +31,7 @@ import {
 } from 'evergreen-ui'
 
 import CameraRequest 	from '../../network/camera'
-import { WifiHandler } 	from '../../network'
+import { WifiHandler, SystemHandler } 	from '../../network'
 import { PaginatedList } from '../utils/pagination'
 
 import ErrorModal from '../modal/error'
@@ -54,7 +54,9 @@ type StateProps = {
   cameraRecording: any,
   redirectTo: any,
   parentMatch: any,
-  wifi: any
+  wifi: any,
+  networkConnected: boolean,
+  wifiOn: boolean
 }
 
 
@@ -73,7 +75,9 @@ export class WifiShow extends React.Component<Props, StateProps> {
       cameraRecording: null,
       redirectTo: null,
       parentMatch: null,
-      wifi: null    
+      wifi: null,
+      networkConnected: false,
+      wifiOn: false  
     }
 
     // this.onChangePage       = this.onChangePage.bind(this)
@@ -89,14 +93,17 @@ export class WifiShow extends React.Component<Props, StateProps> {
     // this.renderTopBar		= this.renderTopBar.bind(this)
     // this.renderSection	= this.renderSection.bind(this)
 
-    this.networkStatus = this.networkStatus.bind(this)
-    this.cancelRequest = WifiHandler.cancelSource()
+    this.networkStatus     = this.networkStatus.bind(this)
+    this.toggleAccessPoint = this.toggleAccessPoint.bind(this)
+    this.cancelRequest     = WifiHandler.cancelSource()
 
     
   }
 
   componentDidMount() {
+    this.getSystemConfig()
     this.networkStatus()
+    
     // }
   }
 
@@ -106,6 +113,32 @@ export class WifiShow extends React.Component<Props, StateProps> {
   }
 
   componentDidUpdate(prevProps, prevState) {
+  }
+
+  getSystemConfig() {
+    SystemHandler.getConfig(this.props.node, {timeout: 2000})
+    .then((res) => {
+      this.setState({wifiOn: (res.data.data.system["wifion"] || false)})
+    })
+    .catch((error) => {
+      this.setState({networkConnected: false})
+      // this.timer = setTimeout(this.getSystemConfig.bind(this), RetryNetworkInterval);
+      // toaster.danger(<ErrorModal requestError={error} />)
+    })
+  }
+
+  toggleAccessPoint() {
+    var newwifistate = !this.state.wifiOn
+    SystemHandler.toggleWifi(this.props.node, {"wifi": newwifistate})
+    .then((res) => {
+      this.setState({wifiOn: newwifistate})
+      toaster.success(`Wifi Access Point will be turned ${newwifistate ? "on" : "off"}`)
+      // this.setState({networkConnected: false, restarting: true})
+      // this.timer = setTimeout(this.getSystemConfig.bind(this), RetryNetworkInterval);
+    })
+    .catch((error) => {
+      toaster.danger(<ErrorModal requestError={error} />)
+    })
   }
 
   networkStatus() {
@@ -167,27 +200,55 @@ export class WifiShow extends React.Component<Props, StateProps> {
     }
     return null
   }
+
+  renderAccessPoint() {
+    var disabled = !this.state.networkConnected
+    var txt = ''
+    if (this.state.wifiOn) {
+      txt = "Turn Access Point Off"
+    } else {
+      txt = "Turn Access Point On"
+    }
+    return (
+      <Pane margin={20} padding={20} background="white" elevation={1} border >
+        <Heading size={600}>{"Access Point"} {this.state.wifiOn ? "On" : "Off"}</Heading>
+        <Pane>
+          <Paragraph size={300} marginTop="10px">
+              This only works if you downloaded the image from ancilla or you 
+              installed the ancilla.service startup script on your system.
+          </Paragraph>
+        </Pane>
+        
+        <Pane display="flex" flexDirection="column" borderTop marginTop={10} paddingTop={10}>
+          <Button onClick={this.toggleAccessPoint}>{txt}</Button>
+        </Pane>
+      </Pane>
+    )
+  }
   // <Link to={"/cameras/" + this.props.service.id}>{this.props.service.name}</Link>&nbsp; / &nbsp;
   //             <Link to={"/cameras/" + this.props.service.id + "/recordings"}>Recordings</Link>&nbsp; / &nbsp;
   render() {
 
     return ( 
-      <Pane padding={40}>
-        {this.renderCurrentStatus()}
-        <Pane display="flex" is="section" justifyContent="center" background="white" borderRadius={3} border>
-          
-          <Pane  padding={30} paddingBottom={0}>
-            <Pane alignItems="center" display="flex" marginBottom={20}>
-              <Heading size={700}>Add Wifi Connection</Heading>
-            </Pane>
-          
-            <Pane alignItems="center" display="flex">
-              <Form node={this.props.node} onSave={this.networkStatus}/>
-            </Pane>
-          </Pane>         
+      <Pane>
+        <Pane padding={20}>
+          {this.renderCurrentStatus()}
+          <Pane display="flex" is="section" justifyContent="center" background="white" borderRadius={3} border>
+            
+            <Pane  padding={30} paddingBottom={0}>
+              <Pane alignItems="center" display="flex" marginBottom={20}>
+                <Heading size={700}>Add Wifi Connection</Heading>
+              </Pane>
+            
+              <Pane alignItems="center" display="flex">
+                <Form node={this.props.node} onSave={this.networkStatus}/>
+              </Pane>
+            </Pane>         
+          </Pane>
         </Pane>
-
+        {this.renderAccessPoint()}
       </Pane>
+
     )
   }	
 }

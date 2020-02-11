@@ -25,6 +25,10 @@ export const SystemHandler = {
     return Request.post(`${node.apiUrl}/system/reboot`, data, options)
   },
 
+  toggleWifi: (node, data = {}, options= {}) => {
+    return Request.post(`${node.apiUrl}/system/wifi`, data, options)
+  },
+
   getConfig: (node, options= {}) => {
     return Request.get(`${node.apiUrl}/system/`, options)
   },

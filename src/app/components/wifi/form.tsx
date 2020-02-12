@@ -111,7 +111,7 @@ export default class Form extends React.Component<Props> {
     this.setState({
       loading: true
     })
-    WifiHandler.connect(this.props.node, this.state.wifiAttrs)
+    WifiHandler.connect(this.props.node, this.state.wifiAttrs, {timeout: 25000})
     .then((response) => {
       console.log(response.data)
       toaster.success(`Wifi has been added`)

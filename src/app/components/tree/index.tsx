@@ -48,7 +48,7 @@ type Props = {
 namespace Tree {
   export class Node extends React.Component<Props> {
     state = {
-      expanded: false
+      expanded: true
     }
 
     constructor(props:any) {

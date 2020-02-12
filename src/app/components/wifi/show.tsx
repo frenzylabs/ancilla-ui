@@ -225,8 +225,7 @@ export class WifiShow extends React.Component<Props, StateProps> {
       </Pane>
     )
   }
-  // <Link to={"/cameras/" + this.props.service.id}>{this.props.service.name}</Link>&nbsp; / &nbsp;
-  //             <Link to={"/cameras/" + this.props.service.id + "/recordings"}>Recordings</Link>&nbsp; / &nbsp;
+
   render() {
 
     return ( 

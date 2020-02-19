@@ -41,6 +41,7 @@ import PrinterHandler       from '../../../network/printer'
 import { NodeState, PrinterState }  from '../../../store/state'
 
 import Prints from '../../prints'
+import Logs from '../../logs'
 
 import PubSub from 'pubsub-js'
 
@@ -187,7 +188,6 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
   }
 
   deletePrinter() {
-    console.log("DELETE PRINTER")
     this.props.deleteService(this.props.node, this.props.service)
     .catch((error) => {
       console.log(error)
@@ -245,6 +245,9 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
               <Route path={`${this.props.match.path}/:printerId`} render={ props =>
                 <PrinterDetails  {...this.props} {...props} /> 
               }/> */}
+              <Route path={`${this.props.match.path}/logs`} render={ props => 
+                <Logs {...this.props} {...props}  /> 
+              }/>
               <Route path={`${this.props.match.path}/prints`} render={ props => 
                 <Prints {...this.props} {...props}  /> 
               }/>

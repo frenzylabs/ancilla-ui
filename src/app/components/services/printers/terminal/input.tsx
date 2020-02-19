@@ -133,7 +133,7 @@ export default class Input extends React.Component<Props> {
   render() {
     return (
       <Pane display="flex" flex={1} flexDirection="column">
-        <Pane display="flex" flex={1} width="100%" padding={8} border>
+        <Pane display="flex" flex={1} padding={8} border>
           <Pane display="flex" width="100%" flex={1} marginRight={8}>
             <input 
               type="text"

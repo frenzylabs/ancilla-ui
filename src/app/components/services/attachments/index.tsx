@@ -11,7 +11,7 @@ import SplitPane from 'react-split-pane'
 
 import {
   Pane,
-  TextInput,
+  Heading,
   Dialog,
   IconButton,
   toaster
@@ -284,7 +284,7 @@ export class ServiceAttachment extends React.Component<AttachmentProps, StatePro
         <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={10} border="default">
           <Pane display="flex">
             <Pane display="flex" flex={1}>
-              {this.props.attachmentKind ? `${this.props.attachmentKind}s` : 'Attachments'}
+              <Heading size={400}>{this.props.attachmentKind ? `${this.props.attachmentKind}s` : 'Attachments'}</Heading>
             </Pane>
             <Pane>
               {this.renderAddAttachment()}

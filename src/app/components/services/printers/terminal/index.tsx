@@ -32,7 +32,7 @@ export default class Terminal extends React.Component<Props> {
 
   render() {
     return(
-      <Pane display="flex">
+      <Pane display="flex" flex={1}>
         <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={10} border="default">
           <Body {...this.props} />
           <Input {...this.props} />

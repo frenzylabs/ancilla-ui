@@ -165,7 +165,7 @@ export default class Body extends React.Component<Props> {
     return (
       <React.Fragment>
         <Pane display="flex" width="100%" padding={8} background="#fff" borderBottom>
-          <Heading size={300}>Terminal</Heading>
+          <Heading size={400}>Terminal</Heading>
         </Pane>
 
         <Pane display="flex" flexDirection="column" width="100%" borderLeft borderRight>

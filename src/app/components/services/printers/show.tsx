@@ -54,6 +54,7 @@ type PrinterProps = {
   updateState: Function,
   getState: Function,
   dispatch: Function,
+  match: any
 
 }
 

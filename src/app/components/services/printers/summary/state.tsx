@@ -28,6 +28,7 @@ import { NodeState, PrinterState }  from '../../../../store/state'
 type Props = {
   node: NodeState, 
   service: PrinterState,
+  match: any,
   dispatch: Function
 }
 
@@ -201,6 +202,15 @@ export default class State extends React.Component<Props> {
     }
   }
 
+
+  renderLog() {
+    return (
+      <Pane display="flex" marginBottom={10} marginTop={10}>
+        <Link to={`${this.props.match.url}/logs`}>Logs</Link>
+      </Pane>
+    )
+  }
+
   render() {
     return (
       <Pane display="flex" flex={1} padding={20} margin={10} background="white" border="default" flexDirection="column">
@@ -209,6 +219,7 @@ export default class State extends React.Component<Props> {
         <Pane>
           <Link to={`/printers/${this.props.service.id}/prints`}>All Prints</Link>
         </Pane>
+        {this.renderLog()}
       </Pane>
     )
   }

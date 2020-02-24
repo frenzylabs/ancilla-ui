@@ -55,6 +55,7 @@ type PrinterProps = {
   updateState: Function,
   getState: Function,
   dispatch: Function,
+  match: any
 
 }
 
@@ -80,6 +81,7 @@ export class PrinterShow extends React.Component<PrinterProps, StateProps> {
     this.receiveEvent    = this.receiveEvent.bind(this)
     this.setupPrinter    = this.setupPrinter.bind(this)
     this.getPrint        = this.getPrint.bind(this)
+    this.cancelPrint     = this.cancelPrint.bind(this)
 
     
     
@@ -219,12 +221,24 @@ export class PrinterShow extends React.Component<PrinterProps, StateProps> {
       // var attachments = this.state.attachments
       console.log("START PRINT", response.data)
       var f = response.data.print
-      // attachments = attachments.concat(f)
-      // this.setState({
-      //   loading: false,
-      //   attachments: attachments
-      // })
+      // toaster.success(`Print Started ${printParams.name} has been successfully added`)
+      
+    })
+    .catch((error) => {
+      console.log(error)
+      // if (closeDialog)
+      //   closeDialog()
+      toaster.danger(<ErrorModal requestError={error} />)
+    })
+  }
 
+  cancelPrint(printId) {
+    
+    return PrinterHandler.cancel_print(this.props.node, this.props.service, printId)
+    .then((response) => {
+      // var attachments = this.state.attachments
+      console.log("Cancelled PRINT", response.data)
+      var f = response.data.print
       // toaster.success(`Print Started ${printParams.name} has been successfully added`)
       
     })
@@ -257,7 +271,7 @@ export class PrinterShow extends React.Component<PrinterProps, StateProps> {
         {this.renderCreatePrint()}
           <Pane display="flex">
             <Pane display="flex" width="100%">
-              <Connection {...this.props} startPrint={this.startPrint.bind(this)} createPrint={this.showPrintForm.bind(this)} />
+              <Connection {...this.props} startPrint={this.startPrint.bind(this)} createPrint={this.showPrintForm.bind(this)} cancelPrint={this.cancelPrint} />
               <State {...this.props} />
             </Pane>
           </Pane>

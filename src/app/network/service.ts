@@ -71,7 +71,19 @@ export const ServiceHandler = {
   updateAttachment: (node, attachment_id, data, options = {}) => {
     // var data = Object.assign(options['params'] || {}, {attachment_id: attachment_id})
     return Request.patch(`${node.apiUrl}/attachments/${attachment_id}`, data, options)
-  }
+  },
+
+  logs: (node, service, options = {}) => {
+    // options['params'] = {printer_id: printer.id, limit: 1}
+    var qs = options["qs"]
+    delete options["qs"]
+    var path = `${node.apiUrl}/services/${service.kind}/${service.id}/logs` + QS.stringify(qs, { addQueryPrefix: true }) 
+    return Request.get(path, options)
+  },
+
+  deleteLog: (node, service, filename, options = {}) => {    
+    return Request.delete(`${node.apiUrl}/services/${service.kind}/${service.id}/logs/${filename}`, options)
+  },
 
 
 }

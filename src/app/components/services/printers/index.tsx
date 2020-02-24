@@ -29,7 +29,9 @@ import PrinterShow          from './show'
 import Settings             from '../../settings'
 import PrinterActions       from '../../../store/actions/printers'
 import PrinterForm          from './form'
+import SettingsForm         from './settings_form'
 import {Form as AuthForm }  from '../layerkeep/form'
+
 import Modal                from '../../modal/index'
 import ErrorModal           from '../../modal/error'
 import NodeAction           from '../../../store/actions/node'
@@ -39,6 +41,7 @@ import PrinterHandler       from '../../../network/printer'
 import { NodeState, PrinterState }  from '../../../store/state'
 
 import Prints from '../../prints'
+import Logs from '../../logs'
 
 import PubSub from 'pubsub-js'
 
@@ -185,7 +188,6 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
   }
 
   deletePrinter() {
-    console.log("DELETE PRINTER")
     this.props.deleteService(this.props.node, this.props.service)
     .catch((error) => {
       console.log(error)
@@ -195,7 +197,7 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
 
   deleteComponent() {
     return (
-      <Pane display="flex" borderTop paddingTop={20}>
+      <Pane key="delete" display="flex" borderTop paddingTop={20}>
         <Pane display="flex" flex={1} padding={20} marginBottom={20} className="danger-zone" alignItems="center" flexDirection="row">
           <Pane display="flex" flex={1} marginRight={50}>
             <p>
@@ -243,14 +245,25 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
               <Route path={`${this.props.match.path}/:printerId`} render={ props =>
                 <PrinterDetails  {...this.props} {...props} /> 
               }/> */}
+              <Route path={`${this.props.match.path}/logs`} render={ props => 
+                <Logs {...this.props} {...props}  /> 
+              }/>
               <Route path={`${this.props.match.path}/prints`} render={ props => 
                 <Prints {...this.props} {...props}  /> 
               }/>
               <Route path={`${this.props.match.path}/settings`} render={ props => 
                 <Settings {...this.props} {...props} title={this.settingsTitle()} forms={[
-                  <PrinterForm onSave={this.printerSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props}/>, 
-                  this.deleteComponent()
-                ]} /> 
+                  {"key": "General", "component": 
+                    [<PrinterForm key="general" onSave={this.printerSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />,
+                      this.deleteComponent()
+                    ]},
+                    {
+                      "key": "Logging", "component": 
+                      <SettingsForm key="logging" onSave={this.printerSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />
+                    }
+                  
+                ]}/> 
+     
               }/>
 
               <Route path={`${this.props.match.path}`} render={ props => 

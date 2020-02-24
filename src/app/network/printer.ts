@@ -109,6 +109,10 @@ export const Printer = {
     return Request.post(`${node.apiUrl}/services/printer/${printerService.id}/print`, options)
   },
 
+  cancel_print: (node, printerService, printId, options = {}) => {
+    return Request.post(`${node.apiUrl}/services/printer/${printerService.id}/prints/${printId}/cancel`, options)
+  },
+
   getPrintRecordings: (node, printerService, printId, options= {}) => {
     var qs = options["qs"]
     delete options["qs"]    

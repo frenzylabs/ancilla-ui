@@ -38,6 +38,7 @@ export default class SystemSettings extends React.Component<Props> {
     super(props)
 
     this.restartAncilla   = this.restartAncilla.bind(this)
+    this.updateAncilla    = this.updateAncilla.bind(this)
     this.rebootSystem     = this.rebootSystem.bind(this)
     this.getSystemConfig  = this.getSystemConfig.bind(this)
     this.cancelRequest    = SystemHandler.cancelSource();
@@ -68,6 +69,18 @@ export default class SystemSettings extends React.Component<Props> {
     })
   }
 
+  updateAncilla() {
+    SystemHandler.updateAncilla(this.props.node)
+    .then((res) => {
+      toaster.success(`Ancilla will restart`)
+      this.setState({networkConnected: false, restarting: true})
+      this.timer = setTimeout(this.getSystemConfig.bind(this), RetryNetworkInterval);
+    })
+    .catch((error) => {
+      toaster.danger(<ErrorModal requestError={error} />)
+    })
+  }
+  
   restartAncilla() {
     SystemHandler.restart(this.props.node)
     .then((res) => {
@@ -111,6 +124,9 @@ export default class SystemSettings extends React.Component<Props> {
           </Paragraph>
         </Pane>
         
+        <Pane display="flex" flexDirection="column" borderTop marginTop={10} paddingTop={10}>
+          <Button disabled={!this.state.networkConnected} onClick={this.updateAncilla}>Update Ancilla</Button>
+        </Pane>
         <Pane display="flex" flexDirection="column" borderTop marginTop={10} paddingTop={10}>
           <Button disabled={!this.state.networkConnected} onClick={this.restartAncilla}>Restart Ancilla</Button>
         </Pane>

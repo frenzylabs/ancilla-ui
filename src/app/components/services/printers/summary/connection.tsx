@@ -29,7 +29,8 @@ type Props = {
   node: NodeState, 
   service: PrinterState,
   startPrint: Function,
-  createPrint: Function
+  createPrint: Function,
+  cancelPrint: Function
 }
 
 export default class Connection extends React.Component<Props> {
@@ -107,8 +108,16 @@ export default class Connection extends React.Component<Props> {
   // }
 
   cancelPrint() {
-    let cmd = [this.props.service.name, "cancel_print"]
-    PubSub.make_request(this.props.node, cmd)
+    // let cmd = [this.props.service.name, "cancel_print"]
+    // PubSub.make_request(this.props.node, cmd)
+
+    if (this.props.service.currentPrint && this.props.service.currentPrint.model) {      
+      this.props.cancelPrint(this.props.service.currentPrint.id).then((res) => {
+        this.setState({showing: false})
+      }).catch((err) => { 
+        this.setState({showing: false})
+      })
+    }
 
     // this.pubsubToken = PubSub.publish(this.topic, );
   }
@@ -116,7 +125,6 @@ export default class Connection extends React.Component<Props> {
   pausePrint() {
     let cmd = [this.props.service.name, "pause_print"]
     PubSub.make_request(this.props.node, cmd)
-    // this.pubsubToken = PubSub.publish(this.topic, );
   }
 
   resumePrint() {
@@ -152,7 +160,13 @@ export default class Connection extends React.Component<Props> {
   }
 
   renderCancelPrint() {
-    if (this.props.service.state["printing"]) {
+    var disabled = true
+    if (this.props.service.state["connected"]) {
+      disabled = false
+    }
+    if (this.props.service.state["printing"] || (this.props.service.currentPrint && this.props.service.currentPrint.status == "paused")) {
+      
+      
       return (
         <React.Fragment key="print">
           <Dialog
@@ -166,7 +180,7 @@ export default class Connection extends React.Component<Props> {
           </Dialog>
 
           <Pane display="flex" marginBottom={6}>
-            <Button onClick={() => this.toggleDialog(true)} minWidth={180} iconBefore="stop" >Cancel Print</Button>
+            <Button disabled={disabled} onClick={() => this.toggleDialog(true)} minWidth={180} iconBefore="application" >Cancel Print</Button>
           </Pane>
         </React.Fragment>
       )

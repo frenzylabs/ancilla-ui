@@ -74,7 +74,7 @@ export default class SettingsView extends React.Component<Props> {
 
   renderForms() {
     if(!this.state.sections.length) { return }
-
+    
     return this.state.sections.map((form, index) => (
       <Pane key={`form-${index}`} id={`form-${index}-content`} padding={20} marginBottom={20}>
         {form}

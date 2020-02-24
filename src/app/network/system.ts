@@ -21,6 +21,10 @@ export const SystemHandler = {
       return Request.post(`${node.apiUrl}/system/restart`, data, options)
   },
 
+  updateAncilla: (node, data = {}, options= {}) => {
+    return Request.post(`${node.apiUrl}/system/update_ancilla`, data, options)
+  },
+
   reboot: (node, data = {}, options= {}) => {
     return Request.post(`${node.apiUrl}/system/reboot`, data, options)
   },

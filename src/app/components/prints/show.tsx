@@ -603,7 +603,6 @@ export class PrintShow extends React.Component<Props, StateProps> {
           {this.renderPrintDetails()}
           {this.renderPrinterDetails()}
           {this.renderRecordings()}
-          {this.renderCommands()}
 
           <Pane borderBottom borderLeft borderRight>
             

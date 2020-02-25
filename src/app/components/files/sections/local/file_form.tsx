@@ -88,7 +88,6 @@ export default class FileForm extends React.Component<Props> {
 
   detectPrintSlice() {
     let _printSlice = this.props['printSlice'] || {}
-    console.log("PRINT SLICE= ", _printSlice)
     this.setState({
       ...this.state,
       newFile: {

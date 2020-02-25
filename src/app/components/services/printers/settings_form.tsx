@@ -60,7 +60,7 @@ export default class SettingsForm extends React.Component<Props> {
       logging: {
         level: "INFO",
         stdout: {on: false, level: "WARNING"},
-        file: {on: false, level: "INFO", maxBytes: 128_000_000, backupCount: 10}
+        file: {on: true, level: "INFO", maxBytes: 64_000_000, backupCount: 1}
       },
       tada: {
         blah: {"key": "val"}

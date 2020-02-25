@@ -376,15 +376,12 @@ export class CameraView extends React.Component<Props, StateProps> {
 
   renderVideo() {
     if (this.props.service.state["connected"]) {
-      // let url = this.props.node.apiUrl
-      // let url = this.props.node.apiUrl
-      // var videoUrl = `${url}/webcam/${this.props.service.name}`
       return (
-        // <HtmlPreview src={`${this.state.videoUrl}`} body={`<body><img width="640" src="${this.state.videoUrl}" /></body>`}></HtmlPreview>
+        <HtmlPreview src={`${this.state.videoUrl}`} body={`<body style="width:'100%'; height:'100%'" ><img width="100%" src="${this.state.videoUrl}" /></body>`}></HtmlPreview>
         // <img width={640} ref={fp => this.videoRef = fp} src={`${videoUrl}`} />
-        <iframe key={this.state.videoUrl} id="image" width={640} style={{minHeight: "480px", border: '1px solid #c0c0c0'}} height={"100%"} ref={fp => this.videoRef = fp} src={`${this.state.videoUrl}`}  seamless={false} >
-          <p>Your browser does not support iframes.</p>          
-        </iframe>
+        // <iframe key={this.state.videoUrl} id="image" width={"100%"} style={{minHeight: "320px", border: '1px solid #c0c0c0'}} height={"100%"} ref={fp => this.videoRef = fp} src={`${this.state.videoUrl}`}  seamless={false} >
+        //   <p>Your browser does not support iframes.</p>          
+        // </iframe>
       )
     }
     return ( 
@@ -403,11 +400,13 @@ export class CameraView extends React.Component<Props, StateProps> {
               <Button 
                 iconBefore="mobile-video" 
                 marginRight={12}
+                padding={10}
                 intent={this.props.service.state["recording"] ? "danger" : "success"}
                 disabled={!this.props.service.state["connected"]}
                 onClick={this.toggleRecording}    
                 >
-                {this.props.service.state["recording"] ? "Stop" : "Start"} Recording
+                <Pane height="auto"
+                lineHeight="normal">{this.props.service.state["recording"] ? "Stop" : "Start"} Recording</Pane>
               </Button>
       )
     }
@@ -445,8 +444,8 @@ export class CameraView extends React.Component<Props, StateProps> {
           }
           />
 
-          <Pane display="flex" flex={1} flexDirection="row" alignItems="center">
-            <Pane display="flex" flex={1}>
+          <Pane display="flex" flex={1} flexDirection="row" flexWrap="wrap" alignItems="center">
+            <Pane display="flex" flex={1} height="100%" marginBottom={10}>
               {recbtn}
             </Pane>
 
@@ -486,8 +485,8 @@ export class CameraView extends React.Component<Props, StateProps> {
       // if (this.props.service.state.connected) {
         
         return (
-          <Pane display="flex" flex={1} width="100%" padding={10}>
-            <Pane display="flex" padding={20} background="white" border justifyContent="center">
+          <Pane display="flex" flex={1} flexWrap="wrap" width="100%" padding={10}>
+            <Pane display="flex" flex={1} marginBottom={20} padding={20} minWidth="320px" width="100%" height="100%" background="white" border justifyContent="center">
               {this.renderVideo()}
             </Pane>
             <Pane display="flex" flex={1} padding={20} paddingTop={0} paddingRight={0} flexDirection="column" width="100%">

@@ -28,9 +28,10 @@ export const ServiceAction = {
     return (dispatch, getState) => {      
       return Service.addAttachment(node, serviceState, params)
         .then((response) => {
+          // console.log("ADD Attachment", response.data)
           dispatch(ServiceAction.attachmentReceived(node, serviceState, response.data.attachment))
           return response
-        })      
+        })
     }
   },
 

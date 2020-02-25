@@ -270,7 +270,12 @@ export class CameraIndex extends React.Component<Props, StateProps> {
                   {
                     "key": "Record", "component": 
                     <CameraForm kind="record" onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />
+                  },
+                  {
+                    "key": "Video Capture", "component": 
+                    <CameraForm kind="capture" onSave={this.cameraSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />
                   }
+
                   
                 ]}/> 
               }/>

@@ -87,7 +87,7 @@ export class ServiceAttachment extends React.Component<AttachmentProps, StatePro
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.service.id != this.props.service.id || prevProps.reload != this.props.reload) {
-      // this.getAttachments()
+      this.props.listAttachments(this.props.node, this.props.service)
     }
   }
   

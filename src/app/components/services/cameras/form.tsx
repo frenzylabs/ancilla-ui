@@ -14,6 +14,11 @@ import {
   Label,
   Button,
   Text,
+  Heading,
+  Paragraph,
+  Icon,
+  Position,
+  Tooltip,
   toaster
 } from 'evergreen-ui'
 
@@ -51,7 +56,14 @@ export default class Form extends React.Component<Props> {
     record: {
       timelapse: 2,
       frames_per_second: 10
-    }    
+    },
+    video: {
+      CAP_PROP_FRAME_WIDTH: "640",
+      CAP_PROP_FRAME_HEIGHT: "480",
+      CAP_PROP_FPS: "",
+      CAP_PROP_FOURCC: "MJPG",
+      
+    }
   }
 
   
@@ -65,9 +77,12 @@ export default class Form extends React.Component<Props> {
   componentDidMount() {
     if (this.props.data) {
       var data = this.props.data.model || {}      
+      var video = data.settings["video"] || {}
+
       this.setState({
         newCamera: {...this.state.newCamera, ...data},
-        record: {...this.state.record, ...(data.settings["record"] || {})}
+        record: {...this.state.record, ...(data.settings["record"] || {})},
+        video: {...this.state.video, ...video}
       })
     }
   }
@@ -75,9 +90,12 @@ export default class Form extends React.Component<Props> {
   componentDidUpdate(prevProps) {
     if (this.props.data && prevProps.data != this.props.data) {
       var data = this.props.data.model || {}
+      var video = data.settings["video"] || {}
+
       this.setState({
         newCamera: {...this.state.newCamera, ...data},
-        record: {...this.state.record, ...(data.settings["record"] || {})}
+        record: {...this.state.record, ...(data.settings["record"] || {})},
+        video: {...this.state.video, ...video}
       })
     }
   }
@@ -141,8 +159,174 @@ export default class Form extends React.Component<Props> {
     }
   }
 
+  setVideoSize() {
+    var cam = this.state.newCamera
+    var vset = (cam.settings["video"] || {})
+    
+    
+    vset["CAP_PROP_FRAME_WIDTH"] = parseInt(this.state.video.CAP_PROP_FRAME_WIDTH) || ""
+    vset["CAP_PROP_FRAME_HEIGHT"] = parseInt(this.state.video.CAP_PROP_FRAME_HEIGHT) || ""
+    
+    vset["size"] = [parseInt(this.state.video.CAP_PROP_FRAME_WIDTH) || 640, parseInt(this.state.video.CAP_PROP_FRAME_HEIGHT) || 480]
+    // var width = parseInt(e.target.value) || ""
+    this.setState({ 
+      newCamera: {
+        ...cam,
+        settings: {...cam.settings, video: vset}
+      }
+    })
+   
+  }
+
+  renderVideoCaptureForm() {
+    return (
+      <React.Fragment>
+        <Heading size={600}>{"Camera Capture Settings"}</Heading>
+        <Pane>
+          <Paragraph size={300} marginBottom="10px">
+              *These camera settings are only applied on initial connection. 
+              
+          </Paragraph>
+        </Pane>
+        <Pane flex={1} display={"flex"} flexWrap="wrap">
+          <Pane marginRight={15}>
+          <Label htmlFor="width">Width</Label>
+          <TextInput 
+            name="width" 
+            placeholder={`Width of Video`}
+            marginBottom={10}
+            width="100%" 
+            height={48}
+            value={this.state.video.CAP_PROP_FRAME_WIDTH}
+            onChange={e => {
+              var width = parseInt(e.target.value) || ""
+              this.state.video.CAP_PROP_FRAME_WIDTH = `${width}`
+              this.setVideoSize()            
+            }}
+          />
+          </Pane>
+          <Pane >
+          <Label htmlFor="height">Height</Label>
+          <TextInput 
+            name="height" 
+            placeholder={`Height of Video`}
+            marginBottom={10}
+            width="100%" 
+            height={48}
+            value={this.state.video.CAP_PROP_FRAME_HEIGHT}
+            onChange={e => {
+              var height = parseInt(e.target.value) || ""
+              this.state.video.CAP_PROP_FRAME_HEIGHT = `${height}`
+              this.setVideoSize()            
+            }}
+          />
+          </Pane>
+        </Pane>
+        
+        <Label htmlFor="fps">
+          Frames Per Second 
+          <Paragraph size={300} marginLeft="10px" display={"inline-block"}>
+              <small>(Default depends on your camera)</small>
+
+              <Tooltip 
+                position={Position.BOTTOM}
+                statelessProps={{
+                  maxWidth: "60vw"
+                }}
+                content={
+                  <Paragraph margin={10}>
+                    What you set this to will depend on your system resources. 
+                    For instance, if you are running multiple cameras on a Raspberry Pi 
+                    you might want to set this to between 10 - 15.
+                  </Paragraph>
+                }
+                appearance="card"
+              >
+                <Icon size={12} marginLeft={4} icon="info-sign" />
+              </Tooltip>
+          </Paragraph>
+        
+        </Label>
+        <TextInput 
+          name="fps" 
+          placeholder={`Frames Per Second `}
+          marginBottom={20}
+          // width="100%" 
+          height={48}
+          value={this.state.video.CAP_PROP_FPS}
+          onChange={e => {
+            var fps = parseInt(e.target.value) || ""
+            var cam = this.state.newCamera
+            var vset = (cam.settings["video"] || {})
+            vset["CAP_PROP_FPS"] = fps
+            
+            this.setState({
+              video: {...this.state.video, CAP_PROP_FPS: fps},
+              newCamera: {
+                ...cam,
+                settings: {...cam.settings, video: vset}
+              }
+            })
+          }
+        }
+        />
+
+        <Label htmlFor="fourcc">FOURCC Format 
+          <Paragraph size={300} marginLeft="10px" display={"inline-block"}>
+                <small>(Ancilla's default is MJPG)</small>
+
+                <Tooltip 
+                  position={Position.BOTTOM}
+                  statelessProps={{
+                    maxWidth: "60vw"
+                  }}
+                  content={
+                    <Paragraph margin={10}>
+                      It's possible your camera doesn't support MJPG.  Make this empty to use your camera's default.
+                      Learn More about the different codes here <a href="http://www.fourcc.org/fourcc.php" target="_blank">http://www.fourcc.org</a>
+                    </Paragraph>
+                  }
+                  appearance="card"
+                >
+                  <Icon size={12} marginLeft={4} icon="info-sign" />
+                </Tooltip>
+            </Paragraph>
+        </Label>
+        <TextInput 
+          name="fourcc" 
+          placeholder={`FOURCC `}
+          marginBottom={20}
+          // width="100%" 
+          height={48}
+          value={this.state.video.CAP_PROP_FOURCC}
+          onChange={e => {
+            var fourcc = e.target.value
+            if (fourcc.length > 4)
+              return
+            fourcc =  fourcc.toUpperCase()
+
+            var cam = this.state.newCamera
+            var vset = (cam.settings["video"] || {})
+            if (fourcc.length == 4 || fourcc.length == 0)
+              vset["CAP_PROP_FOURCC"] = fourcc
+            
+            this.setState({
+              video: {...this.state.video, CAP_PROP_FOURCC: fourcc},
+              newCamera: {
+                ...cam,
+                settings: {...cam.settings, video: vset}
+              }
+            })
+          }
+        }
+        />
+ 
+    </React.Fragment>
+    )
+  }
+
+
   renderRecordingForm() {
-    var rset = (this.state.newCamera.settings["record"] || {"timelapse": 2, "frames_per_second": 10})
     return (
       <React.Fragment>
         <Label htmlFor="timelapse">Timelapse</Label>
@@ -265,6 +449,9 @@ export default class Form extends React.Component<Props> {
     switch (this.props.kind) {
       case 'record':
         return this.renderRecordingForm()
+        break;
+      case 'capture':
+        return this.renderVideoCaptureForm()
         break;
       default:
         return this.renderGeneral()

@@ -38,7 +38,9 @@ import { NodeState } from '../../store/state'
 type Props = {
   node: NodeState,
   nodes: Array<NodeState>,
-  match: object,
+  match: any,
+  location: any,
+  history: any,
   getServices: Function,
   updateNode: Function
 }

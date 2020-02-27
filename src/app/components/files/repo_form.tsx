@@ -158,11 +158,10 @@ export default class RepoForm extends React.Component<{save:Function, loading:bo
 
   selectRepoRevision(item, id) {
     var num = this.getSelection(id)
-    console.log("Selected repo", item)
-    console.log(this.state.repoSelections[num].selectedRepo)
+
     var selectedRepo = this.state.repoSelections[num].selectedRepo
     var path = selectedRepo.kind + "/" + selectedRepo.name + "/tree/" + item.value;
-    console.log("Selected path", path)
+
     Layerkeep.get(this.props.node, path, {params: {recursive: true}, cancelToken: this.cancelRequest.token})
     .then((response) => {
       var files = response.data.data.reduce((acc, item) => {

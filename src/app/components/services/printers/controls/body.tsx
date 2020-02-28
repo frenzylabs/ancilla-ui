@@ -58,8 +58,24 @@ export default class Controls extends React.Component<Props> {
       showCustom: false
     },
     temp: {
-      hotend: 0.0,
-      bed:    0.0
+      raw: null,
+      hotend: {
+        current: 0,
+        requested: null
+      },
+      bed: {
+        current: 0,
+        requested: null
+      },
+      lastUpdate: null
+    },
+    position: {
+      pending: null, // {x: <value>}
+      current: {
+        x: 0,
+        y: 0,
+        z: 0
+      }
     }
   }
 
@@ -76,10 +92,67 @@ export default class Controls extends React.Component<Props> {
     this.renderDistance   = this.renderDistance.bind(this)
     this.renderFan        = this.renderFan.bind(this)
     this.move             = this.move.bind(this)
-    this.parseTemp        = this.parseTemp.bind(this)
     this.changedBedTemp   = this.changedBedTemp.bind(this)
     this.incrementBedTemp = this.incrementBedTemp.bind(this)
     this.decrementBedTemp = this.decrementBedTemp.bind(this)  
+    this.requestTemp      = this.requestTemp.bind(this)
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    return {
+      ...state,
+      temp: Controls.parseTemp(props, state),
+      position: {
+        ...state.position,
+        current: Controls.parsePosition(props, state)
+      }
+    }
+  }
+
+  static parseTemp(props, state) {
+    const r     = /([T|B|C]\d*):([^\s\/]+)\s*\/([^\s]+)/g
+    var temp    = props.service.state['temp'] || ""
+    var matches = [...temp.matchAll(r)]
+    let hotend  = (matches.filter((item) => (item[1] || "").startsWith("T"))[0] || [])
+    let bed     = (matches.filter((item) => (item[1] || "").startsWith("B"))[0] || [])
+    
+    return {
+      raw: temp,
+      hotend: {
+        current: hotend[2]    || 0,
+        requested: hotend[1] > 0 ? hotend[1] : state.temp.hotend.requested
+      },
+      bed: {
+        current: bed[2]   || 0,
+        requested: bed[1] > 0 ? bed[1] : state.temp.bed.requested
+      },
+    }
+  }
+
+  static parsePosition(props, state) {
+    const r     = /([X|Y|Z]):(\d+\.?\d*)/g
+    let pos     = (props.service.state['position'] || 'Count').split('Count')[0]
+    let matches = [...pos.matchAll(r)]
+    let x       = (matches.filter((item) => (item[1] || "").startsWith("X"))[0] || [])
+    let y       = (matches.filter((item) => (item[1] || "").startsWith("Y"))[0] || [])
+    let z       = (matches.filter((item) => (item[1] || "").startsWith("Z"))[0] || [])
+
+    return {
+      raw:  props.service.state['position'] || '',
+      x:    x[2] || 0,
+      y:    y[2] || 0,
+      z:    z[2] || 0
+    }
+  }
+
+  componentDidMount() {
+    this.getCurrentPosition()
+    
+    if(Object.keys(this.props.service.state).indexOf('temp') > -1) {
+      return
+    }
+
+    this.requestTemp()
   }
 
   getCurrentPosition() {
@@ -88,163 +161,125 @@ export default class Controls extends React.Component<Props> {
     PubSub.make_request(this.props.node, cmd)
   }
 
+  requestTemp() {
+    if(this.props.service.state['printing']) { return }
+
+    let cmd = [this.props.service.name, "send_command", { cmd: "M105", nowait: false, skip_queue: true}]
+    PubSub.make_request(this.props.node, cmd)
+  }
+
   changedTemp(e) {
-    var val = parseFloat(e.currentTarget.value)
-    val     = isNaN(val) ? 0 : val
-
-    this.setState({
-      temp: {
-        ...this.state.temp,
-        hotend: val
-      }
-    })
-
-    this.sendTemp(Target.Hotend)
+    this.sendTemp(Target.Hotend, e.target.value)
   }
 
   incrementTemp() {
-    var tmp = ((this.state.temp.hotend * 10) + 1) / 10
+    let frm = this.state.temp.hotend.requested || this.state.temp.hotend.current
+    var temp  = parseFloat((((frm * 10) + 1) / 10).toFixed(1))
 
-    this.setState({
-      ...this.state,
-      temp: {
-        ...this.state.temp,
-        hotend: tmp
-      }
-    })
-
-    this.sendTemp(Target.Hotend)
+    this.sendTemp(Target.Hotend, temp)
   }
 
   decrementTemp() {
-    if(this.state.temp.hotend == 0) return
+    let frm = this.state.temp.hotend.requested || this.state.temp.hotend.current
+    var temp  = frm > 0 ? parseFloat((((frm * 10) - 1) / 10).toFixed(1)) : 0
 
-    var tmp = (this.state.temp.hotend * 10) - 1
-    tmp     = tmp < 1 ? 0 : parseFloat((tmp / 10).toFixed(1))
-
-    this.setState({
-      ...this.state,
-      temp: {
-        ...this.state.temp,
-        hotend: tmp
-      }
-    })
-
-    this.sendTemp(Target.Hotend)
+    this.sendTemp(Target.Hotend, temp)
   }
 
   changedBedTemp(e) {
-    var val = parseFloat(e.currentTarget.value)
-    val = isNaN(val) ? 0 : val
-
-    this.setState({
-      temp: {
-        ...this.state.temp,
-        bed: val
-      }
-    })
-
-    this.sendTemp(Target.Bed)
+    this.sendTemp(Target.Bed, e.target.value)
   }
 
   incrementBedTemp() {
-    var tmp = ((this.state.temp.hotend * 10) + 1) / 10
+    let frm = this.state.temp.bed.requested || this.state.temp.bed.current
+    var temp  = parseFloat((((frm * 10) + 1) / 10).toFixed(1))
 
-    this.setState({
-      ...this.state,
-      temp: {
-        ...this.state.temp,
-        bed: tmp
-      }
-    })
-
-    this.sendTemp(Target.Bed)
+    this.sendTemp(Target.Bed, temp)
   }
 
   decrementBedTemp() {
-    if(this.state.temp.hotend == 0) return
+    let frm = this.state.temp.bed.requested || this.state.temp.bed.current
+    var temp  = frm > 0 ? parseFloat((((frm * 10) - 1) / 10).toFixed(1)) : 0
 
-    var tmp = (this.state.temp.hotend * 10) - 1
-    tmp     = tmp < 1 ? 0 : parseFloat((tmp / 10).toFixed(1))
+    this.sendTemp(Target.Bed, temp)
+  }
+
+  sendTemp(target:Target, temp:Number) {
+    var _temp = this.state.temp
+    _temp[(target == Target.Hotend ? 'hotend' : 'bed')]['requested'] = temp
 
     this.setState({
       ...this.state,
-      temp: {
-        ...this.state.temp,
-        bed: tmp
-      }
+      temp: _temp
     })
 
-    this.sendTemp(Target.Bed)
-  }
-
-  sendTemp(target:Target) {
-    let gcode = target == Target.Hotend ? `M104 S${this.state.temp.hotend}` : `M140 S${this.state.temp.bed}`
+    let gcode = target == Target.Hotend ? `M104 S${temp}` : `M140 S${temp}`
     let cmd   = [this.props.service.name, "send_command", { cmd: gcode.trim(), nowait: true, skip_queue: true}]
 
     PubSub.make_request(this.props.node, cmd)
   }
 
   move(direction:Direction) {
-    let gcode:string
+    var command:Array<any> = ['G1']
 
     switch(direction) {
       case Direction.Up:
-        gcode = `G0 Y${this.state.distance.value}`
+        command = command.concat([
+          'Y',
+          this.state.distance.value
+        ])
         break
       case Direction.Right:
-        gcode = `G0 X${this.state.distance.value}`
+        command = command.concat([
+          'X',
+          this.state.distance.value > 0 ? -(this.state.distance.value) : 0
+        ])
         break
       case Direction.Down:
-        gcode = `G0 Y-${this.state.distance.value}`
+        command = command.concat([
+          'Y',
+          this.state.distance.value > 0 ? -(this.state.distance.value) : 0
+        ])
         break
       case Direction.Left:
-        gcode = `G0 X-${this.state.distance.value}`
+        command = command.concat([
+          'X',
+          this.state.distance.value
+        ])
         break
       case Direction.Extrude:
-        gcode = `G0 E${this.state.distance.value}`
-        break
-      case Direction.Home:
-        gcode = 'G8 X Y'
+        command = command.concat([
+          'E',
+          this.state.distance.value
+        ])
         break
       case Direction.ZUp:
-        gcode = `G0 Z${this.state.distance.value}`
+        command = command.concat([
+          'Z',
+          this.state.distance.value
+        ])
         break
       case Direction.ZDown:
-        gcode = `G0 Z-${this.state.distance.value}`
+        command = command.concat([
+          'Z',
+          this.state.distance.value > 0 ? -(this.state.distance.value) : 0
+        ])
+        break
+      case Direction.Home:
+        command = ['G8', 'X', 'Y']
         break
       case Direction.ZHome:
-        gcode = 'G28 Z'
+        command = ['G28', 'Z']
         break
       case Direction.HomeAll:
-        gcode = 'G8'
+        command = ['G8']
         break
     }
 
-    let cmd = [this.props.service.name, "send_command", { cmd: gcode.trim(), nowait: true, skip_queue: true}]
+    let gcode = command.join(" ")
+    let cmd   = [this.props.service.name, "send_command", { cmd: gcode.trim(), nowait: true, skip_queue: true}]
+
     PubSub.make_request(this.props.node, cmd)
-  }
-
-  parseTemp() {
-    const r     = /([T|B|C]\d*):([^\s\/]+)\s*\/([^\s]+)/g
-    var temp    = this.props.service.state['temp'] || ""
-    var matches = [...temp.matchAll(r)]
-    let hotend  = (matches.filter((item) => (item[1] || "").startsWith("T"))[0] || [])
-    let bed     = (matches.filter((item) => (item[1] || "").startsWith("B"))[0] || [])
-
-    
-
-    
-    return {
-      hotend: {
-        current: hotend[2],
-        requested: hotend[1]
-      },
-      bed: {
-        current: bed[2],
-        requested: bed[1]
-      },
-    }
   }
 
   renderOffsetXY() {
@@ -332,17 +367,18 @@ export default class Controls extends React.Component<Props> {
   }
 
   renderHotendTemp() {
-    const {hotend} = this.parseTemp()
+    const current   = this.state.temp.hotend.current
+    const requested = this.state.temp.hotend.requested || this.state.temp.hotend.current
 
     return (
       <Pane display="flex" flex={1} flexDirection="row" alignItems="center">
         <Pane display="flex" flexDirection="column" marginRight={44}>
-          <Heading color="black" size={200}>Hotend: {hotend.current}&deg;</Heading>
+          <Heading color="black" size={200}>Hotend: {current}&deg;</Heading>
         </Pane>
 
         <Pane display="flex" flexDirection="row">
           <Pane>
-            <TextInput width={80} value={this.state.temp.hotend} placeholder="0.0"  onChange={this.changedTemp} />
+            <TextInput width={80} value={requested} placeholder="0.0"  onChange={this.changedTemp} />
           </Pane>
 
           <Pane display="flex" flex={1} flexDirection="column" paddingLeft={4}>
@@ -356,17 +392,18 @@ export default class Controls extends React.Component<Props> {
   }
 
   renderBedTemp() {
-    const {bed} = this.parseTemp()
+    const current   = this.state.temp.bed.current
+    const requested = this.state.temp.bed.requested || this.state.temp.bed.current
 
     return (
       <Pane display="flex" flex={1} flexDirection="row" alignItems="center">
         <Pane display="flex" flexDirection="column" marginRight={64}>
-          <Heading color="black" size={200}>Bed: {bed.current}&deg;</Heading>
+          <Heading color="black" size={200}>Bed: {current}&deg;</Heading>
         </Pane>
 
         <Pane display="flex" flexDirection="row">
           <Pane>
-            <TextInput width={80} value={this.state.temp.bed} placeholder="0.0"  onChange={this.changedBedTemp} />
+            <TextInput width={80} value={requested} placeholder="0.0"  onChange={this.changedBedTemp} />
           </Pane>
 
           <Pane display="flex" flex={1} flexDirection="column" paddingLeft={4}>
@@ -427,7 +464,7 @@ export default class Controls extends React.Component<Props> {
           <Pane display="flex" flexDirection="column">
 
           <Pane display="flex" flex={1} flexDirection="row" alignItems="center" justifyContent="center">
-            <Button iconBefore="home" marginTop={8} marginBottom={8} marginRight={10} marginLeft={10} onClick={() => this.move(Direction.Down)}>Home All</Button>
+            <Button iconBefore="home" marginTop={8} marginBottom={8} marginRight={10} marginLeft={10} onClick={() => this.move(Direction.HomeAll)}>Home All</Button>
           </Pane>
 
             <Pane marginRight={10} marginLeft={10} borderBottom></Pane>

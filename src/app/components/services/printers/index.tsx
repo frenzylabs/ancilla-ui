@@ -259,7 +259,11 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
                     ]},
                     {
                       "key": "Logging", "component": 
-                      <SettingsForm key="logging" onSave={this.printerSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />
+                      <SettingsForm key="logging" kind="logging" onSave={this.printerSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />
+                    },
+                    {
+                      "key": "Advanced", "component": 
+                      <SettingsForm key="advanced" kind="advanced" onSave={this.printerSaved.bind(this)} onError={this.saveFailed.bind(this)} data={this.props.service.model} {...this.props} {...props} />
                     }
                   
                 ]}/> 

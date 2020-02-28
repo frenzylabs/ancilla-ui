@@ -24,12 +24,14 @@ import {
   toaster
 } from 'evergreen-ui'
 
-import printer, {default as request} from '../../../network/printer'
+import PrinterHandler from '../../../network/printer'
+
 import { ServiceHandler } from '../../../network'
 import { NodeState, PrinterState }  from '../../../store/state'
 
 type Props = {
   node: NodeState,
+  kind: string,
   save?:Function, 
   data?: any, 
   onSave: Function, 
@@ -42,15 +44,6 @@ type Props = {
 
 export default class SettingsForm extends React.Component<Props> {
   state = {
-    newPrinter: {
-      settings:     {
-        logging: {
-          level: "INFO",
-          stdout: {on: false, level: "WARNING"}, 
-          file: {on: false} 
-        }
-      }
-    },
     // logging: {
     //   level: "INFO",
     //   stdout: {on: true, level: "WARNING"},
@@ -62,8 +55,10 @@ export default class SettingsForm extends React.Component<Props> {
         stdout: {on: false, level: "WARNING"},
         file: {on: true, level: "INFO", maxBytes: 64_000_000, backupCount: 1}
       },
-      tada: {
-        blah: {"key": "val"}
+      tempReporting: {
+        enabled: true,
+        strategy: "poll",
+        interval: "5"
       }
     },
     logLevels: [
@@ -72,6 +67,10 @@ export default class SettingsForm extends React.Component<Props> {
       "WARNING",
       "ERROR",
       "CRITICAL"
+    ],
+    tempReportingOptions: [
+      {name: "Poll", value: "poll", description: "Uses M105 to periodically get Printer's Temperature"},
+      {name: "AutoReport", value: "auto", description: "If your firmware has the capability, this will send an M155 command to tell the firmware to automatically report the temperature."}
     ],
     loading: false,
     name:     ''
@@ -140,8 +139,8 @@ export default class SettingsForm extends React.Component<Props> {
     if (!(this.props.data && this.props.data.id)) {
       return 
     }
-
-    ServiceHandler.update(this.props.node, this.props.data.id, {"settings": this.state.settings})
+    
+    PrinterHandler.update(this.props.node, this.props.data.id, {"settings": this.state.settings})
     .then((response) => {
       this.setState({
         loading: false
@@ -194,10 +193,16 @@ export default class SettingsForm extends React.Component<Props> {
     this.setLoggingState(kind, key, txtinput)
   }
 
+  
   setLoggingState(kind, key, val) {
     var settings = this.state.settings
     var newlogging = {...settings["logging"][kind], [key]: val}
-    this.setState({settings: {...settings, logging: {...settings["logging"], [kind]: newlogging}}})
+    this.setSettingState("logging", kind, newlogging)
+  }
+
+  setSettingState(kind, key, val) {
+    var settings = this.state.settings
+    this.setState({settings: {...settings, [kind]: {...settings[kind], [key]: val}}})
   }
 
   renderBaseLogForm(kind) {
@@ -351,11 +356,129 @@ export default class SettingsForm extends React.Component<Props> {
     )
   }
 
+  renderPollForm(skey, tempReporting) {
+    
+    return (
+      <Pane width={"100%"}>
+          <Label
+              htmlFor="interval"
+              marginBottom={4}
+              display="block"
+            >
+              Poll Interval <small>(seconds)</small>
+          </Label>
+          <TextInput
+            name="interval" 
+            placeholder="Interval" 
+            disabled={!tempReporting.enabled}
+            marginBottom={4}
+            height={48}
+            value={tempReporting.interval}
+            onChange={e => {
+                var val = parseInt(e.target.value) || ""
+                this.setSettingState(skey, "interval", `${val}`)
+              }
+            }
+          />
+        </Pane>
+    )
+  }
+  renderTempForm() {
+    var skey = "tempReporting"
+    var tempReporting = this.state.settings[skey] || {}
+    var selectedStrategy = this.state.tempReportingOptions.find((x) => x.value == tempReporting.strategy)
+    return (
+      <Pane margin={20} padding={20} background="white" elevation={1} border >
+        <Heading size={600}>{"Temperature Reporting"}</Heading>
+        
+        <Pane>
+          <Label
+                size={400}
+                display="inline-block"
+              >
+                On:
+            </Label>
+        <Switch
+            margin={20}
+            height={24}
+            display="inline-block"
+            checked={tempReporting.enabled}
+            onChange={e => this.setSettingState(skey, "enabled", e.target.checked)}
+          />
+          <Pane display="flex" flexDirection="column" borderTop marginTop={10} paddingTop={10}>
+            <Label
+              htmlFor="strategy"
+              marginBottom={4}
+              display="block"
+            >
+              Strategy 
+            </Label>
+            <Pane display="flex" flex="1" marginBottom="10px">
+              <Combobox 
+                openOnFocus 
+                items={this.state.tempReportingOptions} 
+                itemToString={item => item ? item.name : ''}
+                placeholder={"Temp Reporting"} 
+                marginTop={4} 
+                marginBottom={4}  
+                // width="100%" 
+                height={48}
+                selectedItem={selectedStrategy}
+                // initialSelectedItem={tempReporting.strategy}
+                disabled={!tempReporting.enabled}
+                onChange={selected => {
+                  this.setSettingState(skey, "strategy", selected.value)
+                }
+                }
+                
+              />
+            
+              <Paragraph>
+                {selectedStrategy["description"] || ""}
+              </Paragraph> 
+            </Pane>
+          </Pane>
+          {tempReporting.strategy == "poll" && this.renderPollForm(skey, tempReporting)}
+        </Pane>        
+       </Pane> 
+    )
+  }
+
+  renderLoggingForm() {
+    return (
+      <React.Fragment>
+        {this.renderFileLogging()}
+        {this.renderStdoutLogging()}
+      </React.Fragment>
+    )
+  }
+
+  renderAdvancedForm() {
+    return (
+      <React.Fragment>
+        {this.renderTempForm()}
+        
+      </React.Fragment>
+    )
+  }
+
+  renderForm() {
+    switch (this.props.kind) {
+      case 'logging':
+        return this.renderLoggingForm()
+        break;
+      case 'advanced':
+        return this.renderAdvancedForm()
+        break;
+      default:
+        return 
+    }
+  }
+
   render() {
     return (
       <Pane>
-        {this.renderFileLogging()}
-        {this.renderStdoutLogging()}
+        {this.renderForm()}
         <Pane margin={10} padding={10} >
             <Button isLoading={this.state.loading} appearance="primary" onClick={this.save}>Save</Button>
         </Pane>

@@ -99,6 +99,8 @@ export default class Controls extends React.Component<Props> {
   }
 
   static getDerivedStateFromProps(props, state) {
+    console.log("props: ", props)
+
     return {
       ...state,
       temp: Controls.parseTemp(props, state),
@@ -119,12 +121,12 @@ export default class Controls extends React.Component<Props> {
     return {
       raw: temp,
       hotend: {
-        current: hotend[2]    || 0,
-        requested: hotend[1] > 0 ? hotend[1] : state.temp.hotend.requested
+        current:    hotend[2] || 0,
+        requested:  hotend[3] || 0
       },
       bed: {
-        current: bed[2]   || 0,
-        requested: bed[1] > 0 ? bed[1] : state.temp.bed.requested
+        current:    bed[2] || 0,
+        requested:  bed[3] || 0
       },
     }
   }
@@ -255,14 +257,13 @@ export default class Controls extends React.Component<Props> {
         break
       case Direction.ZUp:
         command = command.concat([
-          'Z',
-          this.state.distance.value
+          `Z${this.state.distance.value}`,
+          
         ])
         break
       case Direction.ZDown:
         command = command.concat([
-          'Z',
-          this.state.distance.value > 0 ? -(this.state.distance.value) : 0
+          `Z-${this.state.distance.value}`
         ])
         break
       case Direction.Home:
@@ -371,17 +372,17 @@ export default class Controls extends React.Component<Props> {
     const requested = this.state.temp.hotend.requested || this.state.temp.hotend.current
 
     return (
-      <Pane display="flex" flex={1} flexDirection="row" alignItems="center">
-        <Pane display="flex" flexDirection="column" marginRight={44}>
+      <Pane display="flex" flexDirection="row" alignItems="center">
+        <Pane display="flex" flex={1} flexDirection="column" >
           <Heading color="black" size={200}>Hotend: {current}&deg;</Heading>
         </Pane>
 
-        <Pane display="flex" flexDirection="row">
+        <Pane display="flex" flexDirection="row" alignItems="right" justifyContent="right">
           <Pane>
             <TextInput width={80} value={requested} placeholder="0.0"  onChange={this.changedTemp} />
           </Pane>
 
-          <Pane display="flex" flex={1} flexDirection="column" paddingLeft={4}>
+          <Pane display="flex" flexDirection="column" paddingLeft={4}>
             <IconButton icon="caret-up" height={16} onClick={this.incrementTemp} />
             <IconButton icon="caret-down" height={16} onClick={this.decrementTemp} />
           </Pane>
@@ -397,7 +398,7 @@ export default class Controls extends React.Component<Props> {
 
     return (
       <Pane display="flex" flex={1} flexDirection="row" alignItems="center">
-        <Pane display="flex" flexDirection="column" marginRight={64}>
+        <Pane display="flex" flex={1} flexDirection="column" marginRight={64}>
           <Heading color="black" size={200}>Bed: {current}&deg;</Heading>
         </Pane>
 
@@ -406,7 +407,7 @@ export default class Controls extends React.Component<Props> {
             <TextInput width={80} value={requested} placeholder="0.0"  onChange={this.changedBedTemp} />
           </Pane>
 
-          <Pane display="flex" flex={1} flexDirection="column" paddingLeft={4}>
+          <Pane display="flex" flexDirection="column" paddingLeft={4}>
             <IconButton icon="caret-up" height={16} onClick={this.incrementBedTemp} />
             <IconButton icon="caret-down" height={16} onClick={this.decrementBedTemp} />
           </Pane>

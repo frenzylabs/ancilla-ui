@@ -457,6 +457,7 @@ export default class Form extends React.Component<Props> {
         return this.renderGeneral()
     }
   }
+  
   render() {
     return (
       <Pane display="flex" flex={1} flexDirection="column" paddingBottom={40}>

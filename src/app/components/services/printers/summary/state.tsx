@@ -176,7 +176,6 @@ export default class State extends React.Component<Props> {
           {this.renderRow("Started On", `${created_at}`)}
           {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice["name"]) || "")}
           {this.renderRow("Duration", `${Math.round(curprnt.duration)}`)}
-          {this.renderRow("Printer Temp", this.getPrinterTemp())}
         </div>
       )
     }
@@ -197,7 +196,7 @@ export default class State extends React.Component<Props> {
           {this.renderRow("Slice File", (curprnt.print_slice && curprnt.print_slice["name"]) || "")}
           {this.renderRow("Duration", `${Math.round(curprnt.duration)}`)}
           {this.renderRow("Progress", this.getProgress())}
-          {this.renderRow("Printer Temp", this.getPrinterTemp())}
+          
         </div>
       )
     }
@@ -217,6 +216,7 @@ export default class State extends React.Component<Props> {
       <Pane display="flex" flex={1} padding={20} margin={10} background="white" border="default" flexDirection="column">
         {this.renderLastPrint()}
         {this.renderCurrentPrint()}
+        {this.renderRow("Printer Temp", this.getPrinterTemp())}
         <Pane>
           <Link to={`/printers/${this.props.service.id}/prints`}>All Prints</Link>
         </Pane>

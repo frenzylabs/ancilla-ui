@@ -60,7 +60,7 @@ export default class Body extends React.Component<Props> {
     // console.log("Received Data here1", msg)
     // console.log("Terminal Received Data here2", data)
     if (data["resp"]) {
-      if (data["resp"] != '\n' && data["command"]) {
+      if (data["resp"] != '\n' /*&& data["command"]*/) {
         this.props.dispatch(ServiceActions.updateLogs(this.props.service, data))
         // this.props.dispatch(evt)
 

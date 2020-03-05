@@ -102,8 +102,6 @@ export default class Controls extends React.Component<Props> {
   }
 
   static getDerivedStateFromProps(props, state) {
-    // console.log("props: ", props)
-
     return {
       ...state,
       temp: Controls.parseTemp(props, state),
@@ -161,6 +159,8 @@ export default class Controls extends React.Component<Props> {
   }
 
   sendCommand(code:string, nowait:boolean = false, skipQueue:boolean = true) {
+    if((this.props.service.state['connected'] || false) == false) { return }
+
     let cmd = [this.props.service.name, "send_command", { cmd: code.trim(), nowait: nowait, skip_queue: skipQueue}]
     PubSub.make_request(this.props.node, cmd)
   }
@@ -226,10 +226,17 @@ export default class Controls extends React.Component<Props> {
   }
 
   setRelative(enable:boolean = true) {
+    if((this.props.service.state['connected'] || false) == false) { return }
+
     PubSub.make_request(this.props.node, enable ? this.relativeModeCommand : this.absoluteModeCommand)
   }
 
   sendMovementCommand(cmd) {
+    if(
+      (this.props.service.state['connected'] || false) == false ||
+      (this.props.service.state['printing'] || false) == true
+    ) { return }
+
     this.setRelative()
 
     PubSub.make_request(this.props.node, cmd)
@@ -403,12 +410,12 @@ export default class Controls extends React.Component<Props> {
 
         <Pane display="flex" flexDirection="row" alignItems="right" justifyContent="right">
           <Pane>
-            <TextInput width={80} value={requested} placeholder="0.0"  onChange={this.changedTemp} />
+            <TextInput disabled={!(this.props.service.state['connected'] || false)} width={80} value={requested} placeholder="0.0"  onChange={this.changedTemp} />
           </Pane>
 
           <Pane display="flex" flexDirection="column" paddingLeft={4}>
-            <IconButton icon="caret-up" height={16} onClick={this.incrementTemp} />
-            <IconButton icon="caret-down" height={16} onClick={this.decrementTemp} />
+            <IconButton disabled={!(this.props.service.state['connected'] || false)} icon="caret-up" height={16} onClick={this.incrementTemp} />
+            <IconButton disabled={!(this.props.service.state['connected'] || false)} icon="caret-down" height={16} onClick={this.decrementTemp} />
           </Pane>
         </Pane>
 
@@ -428,12 +435,12 @@ export default class Controls extends React.Component<Props> {
 
         <Pane display="flex" flexDirection="row">
           <Pane>
-            <TextInput width={80} value={requested} placeholder="0.0"  onChange={this.changedBedTemp} />
+            <TextInput disabled={!(this.props.service.state['connected'] || false)} width={80} value={requested} placeholder="0.0"  onChange={this.changedBedTemp} />
           </Pane>
 
           <Pane display="flex" flexDirection="column" paddingLeft={4}>
-            <IconButton icon="caret-up" height={16} onClick={this.incrementBedTemp} />
-            <IconButton icon="caret-down" height={16} onClick={this.decrementBedTemp} />
+            <IconButton disabled={!(this.props.service.state['connected'] || false)} icon="caret-up" height={16} onClick={this.incrementBedTemp} />
+            <IconButton disabled={!(this.props.service.state['connected'] || false)} icon="caret-down" height={16} onClick={this.decrementBedTemp} />
           </Pane>
         </Pane>
 
@@ -456,6 +463,8 @@ export default class Controls extends React.Component<Props> {
   }
 
   renderFan() {
+    const enableMotors = !((this.props.service.state['connected'] || false) || (this.props.service.state['printing'] || false))
+
     return (
       <Pane display="flex" flexDirection="row" alignItems="center" padding={10} paddingLeft={20} paddingTop={10} paddingRight={18}>
         <Pane display="flex" flex={1} flexDirection="row" alignItems="center">
@@ -464,8 +473,8 @@ export default class Controls extends React.Component<Props> {
           </Pane>
 
           <Pane className="fan-toggle">
-            <Button height={24} onClick={() => this.toggleFan(true)}>On</Button>
-            <Button height={24} onClick={() => this.toggleFan(false)}>Off</Button>
+            <Button disabled={!(this.props.service.state['connected'] || false)} height={24} onClick={() => this.toggleFan(true)}>On</Button>
+            <Button disabled={!(this.props.service.state['connected'] || false)} height={24} onClick={() => this.toggleFan(false)}>Off</Button>
           </Pane>
         </Pane>
 
@@ -475,8 +484,8 @@ export default class Controls extends React.Component<Props> {
           </Pane>
 
           <Pane className="motor-toggle">
-            <Button height={24} onClick={() => this.toggleMotor(true)}>On</Button>
-            <Button height={24} onClick={() => this.toggleMotor(false)}>Off</Button>
+            <Button disabled={enableMotors} height={24} onClick={() => this.toggleMotor(true)}>On</Button>
+            <Button disabled={enableMotors} height={24} onClick={() => this.toggleMotor(false)}>Off</Button>
           </Pane>
         </Pane>
       </Pane>
@@ -484,19 +493,26 @@ export default class Controls extends React.Component<Props> {
   }
 
   render() {
+    const status = ((this.props.service.state['connected'] || false) && (this.props.service.state['printing'] || false))
+
     return(
       <React.Fragment>
-        <Pane display="flex" width="100%" padding={8} background="#fff">
+        <Pane display="flex" flexDirection="column" width="100%" padding={8} background="#fff">
           <Heading size={400}>Controls</Heading>
+          
+          {status == true && (
+            <Heading size={300} marginTop={5} color="red">Movement and Motor controls are disabled during printing</Heading>
+          )}
+          
         </Pane>
 
         
         <Pane display="flex" flexDirection="row" width="100%" background="#fff" border="default" alignItems="center">
           <Pane display="flex" flexDirection="column">
 
-          <Pane display="flex" flex={1} flexDirection="row" alignItems="center" justifyContent="center">
-            <Button iconBefore="home" marginTop={8} marginBottom={8} marginRight={10} marginLeft={10} onClick={() => this.move(Direction.HomeAll)}>Home All</Button>
-          </Pane>
+            <Pane display="flex" flex={1} flexDirection="row" alignItems="center" justifyContent="center">
+              <Button disabled={!(this.props.service.state['connected'] || false)} iconBefore="home" marginTop={8} marginBottom={8} marginRight={10} marginLeft={10} onClick={() => this.move(Direction.HomeAll)}>Home All</Button>
+            </Pane>
 
             <Pane marginRight={10} marginLeft={10} borderBottom></Pane>
             {this.renderLocation()}

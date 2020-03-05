@@ -278,7 +278,7 @@ export class PrinterShow extends React.Component<PrinterProps, StateProps> {
 
           <ServiceAttachment {...this.props} attachments={this.props.service.model.attachments} attachmentKind="Camera" device={this.props.service && this.props.service.model}/>
 
-          <Pane display="flex" flex={1} flexDirection="row">
+          <Pane display="flex" flex={1} flexDirection="row" flexWrap="wrap" justifyContent="space-evenly" alignItems="space-evenly">
             <Controls {...this.props} />
             <Terminal {...this.props}  />
           </Pane>

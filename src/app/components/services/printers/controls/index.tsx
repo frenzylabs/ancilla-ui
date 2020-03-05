@@ -18,10 +18,8 @@ export default class Controls extends React.Component {
 
   render() {
     return(
-      <Pane display="flex">
-        <Pane display="flex" flexDirection="column" width="100%" background="#fff" padding={20} margin={10} border="default">
-          <Body {...this.props} />
-        </Pane>
+      <Pane display="flex" flexDirection="column" background="#fff" padding={20} margin={10} border="default">
+        <Body {...this.props} />
       </Pane>
     )
   }

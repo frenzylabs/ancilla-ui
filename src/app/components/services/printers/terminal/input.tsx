@@ -132,46 +132,45 @@ export default class Input extends React.Component<Props> {
 
   render() {
     return (
-      <Pane display="flex" flex={1} flexDirection="column">
-        <Pane display="flex" flex={1} padding={8} border>
-          <Pane display="flex" width="100%" flex={1} marginRight={8}>
-            <input 
-              type="text"
-              disabled={!this.props.service.state["connected"]}
-              placeholder="Enter command..." 
-              value={this.state.entry}
-              onKeyDown={this.keyAction}
-              id="terminal-input-field" 
-              onChange={(e) => {
-                this.setValue(e.target.value)
-                }
+      <React.Fragment>
+        <Pane display="flex" padding={8} border>
+          <input 
+            type="text"
+            disabled={!this.props.service.state["connected"]}
+            placeholder="Enter command..." 
+            value={this.state.entry}
+            onKeyDown={this.keyAction}
+            id="terminal-input-field" 
+            onChange={(e) => {
+              this.setValue(e.target.value)
               }
-            />
-          </Pane>
+            }
+          />
         </Pane>
-          <Pane display="flex" width="100%" flex={1} marginRight={8}>
-            <Checkbox
-              label="Don't Wait for Response"
-              checked={this.state.nowait}
-              onChange={e => 
-                this.setState({
-                  nowait:  e.target.checked
-                })
-              }
-            />
-          </Pane>
-          <Pane display="flex" width="100%" flex={1} marginRight={8}>
-            <Checkbox
-              label="Skip Command Queue"
-              checked={this.state.skipQueue}
-              onChange={e => 
-                this.setState({
-                  skipQueue:  e.target.checked
-                })
-              }
-            />
-          </Pane>
-      </Pane>
+
+        <Pane display="flex" width="100%" flex={1} marginRight={8}>
+          <Checkbox
+            label="Don't Wait for Response"
+            checked={this.state.nowait}
+            onChange={e => 
+              this.setState({
+                nowait:  e.target.checked
+              })
+            }
+            marginRight={20}
+          />
+
+          <Checkbox 
+            label="Skip Command Queue"
+            checked={this.state.skipQueue}
+            onChange={e => 
+              this.setState({
+                skipQueue:  e.target.checked
+              })
+            }
+          />
+        </Pane>
+      </React.Fragment>
     )
   }
 }

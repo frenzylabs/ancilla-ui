@@ -79,6 +79,9 @@ export default class Controls extends React.Component<Props> {
     }
   }
 
+  private relativeModeCommand = [this.props.service.name, "send_command", { cmd: "G91", nowait: true, skip_queue: true}]
+  private absoluteModeCommand = [this.props.service.name, "send_command", { cmd: "G90", nowait: true, skip_queue: true}]
+
   constructor(props) {
     super(props)
 
@@ -157,17 +160,19 @@ export default class Controls extends React.Component<Props> {
     this.requestTemp()
   }
 
-  getCurrentPosition() {
-    let cmd = [this.props.service.name, "send_command", { cmd: "M114", nowait: false, skip_queue: true}]
-    
+  sendCommand(code:string, nowait:boolean = false, skipQueue:boolean = true) {
+    let cmd = [this.props.service.name, "send_command", { cmd: code.trim(), nowait: nowait, skip_queue: skipQueue}]
     PubSub.make_request(this.props.node, cmd)
+  }
+
+  getCurrentPosition() {
+    this.sendCommand("M114")
   }
 
   requestTemp() {
     if(this.props.service.state['printing']) { return }
 
-    let cmd = [this.props.service.name, "send_command", { cmd: "M105", nowait: false, skip_queue: true}]
-    PubSub.make_request(this.props.node, cmd)
+    this.sendCommand("M105")
   }
 
   changedTemp(e) {
@@ -216,9 +221,20 @@ export default class Controls extends React.Component<Props> {
     })
 
     let gcode = target == Target.Hotend ? `M104 S${temp}` : `M140 S${temp}`
-    let cmd   = [this.props.service.name, "send_command", { cmd: gcode.trim(), nowait: true, skip_queue: true}]
+
+    this.sendCommand(gcode.trim(), true, true)
+  }
+
+  setRelative(enable:boolean = true) {
+    PubSub.make_request(this.props.node, enable ? this.relativeModeCommand : this.absoluteModeCommand)
+  }
+
+  sendMovementCommand(cmd) {
+    this.setRelative()
 
     PubSub.make_request(this.props.node, cmd)
+
+    this.setRelative(false)
   }
 
   move(direction:Direction) {
@@ -267,20 +283,28 @@ export default class Controls extends React.Component<Props> {
         ])
         break
       case Direction.Home:
-        command = ['G8', 'X', 'Y']
+        command = ['G28', 'X', 'Y']
         break
       case Direction.ZHome:
         command = ['G28', 'Z']
         break
       case Direction.HomeAll:
-        command = ['G8']
+        command = ['G28']
         break
     }
 
     let gcode = command.join(" ")
     let cmd   = [this.props.service.name, "send_command", { cmd: gcode.trim(), nowait: true, skip_queue: true}]
 
-    PubSub.make_request(this.props.node, cmd)
+    this.sendMovementCommand(cmd)    
+  }
+
+  toggleFan(on:boolean = true) {
+    this.sendCommand(on ? "M106" : "M106 S0")
+  }
+
+  toggleMotor(on:boolean = true) {
+    this.sendCommand(on ? "M17" : "M18")
   }
 
   renderOffsetXY() {
@@ -439,7 +463,10 @@ export default class Controls extends React.Component<Props> {
             <Heading color="black" size={200}>Fan:</Heading>
           </Pane>
 
-          <Pane><Switch height={18} /></Pane>
+          <Pane className="fan-toggle">
+            <Button height={24} onClick={() => this.toggleFan(true)}>On</Button>
+            <Button height={24} onClick={() => this.toggleFan(false)}>Off</Button>
+          </Pane>
         </Pane>
 
         <Pane display="flex" flexDirection="row" alignItems="center">
@@ -447,7 +474,10 @@ export default class Controls extends React.Component<Props> {
             <Heading color="black" size={200}>Motors:</Heading>
           </Pane>
 
-          <Pane><Switch height={18} /></Pane>
+          <Pane className="motor-toggle">
+            <Button height={24} onClick={() => this.toggleMotor(true)}>On</Button>
+            <Button height={24} onClick={() => this.toggleMotor(false)}>Off</Button>
+          </Pane>
         </Pane>
       </Pane>
     )

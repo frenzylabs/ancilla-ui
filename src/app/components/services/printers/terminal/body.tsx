@@ -168,8 +168,8 @@ export default class Body extends React.Component<Props> {
           <Heading size={400}>Terminal</Heading>
         </Pane>
 
-        <Pane display="flex" flexDirection="column" width="100%" borderLeft borderRight>
-          <Pane height={200} overflow="auto">
+        <Pane display="flex" flex={1} flexDirection="column" width="100%" borderLeft borderRight>
+          <Pane display="flex" flex={1} overflow="auto" id="flexscrollbody">
             <div className="list">
               <AutoSizer disableHeight={true} >
                 {({width}) => (

@@ -102,7 +102,7 @@ export default class Controls extends React.Component<Props> {
   }
 
   static getDerivedStateFromProps(props, state) {
-    console.log("props: ", props)
+    // console.log("props: ", props)
 
     return {
       ...state,

@@ -47,7 +47,7 @@ export class Printers extends React.Component<Props> {
 
   addPrinter() {
     let url = `/printers/new`
-    this.props.history.push(`${url}`);    
+    this.props.history.push(`${url}`);
   }
 
   selectPrinter(item) {

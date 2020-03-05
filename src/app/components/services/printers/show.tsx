@@ -41,6 +41,7 @@ import PrintForm from '../../prints/new'
 
 import { NodeState, PrinterState }  from '../../../store/state'
 
+import Controls from './controls'
 
 import PubSub from 'pubsub-js'
 
@@ -274,8 +275,13 @@ export class PrinterShow extends React.Component<PrinterProps, StateProps> {
               <State {...this.props} />
             </Pane>
           </Pane>
+
           <ServiceAttachment {...this.props} attachments={this.props.service.model.attachments} attachmentKind="Camera" device={this.props.service && this.props.service.model}/>
-          <Terminal {...this.props}  />
+
+          <Pane display="flex" flex={1} flexDirection="row" flexWrap="wrap" justifyContent="space-evenly" alignItems="space-evenly">
+            <Controls {...this.props} />
+            <Terminal {...this.props}  />
+          </Pane>
       </Pane>
     );
  }

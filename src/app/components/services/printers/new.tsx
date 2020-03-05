@@ -76,8 +76,12 @@ export class PrinterNew extends React.Component<Props> {
   }
 
   onSave(response) {
-    console.log("response on save")
     this.props.addPrinter(this.props.node, response.data.printer) 
+    console.dir(response.data)
+
+    if(response.data['printer']) {
+      this.selectPrinter(response.data['printer'])
+    }
   }
 
   onError(error) {

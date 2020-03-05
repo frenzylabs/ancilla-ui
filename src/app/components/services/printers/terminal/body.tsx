@@ -60,7 +60,7 @@ export default class Body extends React.Component<Props> {
     // console.log("Received Data here1", msg)
     // console.log("Terminal Received Data here2", data)
     if (data["resp"]) {
-      if (data["resp"] != '\n') {
+      if (data["resp"] != '\n' && data["command"]) {
         this.props.dispatch(ServiceActions.updateLogs(this.props.service, data))
         // this.props.dispatch(evt)
 
@@ -165,11 +165,11 @@ export default class Body extends React.Component<Props> {
     return (
       <React.Fragment>
         <Pane display="flex" width="100%" padding={8} background="#fff" borderBottom>
-          <Heading size={300}>Terminal</Heading>
+          <Heading size={400}>Terminal</Heading>
         </Pane>
 
-        <Pane display="flex" flexDirection="column" width="100%" borderLeft borderRight>
-          <Pane height={200} overflow="auto">
+        <Pane display="flex" flex={1} flexDirection="column" width="100%" borderLeft borderRight>
+          <Pane display="flex" flex={1} overflow="auto" id="flexscrollbody">
             <div className="list">
               <AutoSizer disableHeight={true} >
                 {({width}) => (

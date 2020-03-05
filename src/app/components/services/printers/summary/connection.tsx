@@ -125,7 +125,6 @@ export default class Connection extends React.Component<Props> {
   pausePrint() {
     let cmd = [this.props.service.name, "pause_print"]
     PubSub.make_request(this.props.node, cmd)
-    // this.pubsubToken = PubSub.publish(this.topic, );
   }
 
   resumePrint() {
@@ -143,7 +142,7 @@ export default class Connection extends React.Component<Props> {
   renderRow(key:string, value:string) {
     return (
       <Pane display="flex" marginBottom={6}>
-        <Heading size={500} display="flex" flex={1} marginRight={8}>{key}</Heading>
+        <Heading size={400} display="flex" flex={1} marginRight={8}>{key}</Heading>
         <Text size={400}>{value}</Text>
       </Pane>
     )
@@ -153,7 +152,7 @@ export default class Connection extends React.Component<Props> {
     if (!this.props.service.state["printing"]) {
       return (
         <Pane display="flex" marginBottom={6}>
-          <Button disabled={!this.props.service.state["connected"]} onClick={() => this.props.createPrint()} minWidth={180} iconBefore="application" >Print</Button>          
+          <Button disabled={!this.props.service.state["connected"]} onClick={() => this.props.createPrint()} minWidth={180} iconBefore="print" >Print</Button>          
         </Pane>
       )
     }
@@ -201,7 +200,7 @@ export default class Connection extends React.Component<Props> {
         }
         return (
           <Pane display="flex" marginBottom={6}>
-            <Button disabled={disabled} onClick={() => this.resumePrint()} minWidth={180} iconBefore="application" >Resume Print</Button>
+            <Button disabled={disabled} onClick={() => this.resumePrint()} minWidth={180} iconBefore="play" >Resume Print</Button>
           </Pane>
         )
       }
@@ -209,14 +208,14 @@ export default class Connection extends React.Component<Props> {
 
     return (
       <Pane display="flex" marginBottom={6}>
-        <Button disabled={disabled} onClick={() => this.pausePrint()} minWidth={180} iconBefore="application" >Pause Print</Button>
+        <Button disabled={disabled} onClick={() => this.pausePrint()} minWidth={180} iconBefore="pause" >Pause Print</Button>
       </Pane>
     )    
   }
 
   renderPrintAction() {
     return (
-      <div>
+      <div style={{marginTop: '20px'}}>
         {this.renderCreatePrint()}
         {this.renderCancelPrint()}
         {this.renderPausePrint()}
@@ -227,8 +226,8 @@ export default class Connection extends React.Component<Props> {
   render() {
     return (
       <Pane display="flex" flex={1} padding={20} margin={10} background="white" border="default" flexDirection="column">
-        {this.renderRow("Connection", (this.props.service.model.model && this.props.service.model.model.port))}
-        {this.renderRow("Baudrate", (this.props.service.model.model && this.props.service.model.model.baud_rate))}
+        <div style={{marginBottom: '10px'}}>{this.renderRow("Connection", (this.props.service.model.model && this.props.service.model.model.port))}</div>
+        <div style={{marginBottom: '10px'}}>{this.renderRow("Baudrate", (this.props.service.model.model && this.props.service.model.model.baud_rate))}</div>
         {this.renderPrintAction()}
       </Pane>
     )

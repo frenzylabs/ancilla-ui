@@ -29,15 +29,33 @@ export class HtmlPreview extends React.Component<{body: any, src: string}> {
       return
     }
 
+
+
     let doc = frame.contentDocument
     // console.log("doc = ", doc)
     doc.open()
     doc.write(this.props.body)
     // ReactDOM.render(this.props.body, doc.body)
     doc.close()
+
+    setTimeout(function() {
+      
+      var win = frame.contentWindow
+      if (!win || !win.document) return
+
+      var newheight = Math.max( win.document.body.scrollHeight, win.document.body.offsetHeight, win.document.documentElement.clientHeight, win.document.documentElement.scrollHeight, win.document.documentElement.offsetHeight );
+      // console.log("FRAME onload scrollheight ", frame.contentWindow.document.body.scrollHeight)
+      // console.log("FRAME onload height ", newheight)
+      frame.style.height = newheight + 'px';
+    }, 1000);
+
     frame.onload = function(){
-      frame.style.height = frame.contentWindow.document.body.scrollHeight + 'px';
+      var win = frame.contentWindow
+      if (!win || !win.document) return
+      var newheight = Math.max( win.document.body.scrollHeight, win.document.body.offsetHeight, win.document.documentElement.clientHeight, win.document.documentElement.scrollHeight, win.document.documentElement.offsetHeight );
+      frame.style.height = newheight + 'px';
     }
+    
   }
 
   render(){

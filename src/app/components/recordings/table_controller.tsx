@@ -158,7 +158,6 @@ export class RecordingsController extends React.Component<TableProps, TableState
         })
       })
       .catch((error) => {
-        console.log(error)
         if (error.response && error.response.status == 401) {
           console.log("Unauthorized")
           // this.setState({showAuth: true, loading: false})
@@ -175,7 +174,6 @@ export class RecordingsController extends React.Component<TableProps, TableState
 
 
   deleteRecording(row) {
-    // console.log("delete recording", row)
     var camservice;
     if (this.props.service)
       camservice = this.props.service
@@ -206,7 +204,6 @@ export class RecordingsController extends React.Component<TableProps, TableState
   }
 
   handleFilterChange(val) {
-    // console.log("filter change", val)
     if (this.timer) {
       clearTimeout(this.timer)
     }

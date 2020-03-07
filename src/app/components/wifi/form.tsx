@@ -113,7 +113,6 @@ export default class Form extends React.Component<Props> {
     })
     WifiHandler.connect(this.props.node, this.state.wifiAttrs, {timeout: 25000})
     .then((response) => {
-      console.log(response.data)
       toaster.success(`Wifi has been added`)
       this.setState({
         loading: false
@@ -123,7 +122,6 @@ export default class Form extends React.Component<Props> {
       }
     })
     .catch((error) => {
-      console.log(error)
       if (this.props.onError) {
         this.props.onError(error)
       }

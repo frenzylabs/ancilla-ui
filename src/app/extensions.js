@@ -28,7 +28,7 @@ import PubSub from 'pubsub-js'
   }
 
   PubSub.make_request = function(node, data) {
-    PubSub.publish(node.name + ".request", data)
+    PubSub.publish(node.uuid + ".request", data)
   }
   
 })()

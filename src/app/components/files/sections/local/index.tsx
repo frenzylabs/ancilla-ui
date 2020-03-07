@@ -106,7 +106,7 @@ export default class Local extends React.Component<Props> {
     if(this.cancelRequest) {
       this.cancelRequest.cancel("Local Files unmounted")
     }
-    PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "UNSUB", "events.file"])
+    PubSub.publishSync(this.props.node.uuid + ".request", [this.props.service.identity, "UNSUB", "events.file"])
     if (this.pubsubToken)
       PubSub.unsubscribe(this.pubsubToken)
   }
@@ -116,15 +116,15 @@ export default class Local extends React.Component<Props> {
       this.load();
     }
     
-    if (prevProps.service != this.props.service) {
+    if (prevProps.service != this.props.service || prevProps.node.uuid != this.props.node.uuid) {
       this.setupListeners()
     }
   }
 
   setupListeners() {
     if (this.props.service) {
-      this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events.file`
-      PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "SUB", ""])
+      this.eventTopic = `${this.props.node.uuid}.${this.props.service.identity}.events.file`
+      PubSub.publishSync(this.props.node.uuid + ".request", [this.props.service.identity, "SUB", ""])
 
       if (this.pubsubToken) {
         PubSub.unsubscribe(this.pubsubToken)
@@ -333,7 +333,6 @@ export default class Local extends React.Component<Props> {
   }
 
   handleFilterChange(val) {
-    // console.log("filter change", val)
     if (this.timer) {
       clearTimeout(this.timer)
     }

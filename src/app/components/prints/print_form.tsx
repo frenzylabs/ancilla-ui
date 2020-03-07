@@ -208,7 +208,7 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
   }
 
   onFileError(err) {
-    // console.log("file Error", err)
+    
   }
 
   renderAuth() {

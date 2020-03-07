@@ -11,6 +11,7 @@ export type AttachmentModel = {
 
 export type ServiceModel = {
   id: number,
+  identity: string,
   name: string,
   kind: string,
   settings: object,
@@ -24,6 +25,7 @@ export type ServiceModel = {
 
 export type ServiceState = {
   id: number,
+  identity: string,
   name: string,
   kind: string,
   model: ServiceModel,
@@ -35,6 +37,7 @@ export type ServiceState = {
 export function serviceState(model: ServiceModel, state: {} = {}, logs: [] = []) {
   return {
     id: model.id,
+    identity: model.identity,
     name: model.name,
     kind: model.kind,
     model: model,

@@ -108,13 +108,7 @@ export class CameraView extends React.Component<Props, StateProps> {
   }
 
   componentWillUnmount() {
-    // setTimeout(function() {
-    //   console.log("video src", vidsrc.src)
-    //   vidsrc.src = ""
-    // }), 0);
-    // setTimeout(function() {
-    //       React.unmountAtNode(this.videoRef)
-    // }), 0);
+
     this.setState({videoUrl: ''})
     // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "UNSUB", "events.camera.connection"])
     // PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "UNSUB", "events.camera.recording"])
@@ -129,11 +123,10 @@ export class CameraView extends React.Component<Props, StateProps> {
       this.setVideoUrl()
     }
     if (prevProps.service.model != this.props.service.model) {
-      // console.log("Camera MODEL HAS BEEN UPDATED")
       this.setupCamera()
       this.setVideoUrl()
     }
-    if (prevProps.node.name != this.props.node.name) {
+    if (prevProps.node.uuid != this.props.node.uuid) {
       this.setupSubscription()
     }
   }
@@ -143,6 +136,7 @@ export class CameraView extends React.Component<Props, StateProps> {
       'camera_id': this.props.service.model["model"]["id"],
       'status': 'recording'
     }}
+
     return CameraHandler.recordings(this.props.node, this.props.service, {qs: search})
     .then((res) => {
       this.props.updateCurrentRecording(this.props.node, this.props.service, res.data.data[0] || {})
@@ -158,7 +152,7 @@ export class CameraView extends React.Component<Props, StateProps> {
       let url = this.props.node.apiUrl
       videoUrl = `${url}/webcam/${this.props.service.name}`
     }
-    // console.log("Video URL", videoUrl)
+
     if (this.state.videoUrl != videoUrl)
       this.setState({videoUrl: videoUrl})
   }
@@ -166,9 +160,9 @@ export class CameraView extends React.Component<Props, StateProps> {
   setupCamera() {
     if (this.props.service) {
       this.props.getState(this.props.node, this.props.service)
-      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.state.changed"])
-      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.connection"])
-      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.recording"])
+      PubSub.make_request(this.props.node, [this.props.service.identity, "SUB", "events.camera.state.changed"])
+      PubSub.make_request(this.props.node, [this.props.service.identity, "SUB", "events.camera.connection"])
+      PubSub.make_request(this.props.node, [this.props.service.identity, "SUB", "events.camera.recording"])
       
       if (this.props.service.model.model)
         this.setState({recordSettings: {...(this.props.service.model.model.settings["record"] || {})}})
@@ -178,12 +172,8 @@ export class CameraView extends React.Component<Props, StateProps> {
   }
 
   setupSubscription() {
-    // this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
-    this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events`
-    // console.log("Cam SHOW EVENT TOPIC = ", this.eventTopic)
-    // if (this.pubsubRequestToken) {
-    //   PubSub.unsubscribe(this.pubsubRequestToken)
-    // }
+    this.eventTopic = `${this.props.node.uuid}.${this.props.service.identity}.events`
+
     if (this.pubsubToken) {
       PubSub.unsubscribe(this.pubsubToken)
     }
@@ -193,10 +183,7 @@ export class CameraView extends React.Component<Props, StateProps> {
   
 
   receiveEvent(msg, data) {
-    // console.log("PV Received Event here1", msg)    
-    // console.log("PV Received Event here2", data)
     var [to, kind] = msg.split("events.")
-    // console.log("CAM SHOW EVENT KIND", kind)
     switch(kind) {
       case 'camera.state.changed':
         this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, ...data})
@@ -204,7 +191,6 @@ export class CameraView extends React.Component<Props, StateProps> {
         // this.setState({...this.state, serviceState: {...this.state.serviceState, open: false}})
         break
       case 'camera.recording.state.changed':
-          // console.log("Camera Recording state changed", data)
           // if (data.status != "recording")
           this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, recording: data.status == "recording"})
           // this.props.dispatch(ServiceActions.updateState(this.props.service, {...this.props.service.state, recording: data.status == "recording"}))
@@ -239,29 +225,24 @@ export class CameraView extends React.Component<Props, StateProps> {
       if (this.props.service.currentRecording && this.props.service.currentRecording.id) {
         CameraHandler.stopRecording(this.props.node, this.props.service, this.props.service.currentRecording.id)
         .then((res) => {
-          // console.log("StopRecoding Resp", res)
           this.setState({togglingRecording: false})
         })
         .catch((error) => {
           this.setState({togglingRecording: false})
-          // console.log("StopRecoding Error", error)
         })
       }
     } else {
       CameraHandler.startRecording(this.props.node, this.props.service, {"settings": this.state.recordSettings})
       .then((res) => {
         this.setState({togglingRecording: false})
-        // console.log("StartRecoding Resp", res)
       })
       .catch((error) => {
         this.setState({togglingRecording: false})
-        // console.log("StartRecoding Error", error)
       })
     }
   }
 
   cameraSaved(resp) {
-    // console.log("printer saved", resp)
     this.props.cameraUpdated(this.props.node, resp.data.service_model)
   }
 
@@ -303,7 +284,6 @@ export class CameraView extends React.Component<Props, StateProps> {
       .then((response) => {
         this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, connected: false, togglingPower: false})
       }).catch((error) => {
-        console.log(error)
         this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, togglingPower: false})
         toaster.danger(<ErrorModal requestError={error} />)
       })
@@ -314,7 +294,6 @@ export class CameraView extends React.Component<Props, StateProps> {
         toaster.success(`Connected to ${this.props.service.name}`)
       })
       .catch((error) => {
-        console.log(error)
         this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, togglingPower: false})
         toaster.danger(<ErrorModal requestError={error} />)
       })

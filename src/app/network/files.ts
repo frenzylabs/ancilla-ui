@@ -15,7 +15,6 @@ export default {
   },
 
   create: (node, params = {}, options = {}) => {
-    // console.log(file)
     var data = new FormData();
     // data.append(`file`, file);
 
@@ -29,9 +28,8 @@ export default {
   },
 
   update: (node, id, params = {}, options = {}) => {
-    // console.log(file)
+
     var data = new FormData();
-    // data.append(`file`, file);
 
     for ( var key in params ) {
       if (params[key]) {

@@ -51,23 +51,10 @@ export const Printer = {
   },
   
   updatePrint: (node, printerService, printId, params = {}, options = {}) => {
-    // console.log(file)
     return Request.patch(`${node.apiUrl}/services/printer/${printerService.id}/prints/${printId}`, params, {headers: {'Content-Type' : 'application/json'}})
-    var data = new FormData();
-    // data.append(`file`, file);
-
-    for ( var key in params ) {
-      if (params[key]) {
-        data.append(`${key}`, params[key]);
-      }
-    }
-
-    return Request.patch(`${node.apiUrl}/services/printer/${printerService.id}/prints/${printId}`, data, {headers: {'Content-Type' : 'multipart/form-data'}})
   },
 
   getPrinterCommands: (node, printerService, options = {}) => {
-    // options["params"] = {print_id: x, per_page, page}
-    // QS.stringify(qs, { addQueryPrefix: true }
     var qs = options["qs"]
     delete options["qs"]
     var path = `${node.apiUrl}/services/printer/${printerService.id}/commands` + QS.stringify(qs, { addQueryPrefix: true }) 
@@ -97,7 +84,6 @@ export const Printer = {
   },
 
   connect: (node, printer, options = {}) => {
-    console.log(node)
     return Request.post(`${node.apiUrl}/services/printer/${printer.id}/connection`, options)
   },
 

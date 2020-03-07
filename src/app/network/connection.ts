@@ -60,7 +60,6 @@ export default class Connection {
     // this.socket.binaryType = 'arraybuffer';
 
     this.socket.onopen = (e) => {
-      // console.log("ON OPEN")
       this.onConnect(e)
     }
 
@@ -76,8 +75,6 @@ export default class Connection {
     }
     
     this.socket.onmessage = (e) => {
-      // console.log("ON Message", e)
-
       this.onMessage(e)
     }
   }
@@ -92,7 +89,6 @@ export default class Connection {
   }
 
   send(message) {
-    // console.log("Send Message", message)
     this.socket.send(message)
   }
 
@@ -100,7 +96,7 @@ export default class Connection {
     console.log("WS Connected")
     this.connected = true
 
-    PubSub.publish(this.node.name + ".notifications.connected", {})
+    PubSub.publish(this.node.uuid + ".notifications.connected", {})
   }
 
   onDisconnect(event) {
@@ -117,14 +113,13 @@ export default class Connection {
 
 
   onMessage(event) {
-    // console.log("ON MESSAG", event.data)
     try {
       let msg = JSON.parse(event.data)
-      // console.log("msg parse", msg)
       let topic = msg[0]
       // console.log("TOPIC: ", topic)
       let payload = msg[1]
-      PubSub.publish(this.node.name + "." + topic, payload)
+      // PubSub.publish(this.node.name + "." + topic, payload)
+      PubSub.publish(topic, payload)
     } catch (error) {
       console.log("ERROR", error)
     }

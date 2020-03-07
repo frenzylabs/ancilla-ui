@@ -57,12 +57,10 @@ const appReducer = (state = initialState, action) => {
         // note: since state doesn't have "user",
         // so it will return undefined when you access it.
         // this will allow you to use default value from actually reducer.
-        // console.log("NodeReduce", action)
       var aNode = nodeReducer(state.activeNode, action)
       let nodes = state.nodes.map((item) => {
-        // console.log("ITEM, activeNode", item.uuid, state.activeNode.uuid)
+
         if (item.uuid == state.activeNode.uuid) {
-          // console.log("ITEM = activeNode")
           return aNode
           // return serviceReducer(item, action)
         }
@@ -70,7 +68,6 @@ const appReducer = (state = initialState, action) => {
       })
       return {...state, nodes: nodes, activeNode: aNode}
     }
-      // return state
   }
 }
 

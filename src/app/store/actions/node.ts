@@ -15,10 +15,10 @@ import { NodeHandler, PrinterHandler, CameraHandler, ServiceHandler } from '../.
 export const NodeAction = {
   listNodes() {
     return (dispatch, getState) => {
-      // console.log("NODE ACTION state", getState())
+
       let activeNode = getState().activeNode
       var cancelRequest    = NodeHandler.cancelSource();  
-      // dispatch(requestFeatures(username, cancelRequest))
+
       return NodeHandler.list(activeNode, {cancelToken: cancelRequest.token})
             .then(response => dispatch(NodeAction.receivedNodes(activeNode, response.data)))
     }
@@ -26,10 +26,7 @@ export const NodeAction = {
 
   getNode(node) {
     return (dispatch, getState) => {
-      // console.log("NODE ACTION state", getState())
-      // let activeNode = getState().activeNode
       var cancelRequest    = NodeHandler.cancelSource();  
-      // dispatch(requestFeatures(username, cancelRequest))
       return NodeHandler.get(node, {cancelToken: cancelRequest.token})
             .then(response => dispatch(NodeAction.receivedNodeModel(node, response.data)))
     }
@@ -48,10 +45,8 @@ export const NodeAction = {
 
   listPrinters() {
     return (dispatch, getState) => {
-      // console.log("NODE ACTION state", getState())
       let activeNode = getState().activeNode
-      var cancelRequest    = PrinterHandler.cancelSource();  
-      // dispatch(requestFeatures(username, cancelRequest))
+      var cancelRequest    = PrinterHandler.cancelSource();
       return PrinterHandler.list(activeNode, {cancelToken: cancelRequest.token})
             .then(response => dispatch(NodeAction.receivedPrinters(activeNode, response.data)))
     }
@@ -59,10 +54,8 @@ export const NodeAction = {
 
   getServices() {
     return (dispatch, getState) => {
-      // console.log("NODE ACTION state", getState())
       let activeNode = getState().activeNode
-      var cancelRequest    = ServiceHandler.cancelSource();  
-      // dispatch(requestFeatures(username, cancelRequest))
+      var cancelRequest    = ServiceHandler.cancelSource();
       return ServiceHandler.list(activeNode, {cancelToken: cancelRequest.token})
             .then(response => dispatch(NodeAction.receivedServices(activeNode, response.data)))
     }
@@ -94,10 +87,8 @@ export const NodeAction = {
 
   listCameras() {
     return (dispatch, getState) => {
-      // console.log("NODE ACTION state", getState())
       let activeNode = getState().activeNode
       var cancelRequest    = CameraHandler.cancelSource();  
-      // dispatch(requestFeatures(username, cancelRequest))
       return CameraHandler.list({cancelToken: cancelRequest.token})
             .then(response => dispatch(NodeAction.receivedCameras(activeNode, response.data)))
     }

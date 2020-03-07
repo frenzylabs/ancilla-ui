@@ -28,7 +28,6 @@ export const ServiceAction = {
     return (dispatch, getState) => {      
       return Service.addAttachment(node, serviceState, params)
         .then((response) => {
-          // console.log("ADD Attachment", response.data)
           dispatch(ServiceAction.attachmentReceived(node, serviceState, response.data.attachment))
           return response
         })
@@ -38,9 +37,8 @@ export const ServiceAction = {
 
   deleteService: (node, serviceState) => {
     return (dispatch, getState) => {
-      // let activeNode = getState().activeNode
       var cancelRequest    = Service.cancelSource();  
-      // dispatch(requestFeatures(username, cancelRequest))
+
       if (serviceState.model) {
         return Service.delete(node, serviceState.model, {cancelToken: cancelRequest.token})
             .then((response) => {
@@ -54,13 +52,13 @@ export const ServiceAction = {
 
   updateService: (node, serviceState, params) => {
     return (dispatch, getState) => {
-      // let activeNode = getState().activeNode
+
       var cancelRequest    = Service.cancelSource();  
-      // dispatch(requestFeatures(username, cancelRequest))
+
       if (serviceState.id) {
         return Service.update(node, serviceState.id, params, {cancelToken: cancelRequest.token})
             .then((response) => {
-              dispatch(ServiceAction.serviceUpdated(node, serviceState, response.data.service_model))
+              dispatch(ServiceAction.serviceUpdated(node, serviceState, {model: response.data.service_model}))
               return response
             })
       }
@@ -92,15 +90,11 @@ export const ServiceAction = {
 
   getState(node, serviceState) {
     return (dispatch, getState) => {
-      // console.log("NODE ACTION state", getState())
-      // let activeNode = getState().activeNode
       var cancelRequest    = Service.cancelSource();  
-      // dispatch(requestFeatures(username, cancelRequest))
-      // console.log(printerState)
+
       if (serviceState.model) {
         return Service.state(node, serviceState.model, {cancelToken: cancelRequest.token})
               .then((response) => {
-                // dispatch(PrinterAction.updateState(printer, {...printer.state, connected: false}))
                 dispatch(ServiceAction.updateState(node, serviceState, response.data || {}))
               })
       }

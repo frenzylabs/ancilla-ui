@@ -31,7 +31,6 @@ export default class Row extends React.Component {
   }
 
   delete(row) {
-    console.log("ON DELETE HERE", row)
     if(!this.props.onDelete) { return }
 
     // let name  = e.currentTarget.getAttribute('data-name')

@@ -108,12 +108,8 @@ export default class Form extends React.Component<Props> {
         loadingPorts: false
       })
     })
-
   }
 
-  // componentDidUpdate(prevProps, prevState) {
-  //   console.log("COMPONENT DID UPdate", prevProps, prevState)
-  // }
   savePrinter() {
 
     this.setState({
@@ -138,7 +134,7 @@ export default class Form extends React.Component<Props> {
       toaster.success(`Printer ${name} has been successfully saved`)
     })
     .catch((error) => {
-      console.log(error)
+
       if (this.props.onError) {
         this.props.onError(error)
       }

@@ -127,11 +127,6 @@ export default class Form extends React.Component<Props> {
       if (this.props.onError) {
         this.props.onError(error)
       }
-      
-      // if (error.response.status == 401) {
-      //   console.log("Unauthorized")
-      //   this.setState({showing: true, loading: false})
-      // }
       else {
         var errors = [""]
         if (error.response.data && error.response.data.errors) {
@@ -457,7 +452,7 @@ export default class Form extends React.Component<Props> {
         return this.renderGeneral()
     }
   }
-  
+
   render() {
     return (
       <Pane display="flex" flex={1} flexDirection="column" paddingBottom={40}>

@@ -50,49 +50,6 @@ import PrintForm from './print_form'
 import PropTypes from 'prop-types'
 
 
-// function myNode(objType, props, propName, componentName) {
-//   componentName = componentName || 'ANONYMOUS';
-//   console.log("MY NODE Validator", propName)
-//   if (props[propName]) {
-//     let value = props[propName];
-//     if (typeof value == objType) {
-//       return null
-//     } else {
-//         return `${propName} is not of type Node State`;
-//     }
-//   }
-
-//   // assume all ok
-//   return null;
-// }
-
-// var nodeState = myNode.bind('NodeState')
-// var printerState = myNode.bind('PrinterStated')
-
-// function createChainableTypeChecker(validate) {
-//   function checkType(isRequired, props, propName, componentName, location) {
-//     componentName = componentName || 'ANONYMOUS';
-//     if (props[propName] == null) {
-//       // var locationName = ReactPropTypeLocationNames[location];
-//       if (isRequired) {
-//         return new Error(
-//           ("Required " + location + " `" + propName + "` was not specified in ") +
-//           ("`" + componentName + "`.")
-//         );
-//       }
-//       return null;
-//     } else {
-//       return validate(props, propName, componentName, location);
-//     }
-//   }
-
-//   var chainedCheckType = checkType.bind(null, false);
-//   chainedCheckType.isRequired = checkType.bind(null, true);
-
-//   return chainedCheckType;
-// }
-// var nodePropType = createChainableTypeChecker(nodeState)
-// var printerPropType = createChainableTypeChecker(printerState)
 
 const optionPropTypes = {
   // node: nodePropType.isRequired,  
@@ -202,7 +159,7 @@ export class NewPrint extends React.Component<PrintProps, PrintStateProps> {
     var event_listeners = cservice.model.event_listeners
     Object.keys(camEvents).forEach(key => {
       var val = camEvents[key]
-      var pkey = this.props.printerService.name + ".events." + key
+      var pkey = this.props.node.uuid + "." + this.props.printerService.identity + ".events." + key
       if (pkey in event_listeners) {
         if (!(event_listeners[pkey].find((x) => x["action"] == val["action"]))) {
           event_listeners[pkey].push(val)
@@ -214,12 +171,10 @@ export class NewPrint extends React.Component<PrintProps, PrintStateProps> {
 
     this.props.updateService(this.props.node, cservice, {"event_listeners": event_listeners})
     .then((response) => {
-      // console.log(response)
       // var f = response.data.attachment
       
     })
     .catch((error) => {
-      console.log(error)
       if (error.response && error.response.data && error.response.data) {
         let errors = Object.keys(error.response.data.errors).map((key, index) => {
           return  `${key} : ${error.response.data.errors[key]}<br/>`
@@ -238,12 +193,10 @@ export class NewPrint extends React.Component<PrintProps, PrintStateProps> {
 
       this.props.saveAttachment(this.props.node, this.props.printerService, {service_id: service_id})
       .then((response) => {
-        // console.log(response)
         // var f = response.data.attachment
         
       })
       .catch((error) => {
-        console.log(error)
         if (error.response && error.response.data && error.response.data) {
           let errors = Object.keys(error.response.data.errors).map((key, index) => {
             return  `${key} : ${error.response.data.errors[key]}<br/>`
@@ -268,7 +221,6 @@ export class NewPrint extends React.Component<PrintProps, PrintStateProps> {
     return PrinterHandler.start_print(this.props.node, this.props.printerService, printParams)
     .then((response) => {
       // var attachments = this.state.attachments
-      console.log("START PRINT", response.data)
       var f = response.data.print
       // attachments = attachments.concat(f)
       // this.setState({
@@ -281,7 +233,7 @@ export class NewPrint extends React.Component<PrintProps, PrintStateProps> {
         closeDialog()
     })
     .catch((error) => {
-      console.log(error)
+
       if (closeDialog)
         closeDialog()
       toaster.danger(<ErrorModal requestError={error} />)

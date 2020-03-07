@@ -127,9 +127,7 @@ export class RecordingShow extends React.Component<Props, StateProps> {
       })
     })
     .catch((error) => {
-      console.log(error)
       if (error.response && error.response.status == 401) {
-        console.log("Unauthorized")
         // this.setState({showAuth: true, loading: false})
         this.setState({loading: false})
       } else {

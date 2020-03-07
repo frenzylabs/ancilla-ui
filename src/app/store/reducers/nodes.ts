@@ -8,9 +8,6 @@ import { serviceReducer } from './service'
 
 import { NodeState, serviceState, printerState, cameraState } from '../state'
 
-
-// const initialState = NodeState();
-
 export function nodeReducer(state: NodeState = initialState.activeNode, action) {
   // console.log("NODE REDUCER", action.type);
   switch(action.type) {
@@ -37,10 +34,6 @@ export function nodeReducer(state: NodeState = initialState.activeNode, action) 
     return clone
   }
   case 'RECEIVED_SERVICES': {
-      // console.log("INSIDE RECEIVE PRINTERS", action.data)
-      // console.log("CURRENT STATE = ", state)
-    // var dv = state.printers
-    // dv[action.data.id] = action.data
     let services = action.data.services.reduce((acc, item) => {
       var itemstate = item
       switch(item.kind) {
@@ -58,7 +51,6 @@ export function nodeReducer(state: NodeState = initialState.activeNode, action) 
       acc = acc.concat(itemstate)
       return acc
     }, [])
-    // console.log("SERVICE REDUCERS", services)
     let newstate = {
       ...state, 
       services: services
@@ -150,6 +142,5 @@ export function nodeReducer(state: NodeState = initialState.activeNode, action) 
   //   return state;
   }
 }
-
 
 export default nodeReducer

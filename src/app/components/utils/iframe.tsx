@@ -16,11 +16,8 @@ export class HtmlPreview extends React.Component<{body: any, src: string}> {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    // console.log(this.props.body)
     if (this.props.src != prevProps.src)
       this.writeHTML(this.rendered)
-    // ReactDOM.render(this.props.body, this.rendered.contentDocument.body)
-    // this.rendered.contentDocument.write(this.props.body)
   }
 
   writeHTML(frame){
@@ -32,10 +29,9 @@ export class HtmlPreview extends React.Component<{body: any, src: string}> {
 
 
     let doc = frame.contentDocument
-    // console.log("doc = ", doc)
+
     doc.open()
     doc.write(this.props.body)
-    // ReactDOM.render(this.props.body, doc.body)
     doc.close()
 
     setTimeout(function() {
@@ -44,8 +40,7 @@ export class HtmlPreview extends React.Component<{body: any, src: string}> {
       if (!win || !win.document) return
 
       var newheight = Math.max( win.document.body.scrollHeight, win.document.body.offsetHeight, win.document.documentElement.clientHeight, win.document.documentElement.scrollHeight, win.document.documentElement.offsetHeight );
-      // console.log("FRAME onload scrollheight ", frame.contentWindow.document.body.scrollHeight)
-      // console.log("FRAME onload height ", newheight)
+
       frame.style.height = newheight + 'px';
     }, 1000);
 

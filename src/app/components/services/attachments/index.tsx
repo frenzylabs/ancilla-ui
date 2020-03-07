@@ -106,7 +106,6 @@ export class ServiceAttachment extends React.Component<AttachmentProps, StatePro
       closeDialog()
     })
     .catch((error) => {
-      console.log(error)      
       this.setState({
         loading: false,
       })
@@ -119,40 +118,6 @@ export class ServiceAttachment extends React.Component<AttachmentProps, StatePro
         {description: errors}
       )
     })
-
-    // ServiceHandler.addAttachment(this.props.node, this.props.service, attachment)
-    // .then((response) => {
-    //   var attachments = this.state.attachments
-    //   var f = response.data.attachment
-    //   attachments = attachments.concat(f)
-    //   this.setState({
-    //     loading: false,
-    //     attachments: attachments
-    //   })
-
-    //   toaster.success(`Attachment ${f.attachment.name} has been successfully added`)
-    //   closeDialog()
-    // })
-    // .catch((error) => {
-    //   console.log(error)      
-    //   this.setState({
-    //     loading: false,
-    //   })
-    //   let errors = Object.keys(error.response.data.errors).map((key, index) => {
-    //     return  `${key} : ${error.response.data.errors[key]}<br/>`
-    //   })
-
-    //   toaster.danger(
-    //     `Unable to save attachment ${JSON.stringify(attachment)}`, 
-    //     {description: errors}
-    //   )
-    // })
-    // DeviceHandler.addAttachment(this.props.node, this.props.device.id)
-    //   .then((response) => {
-
-    //   }).catch((err) => {
-    //     console.log(err)
-    //   })
   }
 
   toggleDialog(show:boolean) {
@@ -174,7 +139,6 @@ export class ServiceAttachment extends React.Component<AttachmentProps, StatePro
       toaster.success(`Attachment ${attachment.attachment.name} has been deleted`)
     })
     .catch((error) => {
-      console.log(error)
       toaster.danger(<ErrorModal requestError={error} />)
     })
   }
@@ -185,8 +149,7 @@ export class ServiceAttachment extends React.Component<AttachmentProps, StatePro
     // var settings = {...attachment.settings, expanded: expand}
     attachment.settings = {...attachment.settings, expanded: expand}
     ServiceHandler.updateAttachment(this.props.node, attachment.id, {settings: attachment.settings})
-    .then((response) => {
-      // console.log(response)
+    .then((response) => {      
       // var attachments = this.state.attachments.filter((item) => item.id != attachment.id) 
       // // var currentAttachmentIds = attachments.map(item => item.attachment.id)
       // this.setState({

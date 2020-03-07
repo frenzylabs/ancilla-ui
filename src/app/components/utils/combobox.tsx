@@ -164,7 +164,6 @@ export default class Combobox extends PureComponent {
                   if (openOnFocus) openMenu()
                 },
                 onChange: e => {
-                  console.log("CHANGE ", inputProps)
                   if (inputProps && inputProps.onChange) {
                     inputProps.onChange(e)
                   }

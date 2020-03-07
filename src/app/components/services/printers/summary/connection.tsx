@@ -62,54 +62,7 @@ export default class Connection extends React.Component<Props> {
   }
 
 
-
-  // onNewPrint(closeDialog) {
-  //   if (!(this.form.state.newPrint && this.form.state.newPrint.file_id)) {
-  //     toaster.danger("Select a File")
-  //     return
-  //   }
-
-  //   var newPrint = this.form.state.newPrint
-  //   this.startPrint(newPrint, closeDialog)
-  // }
-
-  // startPrint(printParams, closeDialog = null) {
-  //   // if (!(this.form.state.newPrint && this.form.state.newPrint.file_id)) {
-  //   //   toaster.danger("Select a File")
-  //   //   return
-  //   // }
-
-  //   // var newPrint = this.form.state.newPrint
-  //   return PrinterHandler.start_print(this.props.node, this.props.service, printParams)
-  //   .then((response) => {
-  //     // var attachments = this.state.attachments
-  //     console.log("START PRINT", response.data)
-  //     var f = response.data.print
-  //     // attachments = attachments.concat(f)
-  //     // this.setState({
-  //     //   loading: false,
-  //     //   attachments: attachments
-  //     // })
-
-  //     toaster.success(`Print Started ${printParams.name} has been successfully added`)
-  //     if (closeDialog)
-  //       closeDialog()
-  //   })
-  //   .catch((error) => {
-  //     console.log(error)
-  //     if (closeDialog)
-  //       closeDialog()
-  //     toaster.danger(<ErrorModal requestError={error} />)
-
-  //     this.setState({
-  //       loading: false,
-  //     })
-  //   })
-  // }
-
   cancelPrint() {
-    // let cmd = [this.props.service.name, "cancel_print"]
-    // PubSub.make_request(this.props.node, cmd)
 
     if (this.props.service.currentPrint && this.props.service.currentPrint.model) {      
       this.props.cancelPrint(this.props.service.currentPrint.id).then((res) => {
@@ -119,7 +72,6 @@ export default class Connection extends React.Component<Props> {
       })
     }
 
-    // this.pubsubToken = PubSub.publish(this.topic, );
   }
 
   pausePrint() {
@@ -128,14 +80,10 @@ export default class Connection extends React.Component<Props> {
   }
 
   resumePrint() {
-    // let cmd = [this.props.service.name, "start_print"]
-    // PubSub.publish(this.props.node.name + ".request", cmd)
     if (this.props.service.currentPrint && this.props.service.currentPrint.model) {
       var printParams = { print_id: this.props.service.currentPrint.id, name: this.props.service.currentPrint.model.name}
       this.props.startPrint(printParams)
     }
-    
-    // this.pubsubToken = PubSub.publish(this.topic, );
   }
 
 

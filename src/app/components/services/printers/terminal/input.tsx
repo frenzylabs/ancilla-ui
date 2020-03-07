@@ -55,10 +55,10 @@ export default class Input extends React.Component<Props> {
   sendAction() {
     (this.state.entry.includes('&&') ? this.state.entry.split('&&') : [this.state.entry]).map((item) => {
       let cmd = [this.props.service.name, "send_command", { cmd: item.trim(), nowait: this.state.nowait, skip_queue: this.state.skipQueue}]
-      PubSub.publish(this.props.node.name + ".request", cmd)
+      PubSub.publish(this.props.node.uuid + ".request", cmd)
       return cmd
     })
-    // .forEach((cmd) => { console.log("send: ", cmd)})
+
     this.setState({entry: ""})
   }
 

@@ -69,7 +69,6 @@ export class CameraNew extends React.Component<Props> {
   }
 
   componentDidMount() {
-    console.log("this: ", this.props)
   }
 
   toggleDialog(show:boolean) {
@@ -80,7 +79,6 @@ export class CameraNew extends React.Component<Props> {
   }
 
   onSave(response) {
-    console.log("response on save", response)
 
     this.props.addCamera(this.props.node, response.data.camera)
     this.props.history.push(`/cameras/${response.data.camera.id}`)
@@ -92,7 +90,6 @@ export class CameraNew extends React.Component<Props> {
 
 
   authenticated(res) {
-    console.log("Authenticated", res)
     this.setState({showing: false})
     
   }
@@ -109,9 +106,7 @@ export class CameraNew extends React.Component<Props> {
     if (this.props.service.state["connected"]) {
       CameraHandler.disconnect(this.props.node, this.props.service)
       .then((response) => {
-        console.log("disconnected", response)
       }).catch((error) => {
-        console.log(error)
         toaster.danger(<ErrorModal requestError={error} />)
       })
     } else {
@@ -120,7 +115,6 @@ export class CameraNew extends React.Component<Props> {
         toaster.success(`Connected to ${this.props.service.name}`)
       })
       .catch((error) => {
-        console.log(error)
         toaster.danger(<ErrorModal requestError={error} />)
       })
     }
@@ -133,16 +127,15 @@ export class CameraNew extends React.Component<Props> {
 
   setupCamera() {
     if (this.props.service) {
-      // console.log("SETUP CAMERA")
       this.props.getState(this.props.node, this.props.service)
 
-      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.connection"])
-      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.recording"])
+      PubSub.make_request(this.props.node, [this.props.service.identity, "SUB", "events.camera.connection"])
+      PubSub.make_request(this.props.node, [this.props.service.identity, "SUB", "events.camera.recording"])
 
       
-      this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
-      this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events`
-      // console.log("Cam SHOW EVENT TOPIC = ", this.eventTopic)
+      this.requestTopic = `${this.props.node.uuid}.${this.props.service.identity}.request`
+      this.eventTopic = `${this.props.node.uuid}.${this.props.service.identity}.events`
+
       if (this.pubsubRequestToken) {
         PubSub.unsubscribe(this.pubsubRequestToken)
       }

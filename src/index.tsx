@@ -23,7 +23,6 @@ Request.interceptors.response.use(function (response) {
   return response;
 }, function (error) {
   //catches if the session ended!
-  console.log(error);
   if (isCancel(error)) {
     console.log('Request canceled', error.message);
   } else {

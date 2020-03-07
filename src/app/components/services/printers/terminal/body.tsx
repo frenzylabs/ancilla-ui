@@ -40,6 +40,8 @@ export default class Body extends React.Component<Props> {
   rowHeight = 35
   list = null
   _stopIndex = 0
+  allowAllData = true
+
   constructor(props:any) {
     super(props)
 
@@ -57,43 +59,44 @@ export default class Body extends React.Component<Props> {
 
 
   receiveData(msg, data) {
-    // console.log("Received Data here1", msg)
-    // console.log("Terminal Received Data here2", data)
-    if (data["resp"]) {
-      if (data["resp"] != '\n' /*&& data["command"]*/) {
-        this.props.dispatch(ServiceActions.updateLogs(this.props.service, data))
-        // this.props.dispatch(evt)
 
-        // this.setState(prevState => ({        
-        //   buffer: [...prevState.buffer, data["resp"]]
-        // }))
+    if (data["resp"]) {
+      if (data["resp"] != '\n' && (this.allowAllData || data["command"])) {
+        this.props.dispatch(ServiceActions.updateLogs(this.props.service, data))
       }
     }
   }
   
   componentWillUnmount() {
-    PubSub.make_request(this.props.node, [this.props.service.name, "UNSUB", "data"])
+    PubSub.make_request(this.props.node, [this.props.service.identity, "UNSUB", "data"])
     if (this.pubsubToken)
       PubSub.unsubscribe(this.pubsubToken)
   }
 
   componentDidMount() {
     if (this.props.service) {
-      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "data"])
-      this.topic = `${this.props.node.name}.${this.props.service.name}.data.printer.data_received`
+      PubSub.make_request(this.props.node, [this.props.service.identity, "SUB", "data"])
+      this.topic = `${this.props.node.uuid}.${this.props.service.identity}.data.printer.data_received`
       this.pubsubToken = PubSub.subscribe(this.topic, this.receiveData);
+      if (this.props.service.logs.length > 0)
+        this.allowAllData = false
     }
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.service.model && prevProps.service.model != this.props.service.model) {
+    if (this.props.service.model && (prevProps.service.model != this.props.service.model || prevProps.node.uuid != this.props.node.uuid)) {
       if (this.pubsubToken)
         PubSub.unsubscribe(this.pubsubToken)
-      this.topic = `${this.props.node.name}.${this.props.service.name}.data.printer.data_received`
+      this.topic = `${this.props.node.uuid}.${this.props.service.identity}.data.printer.data_received`
       this.pubsubToken = PubSub.subscribe(this.topic, this.receiveData);
     }
     if (prevProps.service.logs.length != this.props.service.logs.length) {
-      // console.log(`StOP INDEX ${this._stopIndex}, prevleng: ${prevProps.service.logs.length}, curLen: ${this.props.service.logs.length}`)
+
+      if (prevProps.service.logs.length == 0) {
+        setTimeout(() => {
+          this.allowAllData = false
+        }, 5000)
+      }
       if (this._stopIndex > 1 && this._stopIndex > prevProps.service.logs.length - 2){
         this.list.scrollToRow(this.props.service.logs.length - 1)
       }
@@ -124,7 +127,6 @@ export default class Body extends React.Component<Props> {
   }
 
   _onRowsRendered({ startIndex, stopIndex }) {
-    // this._startIndex = startIndex
     this._stopIndex = stopIndex
   }
 
@@ -168,15 +170,15 @@ export default class Body extends React.Component<Props> {
           <Heading size={400}>Terminal</Heading>
         </Pane>
 
-        <Pane display="flex" flex={1} flexDirection="column" width="100%" borderLeft borderRight>
-          <Pane display="flex" flex={1} overflow="auto" id="flexscrollbody">
-            <div className="list">
-              <AutoSizer disableHeight={true} >
-                {({width}) => (
+        <Pane display="flex" flex={1} flexDirection="column" width="100%" height="100%" minHeight="200px" borderLeft borderRight>
+          <Pane display="flex" flex={1} overflow="auto" >
+            <div className="list" style={{"width": "100%", "height": "100%"}}>
+              <AutoSizer >
+                {({height, width}) => (
                 <List
                 ref={(ref) => this.list = ref }
                 width={width}
-                height={200}
+                height={height}
                 rowHeight={this.getRowHeight}
                 rowRenderer={this.renderRow.bind(this)}
                 rowCount={this.props.service.logs.length}

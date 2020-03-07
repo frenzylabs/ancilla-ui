@@ -61,11 +61,11 @@ export default class Controls extends React.Component<Props> {
       raw: null,
       hotend: {
         current: 0,
-        requested: null
+        requested: ""
       },
       bed: {
         current: 0,
-        requested: null
+        requested: ""
       },
       lastUpdate: null
     },
@@ -79,8 +79,8 @@ export default class Controls extends React.Component<Props> {
     }
   }
 
-  private relativeModeCommand = [this.props.service.name, "send_command", { cmd: "G91", nowait: true, skip_queue: true}]
-  private absoluteModeCommand = [this.props.service.name, "send_command", { cmd: "G90", nowait: true, skip_queue: true}]
+  private relativeModeCommand = [this.props.service.name, "send_command", { cmd: "G91", nowait: false, skip_queue: false}]
+  private absoluteModeCommand = [this.props.service.name, "send_command", { cmd: "G90", nowait: false, skip_queue: false}]
 
   constructor(props) {
     super(props)
@@ -101,16 +101,30 @@ export default class Controls extends React.Component<Props> {
     this.requestTemp      = this.requestTemp.bind(this)
   }
 
-  static getDerivedStateFromProps(props, state) {
-    return {
-      ...state,
-      temp: Controls.parseTemp(props, state),
-      position: {
-        ...state.position,
-        current: Controls.parsePosition(props, state)
-      }
+
+  componentDidMount() {
+    this.getCurrentPosition()
+    
+    if(Object.keys(this.props.service.state).indexOf('temp') > -1) {
+      return
+    }
+
+    this.requestTemp()
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.service.state["temp"] != this.props.service.state["temp"]) {
+      this.setState({temp: Controls.parseTemp(this.props, this.state)})
+    }
+    if (prevProps.service.state["position"] != this.props.service.state["position"]) {
+      this.setState({position: {...this.state.position, current: Controls.parsePosition(this.props, this.state)}})
+    }
+    var connected = this.props.service.state['connected']
+    if (connected && prevProps.service.state['connected'] != connected) {
+      this.getCurrentPosition()
     }
   }
+
 
   static parseTemp(props, state) {
     const r     = /([T|B|C]\d*):([^\s\/]+)\s*\/([^\s]+)/g
@@ -148,17 +162,8 @@ export default class Controls extends React.Component<Props> {
     }
   }
 
-  componentDidMount() {
-    this.getCurrentPosition()
-    
-    if(Object.keys(this.props.service.state).indexOf('temp') > -1) {
-      return
-    }
 
-    this.requestTemp()
-  }
-
-  sendCommand(code:string, nowait:boolean = false, skipQueue:boolean = true) {
+  sendCommand(code:string, nowait:boolean = false, skipQueue:boolean = false) {
     if((this.props.service.state['connected'] || false) == false) { return }
 
     let cmd = [this.props.service.name, "send_command", { cmd: code.trim(), nowait: nowait, skip_queue: skipQueue}]
@@ -175,43 +180,55 @@ export default class Controls extends React.Component<Props> {
     this.sendCommand("M105")
   }
 
-  changedTemp(e) {
-    this.sendTemp(Target.Hotend, e.target.value)
+  changedTemp(e) {    
+    var t = e.target.value
+    if (t.length > 0 && isNaN(t)) {
+      return
+    } 
+    this.sendTemp(Target.Hotend, t)
+    
   }
 
   incrementTemp() {
-    let frm = this.state.temp.hotend.requested || this.state.temp.hotend.current
-    var temp  = parseFloat((((frm * 10) + 1) / 10).toFixed(1))
+    let frm = parseFloat(this.state.temp.hotend.requested) || 0
+    var temp  = (((frm * 10) + 10) / 10).toFixed(2)
 
     this.sendTemp(Target.Hotend, temp)
   }
 
   decrementTemp() {
-    let frm = this.state.temp.hotend.requested || this.state.temp.hotend.current
-    var temp  = frm > 0 ? parseFloat((((frm * 10) - 1) / 10).toFixed(1)) : 0
+    let frm = parseFloat(this.state.temp.hotend.requested) || 0
+    
+    var temp  = frm >= 1 ? (((frm * 10) - 10) / 10).toFixed(2) : '0'
 
     this.sendTemp(Target.Hotend, temp)
   }
 
+
   changedBedTemp(e) {
-    this.sendTemp(Target.Bed, e.target.value)
+    var t = e.target.value
+    if (t.length > 0 && isNaN(t)) {
+      return
+    } 
+
+    this.sendTemp(Target.Bed, t)
   }
 
   incrementBedTemp() {
-    let frm = this.state.temp.bed.requested || this.state.temp.bed.current
-    var temp  = parseFloat((((frm * 10) + 1) / 10).toFixed(1))
+    let frm = parseFloat(this.state.temp.bed.requested) || 0
+    var temp  = (((frm * 10) + 10) / 10).toFixed(2)
 
     this.sendTemp(Target.Bed, temp)
   }
 
   decrementBedTemp() {
-    let frm = this.state.temp.bed.requested || this.state.temp.bed.current
-    var temp  = frm > 0 ? parseFloat((((frm * 10) - 1) / 10).toFixed(1)) : 0
+    let frm = parseFloat(this.state.temp.bed.requested) || 0
+    var temp  = frm >= 1 ? (((frm * 10) - 10) / 10).toFixed(2) : '0'
 
     this.sendTemp(Target.Bed, temp)
   }
 
-  sendTemp(target:Target, temp:Number) {
+  sendTemp(target:Target, temp:string) {
     var _temp = this.state.temp
     _temp[(target == Target.Hotend ? 'hotend' : 'bed')]['requested'] = temp
 
@@ -222,7 +239,7 @@ export default class Controls extends React.Component<Props> {
 
     let gcode = target == Target.Hotend ? `M104 S${temp}` : `M140 S${temp}`
 
-    this.sendCommand(gcode.trim(), true, true)
+    this.sendCommand(gcode.trim(), false, false)
   }
 
   setRelative(enable:boolean = true) {
@@ -301,7 +318,7 @@ export default class Controls extends React.Component<Props> {
     }
 
     let gcode = command.join(" ")
-    let cmd   = [this.props.service.name, "send_command", { cmd: gcode.trim(), nowait: true, skip_queue: true}]
+    let cmd   = [this.props.service.name, "send_command", { cmd: gcode.trim(), nowait: false, skip_queue: false}]
 
     this.sendMovementCommand(cmd)    
   }
@@ -400,7 +417,7 @@ export default class Controls extends React.Component<Props> {
 
   renderHotendTemp() {
     const current   = this.state.temp.hotend.current
-    const requested = this.state.temp.hotend.requested || this.state.temp.hotend.current
+    const requested = this.state.temp.hotend.requested
 
     return (
       <Pane display="flex" flexDirection="row" alignItems="center">
@@ -425,7 +442,7 @@ export default class Controls extends React.Component<Props> {
 
   renderBedTemp() {
     const current   = this.state.temp.bed.current
-    const requested = this.state.temp.bed.requested || this.state.temp.bed.current
+    const requested = this.state.temp.bed.requested
 
     return (
       <Pane display="flex" flex={1} flexDirection="row" alignItems="center">

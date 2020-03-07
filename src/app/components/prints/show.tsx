@@ -138,7 +138,6 @@ export class PrintShow extends React.Component<Props, StateProps> {
       })
     })
     .catch((error) => {
-      console.log(error)
       this.setState({loading: false})
       toaster.danger(<ErrorModal requestError={error} />)  
       this.cancelRequest = PrinterRequest.cancelSource();
@@ -150,7 +149,6 @@ export class PrintShow extends React.Component<Props, StateProps> {
     this.setState({saving: true})
     return PrinterRequest.updatePrint(this.props.node, this.props.service, this.state.printerPrint.id, this.state.editPrint, {cancelToken: this.cancelRequest.token})
     .then((res) => {
-      console.log("SAVE res = ", res)
       this.setState({
         printerPrint: res.data.data,
         editPrint: null,
@@ -160,7 +158,7 @@ export class PrintShow extends React.Component<Props, StateProps> {
       })
     })
     .catch((error) => {
-      console.log(error)
+
       this.setState({saving: false})
       toaster.danger(<ErrorModal requestError={error} />)  
       this.cancelRequest = PrinterRequest.cancelSource();
@@ -177,7 +175,6 @@ export class PrintShow extends React.Component<Props, StateProps> {
       
     })
     .catch((error) => {
-      console.log("delete error")
       this.setState({deleting: false})
       toaster.danger(<ErrorModal requestError={error} />)
     })    
@@ -504,7 +501,6 @@ export class PrintShow extends React.Component<Props, StateProps> {
   }
 
   addPrintRecording(recording) {
-    console.log("REcroding = ", recording)
     if (recording && recording.recording_id != "") {
       this.state.editPrint = {recording: recording}
       this.updatePrint().then((res) => {

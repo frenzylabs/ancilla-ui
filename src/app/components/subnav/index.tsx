@@ -62,9 +62,6 @@ export default class SubNav extends React.Component<Props> {
 	}
 
   componentDidMount() {
-    // this.getPrinters()
-    // console.log("INSIDE SUBNAV ", this.props)
-    // window.snav = this;
 	}
 	
 	filesSelected() {

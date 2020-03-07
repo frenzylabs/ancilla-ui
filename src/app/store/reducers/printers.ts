@@ -1,58 +1,17 @@
-// import { PrintState, printState } from './prints'
+//
+//  printers.ts
+//  ancilla
+// 
+//  Created by Kevin Musselman (kevin@frenzylabs.com) on 01/08/20
+//  Copyright 2019 FrenzyLabs, LLC.
+//
 
-// import { ServiceModel, ServiceState } from './service'
 import { printState, PrinterState } from '../state'
-// type PrinterModel = {
-//   baud_rate: string,
-//   created_at: number,
-//   service: object,
-//   id: number,
-//   name: string,
-//   port: string,
-//   updated_at: number
-// }
 
-// type PrinterServiceModel = ServiceModel & { model: PrinterModel}
-
-// export type PrinterState = ServiceState & {
-//   model: PrinterServiceModel,
-//   currentPrint?: PrintState
-// }
-
-// export type PrinterState = ServiceState & {
-//   id: number,
-//   name: string,
-//   model: PrinterModel,
-//   state: object,
-//   logs: [],
-//   currentPrint?: PrintState,
-//   attachments: []
-// }
-
-
-// export function PrinterState(model: PrinterServiceModel, state: {} = {}, logs: [] = [], currentPrint = {}) {
-//   var res = ServiceState.call(this, ...arguments)  
-//   res["currentPrint"] = currentPrint
-//   return res
-//   // return {
-//   //   id: model.id,
-//   //   name: model.name,
-//   //   model: model,
-//   //   state: state,
-//   //   logs: logs,
-//   //   currentPrint: currentPrint
-//   // }
-// }
-
-
-
-// const initialState = PrinterState({});
 
 export function printerReducer(printerstate: PrinterState, action) {
   switch(action.type) {
   case 'PRINTER_PRINT_UPDATED':
-    // console.log("Print Updated", action.data)
-    // console.log("PrintState", printState(action.data))
     return {
       ...printerstate,
       currentPrint: action.data
@@ -74,14 +33,11 @@ export function printerReducer(printerstate: PrinterState, action) {
         currentPrint: printState(action.data)
       }
   case 'PRINTER_RECEIVED_STATE':
-    // console.log("PRINTER RECEIVED STATE", action)
     return {
       ...printerstate,
       state: action.data
     }
   case 'PRINTER_RECEIVED_DATA':
-    // console.log("PRINTER RECEIVED DATA", action)
-    // var logs = printerstate.logs.concat(action.data)
     var logs = [...printerstate.logs, action.data]
     if (logs.length > 100) {
       logs.shift()

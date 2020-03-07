@@ -85,7 +85,6 @@ export default class AttachmentForm extends React.Component<Props, StateProps> {
 
   componentDidMount() {
     this.setServices()
-    // console.log(this.props)
   }
 
   componentDidUpdate(prevProps, prevState) {

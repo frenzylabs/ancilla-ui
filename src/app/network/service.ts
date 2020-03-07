@@ -25,7 +25,6 @@ export const ServiceHandler = {
   },
 
   delete: (node, service, options= {}) => {
-    console.log(service)
     return Request.delete(`${node.apiUrl}/services/${service.id}`, options)
   },
 

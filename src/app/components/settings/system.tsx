@@ -57,7 +57,6 @@ export default class SystemSettings extends React.Component<Props> {
   getSystemConfig() {
     SystemHandler.getConfig(this.props.node, {timeout: 2000})
     .then((res) => {
-      console.log(res)
       this.setState({networkConnected: true})
       // toaster.success(`System will restart`)
     })

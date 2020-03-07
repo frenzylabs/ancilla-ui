@@ -90,7 +90,7 @@ export class CameraIndex extends React.Component<Props, StateProps> {
   }
 
   componentWillUnmount() {
-    PubSub.publishSync(this.props.node.name + ".request", [this.props.service.name, "UNSUB", "events.camera.connection"])
+    PubSub.publishSync(this.props.node.uuid + ".request", [this.props.service.identity, "UNSUB", "events.camera.connection"])
     if (this.pubsubToken)
       PubSub.unsubscribe(this.pubsubToken)
     if (this.pubsubRequestToken)
@@ -99,26 +99,28 @@ export class CameraIndex extends React.Component<Props, StateProps> {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.service.model != this.props.service.model) {
-      // console.log("PRINTER MODEL HAS BEEN UPDATED")
       this.setupCamera()      
     }
-    if (prevProps.node.name != this.props.node.name) {
-      this.setupSubscription()
+    if (prevProps.node.uuid != this.props.node.uuid) {
+      // this.setupSubscription()
+      this.setupCamera()      
     }
   }
 
   setupCamera() {
     if (this.props.service) {
       this.props.getState(this.props.node, this.props.service)
-      PubSub.make_request(this.props.node, [this.props.service.name, "SUB", "events.camera.connection"])
+      PubSub.make_request(this.props.node, [this.props.service.identity, "SUB", "events.camera.connection"])
+      // PubSub.make_request(this.props.node, [this.props.service.id, "test", "tada"])
 
       this.setupSubscription()
     }
   }
 
   setupSubscription() {
-    this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
-    this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events`
+    this.requestTopic = `${this.props.node.uuid}.${this.props.service.identity}.request`
+    this.eventTopic = `${this.props.node.uuid}.${this.props.service.identity}.events`
+
     if (this.pubsubRequestToken) {
       PubSub.unsubscribe(this.pubsubRequestToken)
     }
@@ -130,30 +132,11 @@ export class CameraIndex extends React.Component<Props, StateProps> {
   }
 
   receiveRequest(msg, data) {
-    // console.log("PV Received Data here1", msg)    
-    // console.log("PV Received Data here2", data)
-    // console.log(typeof(data))
-    // if(!data)
-    //   return
-    // if (data["action"] == "get_state") {
-    //   // console.log("get STATE", data)
-    //   this.setState({serviceState: data["resp"]})
-    // }
-    // if (data["action"] == "start_recording") {
-    //   // console.log("get STATE", data)
-    //   this.setState({...this.state, serviceState: {...this.state.serviceState, recording: true}})
-    // } else if (data["action"] == "stop_recording") {
-    //   // console.log("get STATE", data)
-    //   this.setState({...this.state, serviceState: {...this.state.serviceState, recording: false}})
-    // }
+    
   }
 
   receiveEvent(msg, data) {
-    // console.log("PV Received Event here1", msg)    
-    // console.log("PV Received Event here2", data)
-    // console.log(typeof(data))
     var [to, kind] = msg.split("events.")
-    // console.log("CAMINDEX EVENT KIND", kind)
     switch(kind) {
       case 'camera.connection.closed':
           this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, connected: false})
@@ -171,7 +154,6 @@ export class CameraIndex extends React.Component<Props, StateProps> {
   }
 
   cameraSaved(resp) {
-    // console.log("printer saved", resp)
     this.props.cameraUpdated(this.props.node, resp.data.service_model)
     this.props.history.push(this.props.match.url)    
   }
@@ -187,7 +169,6 @@ export class CameraIndex extends React.Component<Props, StateProps> {
       .then((response) => {
         this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, connected: false, togglingPower: false})
       }).catch((error) => {
-        console.log(error)
         this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, togglingPower: false})
         toaster.danger(<ErrorModal requestError={error} />)
       })
@@ -198,7 +179,6 @@ export class CameraIndex extends React.Component<Props, StateProps> {
         toaster.success(`Connected to ${this.props.service.name}`)
       })
       .catch((error) => {
-        console.log(error)
         this.props.updateState(this.props.node, this.props.service, {...this.props.service.state, togglingPower: false})
         toaster.danger(<ErrorModal requestError={error} />)
       })

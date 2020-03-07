@@ -77,7 +77,7 @@ export class App extends React.Component<AppProps, stateProps> {
     this.sendData  = this.sendData.bind(this)
 
     this.receivedNotification = this.receivedNotification.bind(this)
-    this.pubsubToken          = PubSub.subscribe(this.props.activeNode.name + ".request", this.sendData);
+    this.pubsubToken          = PubSub.subscribe(this.props.activeNode.uuid + ".request", this.sendData);
   }
 
     
@@ -102,16 +102,16 @@ export class App extends React.Component<AppProps, stateProps> {
     document.title = this.props.activeNode.name
     if (this.props.activeNode && (!prevNode || prevNode.apiUrl != this.props.activeNode.apiUrl)) {
       PubSub.unsubscribe(this.pubsubToken)
-      this.pubsubToken = PubSub.subscribe(this.props.activeNode.name + ".request", this.sendData);
+      this.pubsubToken = PubSub.subscribe(this.props.activeNode.uuid + ".request", this.sendData);
       this.setState({connection: new Connection({node: this.props.activeNode})})
       this.setupNotification()
     }
-    else if (prevNode.name != this.props.activeNode.name) {
+    else if (prevNode.uuid != this.props.activeNode.uuid) {
       
       // this.setState({connection: new Connection({node: this.props.activeNode})})
       this.state.connection.node = this.props.activeNode
       // PubSub.unsubscribe(this.pubsubToken)
-      this.pubsubToken = PubSub.subscribe(this.props.activeNode.name + ".request", this.sendData);
+      this.pubsubToken = PubSub.subscribe(this.props.activeNode.uuid + ".request", this.sendData);
       this.setupNotification()
     }
   }
@@ -126,26 +126,24 @@ export class App extends React.Component<AppProps, stateProps> {
   setupNotification() {
     if (this.notificationToken)
       PubSub.unsubscribe(this.notificationToken)
-    this.notificationToken = PubSub.subscribe(this.props.activeNode.name + ".notifications", this.receivedNotification)
+    
+    this.notificationToken = PubSub.subscribe(this.props.activeNode.uuid + ".notifications", this.receivedNotification)
   }
 
   sendData(msg, data) {
-    // console.log("Send Data", msg, data)
     if (this.state.connection && this.state.connection.connected) {
       this.state.connection.send(JSON.stringify(data))
     } else {
-      // console.log("Not connected yet", data)
+      // Websocket Not connected yet
       this.sendQueue.push(data)
     }
   }
 
   receivedNotification(topic, data) {
-    // console.log("Received Notification", topic, data)
     var [to, kind] = topic.split("notifications.")
     if (kind == "nodes_changed") {
       this.props.listNodes()
     } else if (kind == "connected") {
-      // console.log("SEND QUEUE", this.sendQueue)
       while(this.sendQueue.length > 0) {
         var data = this.sendQueue.shift()
         this.sendData("request", data)

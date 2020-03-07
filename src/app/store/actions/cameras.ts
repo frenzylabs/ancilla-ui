@@ -13,10 +13,9 @@ import Camera from '../../network/camera'
 export const CameraAction = {
   listRecording(serviceState) {
     return (dispatch, getState) => {
-      // console.log("LIST Recordings NODE ACTION state", getState())
       let activeNode = getState().activeNode
       var cancelRequest    = Camera.cancelSource();  
-      // dispatch(requestFeatures(username, cancelRequest))
+
       if (serviceState.model) {
         return Camera.recordings(activeNode, serviceState.model, {cancelToken: cancelRequest.token})
             .then((response) => {
@@ -28,9 +27,8 @@ export const CameraAction = {
 
   startRecording: (node, serviceState, params) => {
     return (dispatch, getState) => {
-      // let activeNode = getState().activeNode
       var cancelRequest    = Camera.cancelSource();  
-      // dispatch(requestFeatures(username, cancelRequest))
+
       if (serviceState.id) {
         return Camera.startRecording(node, serviceState.id, params, {cancelToken: cancelRequest.token})
             .then((response) => {

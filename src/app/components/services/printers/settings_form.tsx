@@ -122,12 +122,8 @@ export default class SettingsForm extends React.Component<Props> {
       newobj[key] = newval
     })
     return newobj
-
   }
 
-  // componentDidUpdate(prevProps, prevState) {
-  //   console.log("COMPONENT DID UPdate", prevProps, prevState)
-  // }
   savePrinter() {
 
     this.setState({
@@ -151,7 +147,6 @@ export default class SettingsForm extends React.Component<Props> {
       toaster.success(`Printer ${name} has been successfully saved`)
     })
     .catch((error) => {
-      console.log(error)
       if (this.props.onError) {
         this.props.onError(error)
       }

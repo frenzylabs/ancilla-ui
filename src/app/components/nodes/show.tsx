@@ -48,11 +48,7 @@ export class NodeView extends React.Component<Props> {
   constructor(props:any) {
     super(props)    
 
-    // this.toggleDialog = this.toggleDialog.bind(this)
     this.saveFailed  = this.saveFailed.bind(this)
-    // this.getPrinters  = this.getPrinters.bind(this)
-    // console.log("NODE VIEW", this.props)
-    // window.nv = this
   }
   
 
@@ -62,9 +58,7 @@ export class NodeView extends React.Component<Props> {
   }
 
   saveFailed(error) {
-    // console.log("save failed", error)
     if (error.response.status == 401) {
-      console.log("Unauthorized")
       this.setState({showing: true})
     } else {
     // this.setState({requestError: error})

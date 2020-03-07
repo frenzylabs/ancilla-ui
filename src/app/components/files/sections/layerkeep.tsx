@@ -208,7 +208,6 @@ export default class LayerKeep extends React.Component<Props> {
   }
 
   handleFilterChange(val) {
-    // console.log("filter change", val)
     if (this.timer) {
       clearTimeout(this.timer)
     }

@@ -101,8 +101,6 @@ export default class RepoForm extends React.Component<{save:Function, loading:bo
   }
 
   loadRevisions(item) {
-    console.log(item)
-    console.log(item.name)
     return Layerkeep.get(this.props.node, `${item.kind}/${item.name}`, {cancelToken: this.cancelRequest.token})
     .then((response) => {
       let revisions = response.data.data.attributes.branches.map((item) => {
@@ -110,7 +108,7 @@ export default class RepoForm extends React.Component<{save:Function, loading:bo
       })
       return revisions
     }).catch((error) => {
-      console.log(error);
+      // console.log(error);
     });
   }
 

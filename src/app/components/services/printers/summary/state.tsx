@@ -64,20 +64,15 @@ export default class State extends React.Component<Props> {
   componentDidUpdate(prevProps, prevState) {
     var prevPrint = prevProps.service.currentPrint
     var curPrint = this.props.service.currentPrint
-    // if (prevPrint.model && curPrint.model && prevPrint.model.id != curPrint.model.id) {
 
-
-    // } else {
     if (prevPrint.model != curPrint.model) {
       this.setupPrint()
     }
-    // }
   }
 
   setupPrint() {
-    // console.log("SETUP PRINT")
     if (this.props.service) {
-      this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events.printer.print`
+      this.eventTopic = `${this.props.node.uuid}.${this.props.service.identity}.events.printer.print`
 
       if (this.pubsubToken) {
         PubSub.unsubscribe(this.pubsubToken)
@@ -88,30 +83,19 @@ export default class State extends React.Component<Props> {
 
   receiveEvent(msg, data) {
     var [to, kind] = msg.split("events.")
-    // console.log("REceive event ", to, kind)
-    
+
     switch(kind) {
       case 'printer.print.state.changed':              
-          // console.log("Print State Changed ", data)
           this.props.dispatch(PrinterAction.updatePrint(this.props.service, data))
-          // this.setState({...this.state, printState: data})
           break
       case 'printer.print.started':
-          console.log("Print started ", data)
           this.props.dispatch(PrinterAction.updatePrint(this.props.service, data))
-          // this.props.dispatch(PrinterAction.updatePrint(this.props.service, {...this.props.service.currentPrint, status: "running"}))
-          // this.setState({...this.state, printState: data})
           break
       case 'printer.print.cancelled':
-          console.log("Print cancelled ", data)
           this.props.dispatch(PrinterAction.updatePrint(this.props.service, data))
-          // this.props.dispatch(PrinterAction.updatePrint(this.props.service, {...this.props.service.currentPrint, status: "cancelled"}))
-          // this.setState({...this.state, printState: data})
           break
       case 'printer.print.failed':
           this.props.dispatch(PrinterAction.updatePrint(this.props.service, data))
-          // this.props.dispatch(PrinterAction.updatePrint(this.props.service, {...this.props.service.currentPrint, status: "failed"}))
-          // this.setState({...this.state, printState: data})
           break
       default:
         break

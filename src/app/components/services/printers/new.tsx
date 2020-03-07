@@ -55,18 +55,11 @@ export class PrinterNew extends React.Component<Props> {
     this.toggleDialog = this.toggleDialog.bind(this)
     this.onSave       = this.onSave.bind(this)
     this.onError      = this.onError.bind(this)
-    // this.getPrinters  = this.getPrinters.bind(this)
+
   }
 
   componentDidMount() {
-    // this.props.listPrinters()
-    // this.getPrinters()
   }
-
-  // componentDidUpdate(op, os) {
-  //   console.log("did update porps", op)
-  //   console.log("did update stae", os)
-  // }
 
   toggleDialog(show:boolean) {
     this.setState({
@@ -86,7 +79,6 @@ export class PrinterNew extends React.Component<Props> {
 
   onError(error) {
     if (error.response.status == 401) {
-      console.log("Unauthorized")
       this.setState({showing: true, loading: false})
     } else {
       // this.setState({requestError: error})
@@ -95,7 +87,6 @@ export class PrinterNew extends React.Component<Props> {
   }
 
   authenticated(res) {
-    console.log("Authenticated", res)
     this.setState({showing: false})
     
   }

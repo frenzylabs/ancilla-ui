@@ -73,64 +73,16 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
       showing: false
     }
 
-    
-    // this.setupPrinter    = this.setupPrinter.bind(this)   
   }
 
   componentDidMount() {
   }
 
   componentWillUnmount() {
-    // if (this.pubsubToken)
-    //   PubSub.unsubscribe(this.pubsubToken)
-    // if (this.pubsubRequestToken)
-    //   PubSub.unsubscribe(this.pubsubRequestToken)
   }  
 
   componentDidUpdate(prevProps, prevState) {
-    // console.log("component Will update", prevProps, this.props)
-    // if (prevProps.node != this.props.node) {
-    //   // console.log("NODE HAD BEEN UPDATED")
-    // }
-
-    // if (prevProps.printer.state != this.props.printer.state) {
-    //   console.log("PRINTER HAS BEEN UPDATED")
-    //   // this.setupPrinter()
-    // }
-
-    // if (prevProps.printer.currentPrint != this.props.printer.currentPrint) {
-    //   console.log("PRINTER PRINT HAS BEEN UPDATED")
-    //   // this.setupPrinter()
-    // }
-
-    // if (prevProps.service.model != this.props.service.model) {
-    //   // console.log("PRINTER MODEL HAS BEEN UPDATED")
-    //   this.setupPrinter()
-    //   this.getPrint()
-    // }
   }
-
-
-  // setupPrinter() {
-  //   if (this.props.service) {
-  //     this.props.dispatch(PrinterActions.getState(this.props.service))
-  //     PubSub.make_request(this.props.node, [this.props.service.name, "SUB", ""])
-  //     // PubSub.publishSync(this.props.node.name + ".request", [this.props.printer.name, "REQUEST.get_state"])
-  //     // console.log("Has printer")
-  //     this.requestTopic = `${this.props.node.name}.${this.props.service.name}.request`
-  //     this.eventTopic = `${this.props.node.name}.${this.props.service.name}.events`
-  //     if (this.pubsubRequestToken) {
-  //       PubSub.unsubscribe(this.pubsubRequestToken)
-  //     }
-  //     if (this.pubsubToken) {
-  //       PubSub.unsubscribe(this.pubsubToken)
-  //     }
-  //     this.pubsubRequestToken = PubSub.subscribe(this.requestTopic, this.receiveRequest);
-  //     this.pubsubToken = PubSub.subscribe(this.eventTopic, this.receiveEvent);
-  //   }
-  // }
-
-
 
   power(){
     this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, togglingPower: true}))
@@ -140,19 +92,16 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
         this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: false, togglingPower: false}))
       })
       .catch((error) => {
-        console.log(error)
         this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, togglingPower: false}))
         toaster.danger(<ErrorModal requestError={error} />)
       })
     } else {
       PrinterHandler.connect(this.props.node, this.props.service)
       .then((response) => {
-        // console.log("CONNECT resp ", response)
         this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, connected: true, togglingPower: false}))
         toaster.success(`Connected to ${this.props.service.name}`)
       })
       .catch((error) => {
-        console.log(error)
         this.props.dispatch(PrinterActions.updateState(this.props.service, {...this.props.service.state, togglingPower: false}))
         toaster.danger(<ErrorModal requestError={error} />)
       })
@@ -168,17 +117,13 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
   }
 
   printerSaved(resp) {
-    // console.log("printer saved", resp)
     this.props.printerUpdated(this.props.node, resp.data.service_model)
   }
 
   saveFailed(error) {
-    // console.log("save failed", error)
     if (error.response.status == 401) {
-      console.log("Unauthorized")
       this.setState({showing: true})
     } else {
-    // this.setState({requestError: error})
       toaster.danger(<ErrorModal requestError={error} />)
     }
   }
@@ -190,7 +135,6 @@ export class PrinterIndex extends React.Component<Props, StateProps> {
   deletePrinter() {
     this.props.deleteService(this.props.node, this.props.service)
     .catch((error) => {
-      console.log(error)
       toaster.danger(<ErrorModal requestError={error} />)
     })
   }

@@ -12,15 +12,6 @@ export type NodeModel = {
 }
 
 
-network_name: "myender3"
-addresses: ["192.168.1.129"]
-port: 5000
-server: "myender3.local"
-type: "_ancilla._tcp.local."
-uuid: "deba141da7d84831a292de5e920953f0"
-name: "MyEnder3"
-ip: "192.168.1.129"
-
 export type NodeNetworkModel = {    
   name:string,  
   port?: string,
@@ -58,7 +49,7 @@ export type NodeState = {
 export function createNodeState(networkModel: NodeNetworkModel, nodeModel: NodeModel = null) {
   
   if (!networkModel.port)
-    networkModel.port = "5000"
+    networkModel.port = process.env.API_PORT || document.location.port
 
   var hostname = ""
   var server = ""

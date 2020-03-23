@@ -7,11 +7,11 @@ export { printState, PrintModel, PrintState } from './print'
 export { cameraState, CameraModel, CameraState } from './camera'
 
 import { createNodeState, NodeState } from './node'
-import Loader from '../../components/loader'
+
 
 var networkNode = {    
   "name": "Ancilla",  
-  "port": "5000",
+  "port": process.env.API_PORT || document.location.port,
   "hostname": document.location.hostname
 }
 

@@ -107,7 +107,7 @@ export default class PrintForm extends React.Component<PrintProps> {
     },
     search: {
       page: 1, 
-      per_page: 10,
+      per_page: 5,
       q: {
         name: "",
         print_id: 0
@@ -157,6 +157,8 @@ export default class PrintForm extends React.Component<PrintProps> {
         } 
       }
     })
+
+    this.getFiles()
   }
 
   handleFilterChange(val) {
@@ -176,7 +178,7 @@ export default class PrintForm extends React.Component<PrintProps> {
 
   getFiles() {
     this.setState({filesLoading: true})
-    FileHandler.listLocal(this.props.node)
+    FileHandler.listLocal(this.props.node, {qs: this.state.search})
     .then((response) => {
       if (response.data && response.data.data) {
         this.setState({

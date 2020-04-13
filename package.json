@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "parcel src/index.html",
+    "start-dev": "API_PORT=5000 parcel src/index.html",
     "build": "parcel build src/index.html",
     "clean": "rimraf dist"
   },

@@ -64,9 +64,7 @@ const statePropTypes = {
   }),
   selectedFile: PropTypes.any,
   showingAddFile: PropTypes.bool,
-  // files: PropTypes.array,
-  // printers: PropTypes.shape(ServiceState),
-  // cameras: PropTypes.array,
+
   filesLoading: PropTypes.bool,
   showAuth: PropTypes.bool
 }
@@ -82,7 +80,7 @@ type PrintStateProps = PropTypes.InferProps<typeof statePropTypes> & {
   attachedCams: object
 }
 
-export default class PrintForm extends React.Component<PrintProps, PrintStateProps> {
+export default class PrintForm extends React.Component<PrintProps> {
   state = {
     newPrint: {
       name:     '',
@@ -103,10 +101,23 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
     cameras: Array(),
     printers: Array(),
     filesLoading: true,
-    attachedCams: {}
+    attachedCams: {},
+    filter: {
+      name: ""
+    },
+    search: {
+      page: 1, 
+      per_page: 10,
+      q: {
+        name: "",
+        print_id: 0
+      }
+    }
   }
 
-  addForm = null
+  addForm       = null
+  timer         = null
+  cancelRequest = null
 
   componentDidMount() {
     this.getFiles()
@@ -130,6 +141,39 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
     this.setState({newPrint: newstate})
   }
 
+  filterList() {
+    if (this.state.filesLoading && this.cancelRequest) {
+      this.cancelRequest.cancel()
+    }
+    var search = this.state.search
+
+    this.setState({ 
+      search: {
+        ...search, 
+        page: 1, 
+        q: {
+          ...search.q, 
+          ...this.state.filter
+        } 
+      }
+    })
+  }
+
+  handleFilterChange(val) {
+    if(this.timer) {
+      clearTimeout(this.timer)
+    }
+
+    this.timer = setTimeout(this.filterList.bind(this), 500)
+
+    this.setState({
+      filter: {
+        ...this.state.filter,
+        name: val
+      }
+    })
+  }
+
   getFiles() {
     this.setState({filesLoading: true})
     FileHandler.listLocal(this.props.node)
@@ -141,7 +185,6 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
             return {key: fp.id, name: fp.name, id: fp.id, description: fp.description}
           })
         })
-        // this.setState({files: response.data.files})
       }
     }).catch((err) => {
       toaster.danger(err)
@@ -167,7 +210,6 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
 
 
   save() {
-    // this.props.save(this.values)
   }
 
   toggleCamera(cam, checked) {
@@ -242,70 +284,26 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
     )
   }
 
-
-  // renderPrinters() {
-  //   return (
-  //   <SelectMenu
-  //     isMultiSelect
-  //     title="Select printer"
-  //     options={this.state.printers}
-  //     selected={this.state.selected}
-  //     onSelect={item => {
-  //       const selected = [...state.selected, item.value]
-  //       const selectedItems = selected
-  //       const selectedItemsLength = selectedItems.length
-  //       let selectedNames = ''
-  //       if (selectedItemsLength === 0) {
-  //         selectedNames = ''
-  //       } else if (selectedItemsLength === 1) {
-  //         selectedNames = selectedItems.toString()
-  //       } else if (selectedItemsLength > 1) {
-  //         selectedNames = selectedItemsLength.toString() + ' selected...'
-  //       }
-  //       setState({
-  //         selected,
-  //         selectedNames
-  //       })
-  //     }}
-  //     onDeselect={item => {
-  //       const deselectedItemIndex = state.selected.indexOf(item.value)
-  //       const selectedItems = state.selected.filter(
-  //         (_item, i) => i !== deselectedItemIndex
-  //       )
-  //       const selectedItemsLength = selectedItems.length
-  //       let selectedNames = ''
-  //       if (selectedItemsLength === 0) {
-  //         selectedNames = ''
-  //       } else if (selectedItemsLength === 1) {
-  //         selectedNames = selectedItems.toString()
-  //       } else if (selectedItemsLength > 1) {
-  //         selectedNames = selectedItemsLength.toString() + ' selected...'
-  //       }
-  //       setState({ selected: selectedItems, selectedNames })
-  //     }}
-  //   >
-  //     <Button>{state.selectedNames || 'Select multiple...'}</Button>
-  //   </SelectMenu>)
-  // }
-    
   renderItem(props) {
     var item = props.item
-    return <AutocompleteItem {...props} children={
-    <Pane display="flex" flex={1}>
-      <Pane display="flex" flex={1}>
-      {item.name} 
-      </Pane>
-      <Pane>
-        <Tooltip align="right"
-          content={
-            <Paragraph margin={10}>{item.description}</Paragraph>
-          }
-          appearance="card"
-        >
-          <Icon size={12} marginLeft={4} icon="help" />
-        </Tooltip>
-      </Pane>
-   </Pane>} />
+    return (
+      <AutocompleteItem {...props} children={
+          <Pane display="flex" flex={1}>
+            <Pane display="flex" flex={1}>{item.name} </Pane>
+            <Pane>
+              <Tooltip align="right"
+                content={
+                  <Paragraph margin={10}>{item.description}</Paragraph>
+                }
+                appearance="card"
+              >
+                <Icon size={12} marginLeft={4} icon="help" />
+              </Tooltip>
+            </Pane>
+          </Pane>
+        } 
+      />
+    )
   }
 
 
@@ -350,7 +348,6 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
         >
           <FileForm
             ref={f => this.addForm = f}
-            // printSlice={this.state.printSlice}
             loading={this.state.savingFile}
             node={this.props.node}
             onSave={this.onFileSave.bind(this)}
@@ -391,6 +388,9 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
           placeholder={this.state.files.length > 0? "File" : "No Files Found"} 
           autocompleteProps={{
             renderItem: this.renderItem.bind(this)
+          }}
+          inputProps={{
+            onChange:(e) => this.handleFilterChange((e.target.value || '').trim())
           }}
           marginTop={4} 
           marginBottom={4}  
@@ -449,23 +449,6 @@ export default class PrintForm extends React.Component<PrintProps, PrintStatePro
           </Pane>
           {this.state.newPrint.settings.record_print ? this.renderCameraOptions() : null}
         </Pane>
-
-        {/* <Pane display="flex" marginTop={10}>
-          <Pane display="flex" flex={1}>
-            <Checkbox
-              label="Sync To LayerKeep"
-              checked={this.state.newPrint.layerkeep_sync}
-              onChange={e => 
-                this.setState({
-                  newPrint: {
-                    ...this.state.newPrint,
-                    layerkeep_sync: e.target.checked
-                  }
-                })
-              }
-            />
-          </Pane>
-        </Pane> */}
       </Pane>
     )
   }

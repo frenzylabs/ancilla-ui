@@ -49,6 +49,7 @@ export default {
     var qs = options["qs"]
     delete options["qs"]
     var path = `${node.apiUrl}/files` + QS.stringify(qs, { addQueryPrefix: true }) 
+    
     return Request.get(path, options)
   },
 

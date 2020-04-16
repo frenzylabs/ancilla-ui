@@ -399,8 +399,6 @@ export default class PrintForm extends React.Component<PrintProps> {
           marginRight={10}  
           width="100%" 
           height={48}
-          isLoading={this.state.filesLoading}
-          disabled={this.state.files.length < 1}
           onChange={selected => {
             this.setState({
               selectedFile: selected,

@@ -31,8 +31,8 @@ export const Printer = {
     return Request.get(`${node.apiUrl}/services/printer/${printerService.id}/state`, options)
   },
 
-  ports: () => {
-    return Request.get('/api/ports')
+  ports: (node) => {
+    return Request.get(`${node.apiUrl}/ports`)
   },
 
   prints: (node, printerService, options = {}) => { 

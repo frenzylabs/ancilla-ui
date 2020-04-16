@@ -93,7 +93,7 @@ export default class Form extends React.Component<Props> {
       }
       this.setState({newPrinter: {...this.state.newPrinter, ...data}})
     }
-    printer.ports()
+    printer.ports(this.props.node)
     .then(res => {
       let ports = res.data['ports'] || []
 
